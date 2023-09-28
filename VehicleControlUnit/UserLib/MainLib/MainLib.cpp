@@ -4,14 +4,14 @@ namespace VehicleControlUnit { namespace MainLib {
 
 void Main::Setup()
 {
-	logger.LogInfo("This is an Info log");
-	logger.LogSpam("This is a spam log");
-	logger.LogError("This is a error log");
+	logger.LogInfo("--VCU Setup Starts--");
+	canManager.init();
+	canManager.SetTransmitHeader(1, 2, true, true, true);
 }
 
 void Main::Loop()
 {
-	logger.LogSpam("This is a spam log bruhh");
+	logger.LogSpam("--VCU Loop Starts--");
 }
 
 }}

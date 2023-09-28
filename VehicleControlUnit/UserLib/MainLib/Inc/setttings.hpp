@@ -5,8 +5,8 @@ namespace VehicleControlUnit { namespace MainLib { namespace Settings {
 
 // Logger
 const bool spamLoggingEnabled = true;
-const bool infoLoggingEnabled = false;
-const bool errorLoggingEnabled = false;
+const bool infoLoggingEnabled = true;
+const bool errorLoggingEnabled = true;
 
 }}} // namespace VehicleControlUnit::MainLib::Settings
 

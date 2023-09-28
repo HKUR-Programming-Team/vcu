@@ -106,7 +106,7 @@ int main(void)
   MX_USART2_UART_Init();
   MX_CAN_Init();
   /* USER CODE BEGIN 2 */
-  VehicleControlUnit::MainLib::Main VCU(&hcan);
+  VehicleControlUnit::MainLib::Main VCU(hcan);
   VCU.Setup();
   /* USER CODE END 2 */
 

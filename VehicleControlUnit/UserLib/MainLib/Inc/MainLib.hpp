@@ -1,7 +1,9 @@
 #ifndef VCU_MAIN
 #define VCU_MAIN
 
+#include <DataStoreLib/Inc/DataStore.hpp>
 #include <UtilsLib/Inc/Logger.hpp>
+#include <UtilsLib/Inc/CANManager.hpp>
 #include <MainLib/Inc/setttings.hpp>
 
 #include <stm32f1xx.h>
@@ -12,20 +14,21 @@ class Main
 {
 
 public:
-	Main(CAN_HandleTypeDef* const canHandler) :
-		canHandler(canHandler)
+	Main(CAN_HandleTypeDef& canHandler) :
+		logger{Settings::spamLoggingEnabled,
+				Settings::infoLoggingEnabled,
+				Settings::errorLoggingEnabled},
+		canManager(logger, canHandler, "CAN1")
 	{}
 
 	void Setup();
 	void Loop();
 
 private:
-	CAN_HandleTypeDef* canHandler;
+	UtilsLib::Logger logger;
 
-	VehicleControlUnit::UtilsLib::Logger logger{
-			Settings::spamLoggingEnabled,
-			Settings::infoLoggingEnabled,
-			Settings::errorLoggingEnabled};
+	UtilsLib::CANManager canManager;
+	DataStoreLib::DataStore dataStore;
 };
 
 }} // namespace VehicleControlUnit::MainLib
