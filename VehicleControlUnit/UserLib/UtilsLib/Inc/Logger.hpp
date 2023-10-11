@@ -1,5 +1,4 @@
-#ifndef VCU_LOGGER
-#define VCU_LOGGER
+#pragma once
 
 #include <stm32f1xx.h>
 
@@ -33,4 +32,3 @@ private:
 
 }} // namespace VehicleControlUnit::UtilsLib
 
-#endif

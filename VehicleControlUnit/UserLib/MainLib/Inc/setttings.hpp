@@ -1,5 +1,4 @@
-#ifndef VCU_SETTINGS
-#define VCU_SETTINGS
+# pragma once
 
 namespace VehicleControlUnit { namespace MainLib { namespace Settings {
 
@@ -10,5 +9,3 @@ const bool errorLoggingEnabled = true;
 
 }}} // namespace VehicleControlUnit::MainLib::Settings
 
-
-#endif

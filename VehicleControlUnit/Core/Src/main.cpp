@@ -46,9 +46,8 @@
 CAN_HandleTypeDef hcan;
 
 UART_HandleTypeDef huart2;
-
 /* USER CODE BEGIN PV */
-
+VehicleControlUnit::MainLib::Main VCU(hcan);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -65,7 +64,10 @@ static void MX_CAN_Init(void);
 
 void HAL_CAN_RxFifo0MsgPendingCallback(CAN_HandleTypeDef *hcan)
 {
-
+	CAN_RxHeaderTypeDef rxHeader;
+	uint8_t rxData[8] = {};
+	HAL_CAN_GetRxMessage(hcan, CAN_RX_FIFO0, &rxHeader, rxData);
+	VCU.CANMessageReceiveHandlerFIFO0(rxHeader, rxData);
 }
 
 void HAL_GPIO_EXTI_Callback(uint16_t GPIO_Pin)
@@ -106,7 +108,6 @@ int main(void)
   MX_USART2_UART_Init();
   MX_CAN_Init();
   /* USER CODE BEGIN 2 */
-  VehicleControlUnit::MainLib::Main VCU(hcan);
   VCU.Setup();
   /* USER CODE END 2 */
 

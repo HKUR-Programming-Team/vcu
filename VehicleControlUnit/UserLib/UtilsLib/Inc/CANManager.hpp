@@ -1,5 +1,6 @@
 #pragma once
 
+#include <BMSInterfaceLib/Inc/BMSInterface.hpp>
 #include <UtilsLib/Inc/Logger.hpp>
 #include <UtilsLib/Inc/ErrorState.hpp>
 
@@ -13,9 +14,9 @@ class CANManager
 {
 public:
 	CANManager(UtilsLib::Logger& logger, CAN_HandleTypeDef& canHandler, const std::string & canPortName):
-		logger{logger},
-		canHandler{canHandler},
-		canPortName(canPortName)
+		mLogger{logger},
+		mCanHandler{canHandler},
+		mCanPortName(canPortName)
 	{}
 
 	ErrorState init();
@@ -29,19 +30,55 @@ public:
 
 	UtilsLib::ErrorState SendMessage(const uint8_t message[8]);
 
-private:
-	const Logger& logger;
-	CAN_HandleTypeDef& canHandler;
-	const std::string canPortName;
+	// MessageHandler of different CAN transceiver should have different implementations
+	virtual UtilsLib::ErrorState MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8]) = 0;
+
+protected:
+	const Logger& mLogger;
+	CAN_HandleTypeDef& mCanHandler;
+	const std::string mCanPortName;
 
 	// Transmission
-	CAN_TxHeaderTypeDef transmitHeader;
-	uint8_t transmitBuffer[8];
-	uint32_t lastMailboxUsed;
+	CAN_TxHeaderTypeDef mTransmitHeader;
+	uint8_t mTransmitBuffer[8];
+	uint32_t mLastMailboxUsed;
 
 	// Receive
-	CAN_RxHeaderTypeDef receiveHeader;
-	uint8_t receiveBuffer[8];
+	CAN_RxHeaderTypeDef mReceiveHeader;
+	uint8_t mReceiveBuffer[8];
+};
+
+
+class CANManangerForBMSAndMCU : public CANManager
+{
+
+public:
+	CANManangerForBMSAndMCU(UtilsLib::Logger& logger, CAN_HandleTypeDef& canHandler, const std::string & canPortName, BMSInterfaceLib::BMSInteface& BMSInterface):
+			CANManager(logger, canHandler, canPortName),
+			mBMSInterface(BMSInterface)
+			// TODO :: Initialize dependency injection for MCU here
+	{}
+
+	virtual UtilsLib::ErrorState MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8]);
+
+private:
+	// TODO :: Inject dependency here: MCU interface library.
+	BMSInterfaceLib::BMSInteface &mBMSInterface;
+};
+
+class CANManangerForSensors : public CANManager
+{
+
+public:
+	CANManangerForSensors(UtilsLib::Logger& logger, CAN_HandleTypeDef& canHandler, const std::string & canPortName):
+			CANManager(logger, canHandler, canPortName)
+			// TODO :: Initialize dependency injection here
+	{}
+
+	virtual UtilsLib::ErrorState MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8]);
+
+private:
+	// TODO :: Inject dependency here: Sensor interface libraries.
 };
 
 }}
