@@ -97,13 +97,16 @@ UtilsLib::ErrorState CANManager::SendMessage(const uint8_t message[8])
 	if (returnStatus == HAL_OK)
 	{
 		mLogger.LogInfo("TODO: Send CAN message HAL OK");
+		return UtilsLib::ErrorState::CAN_MSG_TRANSMIT_SUCCESS;
 	}
 	else if (returnStatus == HAL_ERROR)
 	{
 		mLogger.LogInfo("TODO: Send CAN message HAL ERROR");
+		return UtilsLib::ErrorState::CAN_MSG_TRANSMIT_FAIL;
 	}
+
 	// TODO :: Do appropriate action according to the return state: implausible? send again?
-	return UtilsLib::ErrorState::INIT_SUCCESS;
+	return UtilsLib::ErrorState::CAN_MSG_TRANSMIT_FAIL;
 }
 
 UtilsLib::ErrorState CANManangerForBMSAndMCU::MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
@@ -122,11 +125,13 @@ UtilsLib::ErrorState CANManangerForBMSAndMCU::MessageReceiveHandler(const CAN_Rx
 	else
 	{
 		mLogger.LogError("CAN Message with unknown IDE is received. canPortName: " + mCanPortName);
+		return UtilsLib::ErrorState::CAN_MSG_RECEIVE_FAIL;
 	}
 
 	// TODO :: Map CAN message ID to action (call a function from another library)
 	// You can call mBMSInterface.MessageReceiveHandler(header, message) to pass the message to BMS interface library
 	mLogger.LogInfo("TODO: Map the received CAN Message's ID to an action for CANManangerForBMSAndMCU");
+	return UtilsLib::ErrorState::CAN_MSG_RECEIVE_SUCCESS;
 }
 
 UtilsLib::ErrorState CANManangerForSensors::MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
@@ -149,6 +154,7 @@ UtilsLib::ErrorState CANManangerForSensors::MessageReceiveHandler(const CAN_RxHe
 
 	// TODO :: Map CAN message ID to action (call a function from another library)
 	mLogger.LogInfo("TODO: Map the received CAN Message's ID to an action for CANManangerForBMSAndMCU");
+	return UtilsLib::ErrorState::INIT_SUCCESS;
 }
 
 }}

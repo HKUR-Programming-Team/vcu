@@ -46,6 +46,7 @@
 CAN_HandleTypeDef hcan;
 
 UART_HandleTypeDef huart2;
+
 /* USER CODE BEGIN PV */
 VehicleControlUnit::MainLib::Main VCU(hcan);
 /* USER CODE END PV */
@@ -116,9 +117,10 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-	  HAL_Delay(1000);
-	  VCU.Loop();
+
     /* USER CODE BEGIN 3 */
+	HAL_Delay(1000);
+	VCU.Loop();
   }
   /* USER CODE END 3 */
 }
@@ -194,6 +196,21 @@ static void MX_CAN_Init(void)
   }
   /* USER CODE BEGIN CAN_Init 2 */
 
+  // TEST CODE
+  CAN_FilterTypeDef canfilterconfig;
+
+  canfilterconfig.FilterActivation = CAN_FILTER_ENABLE;
+  canfilterconfig.FilterBank = 10;  // anything between 0 to SlaveStartFilterBank
+  canfilterconfig.FilterFIFOAssignment = CAN_RX_FIFO0;
+  canfilterconfig.FilterIdHigh = 0x6AE<<5;
+  canfilterconfig.FilterIdLow = 0x0;
+  canfilterconfig.FilterMaskIdHigh = 0x0<<13;
+  canfilterconfig.FilterMaskIdLow = 0x0000;
+  canfilterconfig.FilterMode = CAN_FILTERMODE_IDMASK;
+  canfilterconfig.FilterScale = CAN_FILTERSCALE_32BIT;
+  canfilterconfig.SlaveStartFilterBank = 13;  // 13 to 27 are assigned to slave CAN (CAN 2) OR 0 to 12 are assgned to CAN1
+
+  HAL_CAN_ConfigFilter(&hcan, &canfilterconfig);
   /* USER CODE END CAN_Init 2 */
 
 }
