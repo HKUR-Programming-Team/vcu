@@ -9,7 +9,7 @@ class DataStore
 public:
 
 	DataStore():
-		mMCUImplausibleState{false},
+		mPersistedImplausibleStatus{false},
 		mBMSValidity{false},
 		mBMSBatteryLevel{0},
 		mThrottleValidity{false},
@@ -22,18 +22,18 @@ public:
 	{
 		return mMCUValidity;
 	}
-	bool GetMCUImplausibleState() const
+	bool GetPersistedImplausibleStatus() const
 	{
-		return mMCUImplausibleState;
+		return mPersistedImplausibleStatus;
 	}
 
 	void SetMCUValidity(const bool MCUValidity)
 	{
 		mMCUValidity = MCUValidity;
 	}
-	void SetMCUImplausibleState(const bool MCUImplausibleState)
+	void SetPersistedImplausibleStatus(const bool PersistedImplausibleStatus)
 	{
-		mMCUImplausibleState = MCUImplausibleState;
+		mPersistedImplausibleStatus = PersistedImplausibleStatus;
 	}
 
 	// BMS
@@ -77,9 +77,9 @@ public:
 	{
 		mThrottleValidity = throttleValidity;
 	}
-	void SetThrottleImplausibleState(const bool MCUImplausibleState)
+	void SetThrottleImplausibleState(const bool throttleImplausibleState)
 	{
-		mMCUImplausibleState = MCUImplausibleState;
+		mThrottleImplausibleState = throttleImplausibleState;
 	}
 	void SetThrottle(const bool throttle)
 	{
@@ -91,7 +91,7 @@ private:
 
 // MCU
 	bool mMCUValidity;
-	bool mMCUImplausibleState;
+	bool mPersistedImplausibleStatus;
 
 // BMS
 	bool mBMSValidity;

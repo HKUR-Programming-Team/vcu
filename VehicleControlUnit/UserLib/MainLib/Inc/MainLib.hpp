@@ -2,9 +2,12 @@
 
 #include <BMSInterfaceLib/Inc/BMSInterface.hpp>
 #include <DataStoreLib/Inc/DataStore.hpp>
+#include <UtilsLib/Inc/ADCManager.hpp>
 #include <UtilsLib/Inc/Logger.hpp>
 #include <UtilsLib/Inc/CANManager.hpp>
 #include <MainLib/Inc/setttings.hpp>
+#include <MCUInterfaceLib/Inc/MCUErrorManager.hpp>
+#include <MCUInterfaceLib/Inc/MCUInterface.hpp>
 
 #include <stm32f1xx.h>
 
@@ -19,8 +22,10 @@ public:
 				Settings::infoLoggingEnabled,
 				Settings::errorLoggingEnabled},
 		mDataStore(),
+		mCanManagerForBMSAndMCU(mLogger, canHandler, "CAN1", mBMSInterface, mMCUInterface),
 		mBMSInterface(mLogger, mDataStore),
-		mCanManagerForBMSAndMCU(mLogger, canHandler, "CAN1", mBMSInterface)
+		mMCUInterface(mLogger, mDataStore, mCanManagerForBMSAndMCU),
+		mMCUErrorManager(mLogger, mDataStore, Settings::implausibleThresholdInterval)
 	{}
 
 	void Setup();
@@ -32,8 +37,12 @@ private:
 	UtilsLib::Logger mLogger;
 	DataStoreLib::DataStore mDataStore;
 
-	BMSInterfaceLib::BMSInteface mBMSInterface;
 	UtilsLib::CANManangerForBMSAndMCU mCanManagerForBMSAndMCU;
+
+	BMSInterfaceLib::BMSInteface mBMSInterface;
+	MCUInterfaceLib::MCUInteface mMCUInterface;
+	MCUInterfaceLib::MCUErrorManager mMCUErrorManager;
+
 
 };
 

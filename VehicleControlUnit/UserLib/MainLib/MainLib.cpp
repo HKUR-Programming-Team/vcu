@@ -7,12 +7,18 @@ void Main::Setup()
 	mLogger.LogInfo("--VCU Setup Starts--");
 	mCanManagerForBMSAndMCU.init();
 
+	mLogger.LogInfo("TODO: what if init failed in setup?");
+
 	mLogger.LogInfo("--VCU Setup Finish--");
 }
 
 void Main::Loop()
 {
 	mLogger.LogSpam("--VCU Loop Starts--");
+
+	// MCU
+	mMCUErrorManager.CheckImplausibility(); // update implausible status
+	mMCUInterface.SendMessage(); // send packet to motor controller
 
 }
 
@@ -26,11 +32,6 @@ void Main::CANMessageReceiveHandlerFIFO0(const CAN_RxHeaderTypeDef& header, cons
 	{
 		messageBuffer[i] = message[i];
 	}
-
-	// TEST CODE
-	mLogger.LogInfo("Received: " + std::to_string(message[0]) + " " + std::to_string(message[1]) + " " + std::to_string(message[2]) + " " + std::to_string(message[3]) +
-			" " + std::to_string(message[4]) + " " + std::to_string(message[5]) + " " + std::to_string(message[6]) + " " + std::to_string(message[7]));
-	// TEST CODE
 
 	mCanManagerForBMSAndMCU.MessageReceiveHandler(header, messageBuffer);
 }

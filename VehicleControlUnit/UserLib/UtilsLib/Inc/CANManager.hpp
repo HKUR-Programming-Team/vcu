@@ -1,6 +1,7 @@
 #pragma once
 
 #include <BMSInterfaceLib/Inc/BMSInterface.hpp>
+#include <MCUInterfaceLib/Inc/MCUInterface.hpp>
 #include <UtilsLib/Inc/Logger.hpp>
 #include <UtilsLib/Inc/ErrorState.hpp>
 
@@ -53,9 +54,10 @@ class CANManangerForBMSAndMCU : public CANManager
 {
 
 public:
-	CANManangerForBMSAndMCU(UtilsLib::Logger& logger, CAN_HandleTypeDef& canHandler, const std::string & canPortName, BMSInterfaceLib::BMSInteface& BMSInterface):
+	CANManangerForBMSAndMCU(UtilsLib::Logger& logger, CAN_HandleTypeDef& canHandler, const std::string & canPortName, BMSInterfaceLib::BMSInteface& BMSInterface, MCUInterfaceLib::MCUInteface& MCUInterface):
 			CANManager(logger, canHandler, canPortName),
-			mBMSInterface(BMSInterface)
+			mBMSInterface(BMSInterface),
+			mMCUInterface(MCUInterface)
 			// TODO :: Initialize dependency injection for MCU here
 	{}
 
@@ -64,6 +66,7 @@ public:
 private:
 	// TODO :: Inject dependency here: MCU interface library.
 	BMSInterfaceLib::BMSInteface &mBMSInterface;
+	MCUInterfaceLib::MCUInterface &mMCUInterface;
 };
 
 class CANManangerForSensors : public CANManager

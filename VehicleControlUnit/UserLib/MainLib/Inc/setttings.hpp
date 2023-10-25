@@ -7,5 +7,8 @@ const bool spamLoggingEnabled = false;
 const bool infoLoggingEnabled = true;
 const bool errorLoggingEnabled = true;
 
+// MCU
+const uint32_t implausibleThresholdInterval = 100;
+
 }}} // namespace VehicleControlUnit::MainLib::Settings
 
