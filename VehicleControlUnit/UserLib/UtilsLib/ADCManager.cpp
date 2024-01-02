@@ -27,7 +27,7 @@ ErrorState ADCManager::GetBufferByIndex(const uint8_t index, uint16_t& result) c
 {
 	if (index < 0 || index >= mBufferLength)
 	{
-		mLogger.LogError("Index out of range while accessing ADC DMA buffer. Please raise to developers");
+		mLogger.LogError("Index out of range while accessing ADC DMA buffer. Index: " + std::to_string(index) + ". Please raise to developers");
 		return ErrorState::ADC_DMA_INDEX_OUT_OF_RANGE;
 	}
 

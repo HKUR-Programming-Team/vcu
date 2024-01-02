@@ -8,6 +8,7 @@
 #include <MainLib/Inc/setttings.hpp>
 #include <MCUInterfaceLib/Inc/MCUErrorManager.hpp>
 #include <MCUInterfaceLib/Inc/MCUInterface.hpp>
+#include <SensorInterfaceLib/Inc/SensorInterface.hpp>
 
 #include <stm32f1xx.h>
 
@@ -24,6 +25,7 @@ public:
 		mDataStore(),
 		mADCManager(mLogger, adcHandler, "ADC1", Settings::ADCDMABufferLength),
 		mCanManagerForBMSAndMCU(mLogger, canHandler, "CAN1", mBMSInterface, mMCUInterface),
+		mSensorInterface(mLogger, mDataStore, mADCManager, Settings::throttleSignalADCIndex1, Settings::throttleSignalADCIndex2),
 		mBMSInterface(mLogger, mDataStore),
 		mMCUInterface(mLogger, mDataStore, mCanManagerForBMSAndMCU),
 		mMCUErrorManager(mLogger, mDataStore, Settings::implausibleThresholdInterval)
@@ -41,10 +43,10 @@ private:
 	UtilsLib::ADCManager mADCManager;
 	UtilsLib::CANManangerForBMSAndMCU mCanManagerForBMSAndMCU;
 
+	SensorInterfaceLib::SensorInterface mSensorInterface;
 	BMSInterfaceLib::BMSInterface mBMSInterface;
 	MCUInterfaceLib::MCUInterface mMCUInterface;
 	MCUInterfaceLib::MCUErrorManager mMCUErrorManager;
-
 
 };
 
