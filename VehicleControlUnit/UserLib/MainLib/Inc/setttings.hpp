@@ -17,5 +17,8 @@ const uint32_t ADCDMABufferLength = 3;
 const uint8_t throttleSignalADCIndex1 = 0;
 const uint8_t throttleSignalADCIndex2 = 1;
 
+// Ready to drive sound
+const uint32_t readyToDriveSoundDuration = 1500;
+
 }}} // namespace VehicleControlUnit::MainLib::Settings
 

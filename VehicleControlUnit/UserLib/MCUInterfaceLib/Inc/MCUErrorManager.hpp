@@ -29,7 +29,7 @@ private:
 	DataStoreLib::DataStore& mDataStore;
 
 	bool mInImplausibleState;
-	bool mImplausibleStartTs;
+	uint32_t mImplausibleStartTs;
 
 	const uint32_t mImplausibleThresholdInterval;
 

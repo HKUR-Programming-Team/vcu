@@ -8,6 +8,7 @@
 #include <MainLib/Inc/setttings.hpp>
 #include <MCUInterfaceLib/Inc/MCUErrorManager.hpp>
 #include <MCUInterfaceLib/Inc/MCUInterface.hpp>
+#include <ReadyToDriveLib/Inc/ReadyToDrive.hpp>
 #include <SensorInterfaceLib/Inc/SensorInterface.hpp>
 
 #include <stm32f1xx.h>
@@ -28,7 +29,8 @@ public:
 		mSensorInterface(mLogger, mDataStore, mADCManager, Settings::throttleSignalADCIndex1, Settings::throttleSignalADCIndex2),
 		mBMSInterface(mLogger, mDataStore),
 		mMCUInterface(mLogger, mDataStore, mCanManagerForBMSAndMCU),
-		mMCUErrorManager(mLogger, mDataStore, Settings::implausibleThresholdInterval)
+		mMCUErrorManager(mLogger, mDataStore, Settings::implausibleThresholdInterval),
+		mReadyToDriveManager(mLogger, mDataStore, Settings::readyToDriveSoundDuration)
 	{}
 
 	void Setup();
@@ -47,7 +49,7 @@ private:
 	BMSInterfaceLib::BMSInterface mBMSInterface;
 	MCUInterfaceLib::MCUInterface mMCUInterface;
 	MCUInterfaceLib::MCUErrorManager mMCUErrorManager;
-
+	ReadyToDriveLib::ReadyToDrive mReadyToDriveManager;
 };
 
 }} // namespace VehicleControlUnit::MainLib

@@ -23,6 +23,9 @@ void Main::Loop()
 	// MCU
 	mMCUErrorManager.CheckImplausibility(); // update implausible status
 	mMCUInterface.SendMessage(); // send packet to motor controller
+
+	// Ready to Drive
+	mReadyToDriveManager.CheckReadyToDrive();
 }
 
 void Main::CANMessageReceiveHandlerFIFO0(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])

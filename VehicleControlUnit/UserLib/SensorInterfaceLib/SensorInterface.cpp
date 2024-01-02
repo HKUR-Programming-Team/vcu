@@ -23,7 +23,7 @@ void SensorInterface::ReadThrottleSignal()
 	}
 
 	mLogger.LogInfo("TODO: SensorInterface ReadThrottleSignal process and store signal to data store.");
-	mLogger.LogInfo("Read signals: " + std::to_string(result1) + ", " + std::to_string(result2));
+	mLogger.LogSpam("Read signals: " + std::to_string(result1) + ", " + std::to_string(result2));
 	return;
 }
 
