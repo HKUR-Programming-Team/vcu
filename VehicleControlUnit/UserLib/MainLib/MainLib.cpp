@@ -5,7 +5,8 @@ namespace VehicleControlUnit { namespace MainLib {
 void Main::Setup()
 {
 	mLogger.LogInfo("--VCU Setup Starts--");
-	mCanManagerForBMSAndMCU.init();
+	const auto canError = mCanManagerForBMSAndMCU.init();
+	const auto adcError = mADCManager.init();
 
 	mLogger.LogInfo("TODO: what if init failed in setup?");
 
@@ -17,9 +18,15 @@ void Main::Loop()
 	mLogger.LogSpam("--VCU Loop Starts--");
 
 	// MCU
-	mMCUErrorManager.CheckImplausibility(); // update implausible status
-	mMCUInterface.SendMessage(); // send packet to motor controller
+	// mMCUErrorManager.CheckImplausibility(); // update implausible status
+	// mMCUInterface.SendMessage(); // send packet to motor controller
 
+	// ADC Test
+	uint16_t result1, result2, result3;
+	mADCManager.GetBufferByIndex(0, result1);
+	mADCManager.GetBufferByIndex(1, result2);
+	mADCManager.GetBufferByIndex(2, result3);
+	mLogger.LogInfo("Result " + std::to_string(result1) + " " + std::to_string(result2) + " " + std::to_string(result3));
 }
 
 void Main::CANMessageReceiveHandlerFIFO0(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])

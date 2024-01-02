@@ -10,5 +10,8 @@ const bool errorLoggingEnabled = true;
 // MCU
 const uint32_t implausibleThresholdInterval = 100;
 
+// ADC
+const uint32_t ADCDMABufferLength = 3;
+
 }}} // namespace VehicleControlUnit::MainLib::Settings
 

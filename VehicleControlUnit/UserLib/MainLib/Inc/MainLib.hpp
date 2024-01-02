@@ -17,11 +17,12 @@ class Main
 {
 
 public:
-	Main(CAN_HandleTypeDef& canHandler) :
+	Main(CAN_HandleTypeDef& canHandler, ADC_HandleTypeDef& adcHandler) :
 		mLogger{Settings::spamLoggingEnabled,
 				Settings::infoLoggingEnabled,
 				Settings::errorLoggingEnabled},
 		mDataStore(),
+		mADCManager(mLogger, adcHandler, "ADC1", Settings::ADCDMABufferLength),
 		mCanManagerForBMSAndMCU(mLogger, canHandler, "CAN1", mBMSInterface, mMCUInterface),
 		mBMSInterface(mLogger, mDataStore),
 		mMCUInterface(mLogger, mDataStore, mCanManagerForBMSAndMCU),
@@ -37,6 +38,7 @@ private:
 	UtilsLib::Logger mLogger;
 	DataStoreLib::DataStore mDataStore;
 
+	UtilsLib::ADCManager mADCManager;
 	UtilsLib::CANManangerForBMSAndMCU mCanManagerForBMSAndMCU;
 
 	BMSInterfaceLib::BMSInterface mBMSInterface;
