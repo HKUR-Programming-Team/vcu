@@ -39,8 +39,8 @@ private:
 
 	UtilsLib::CANManangerForBMSAndMCU mCanManagerForBMSAndMCU;
 
-	BMSInterfaceLib::BMSInteface mBMSInterface;
-	MCUInterfaceLib::MCUInteface mMCUInterface;
+	BMSInterfaceLib::BMSInterface mBMSInterface;
+	MCUInterfaceLib::MCUInterface mMCUInterface;
 	MCUInterfaceLib::MCUErrorManager mMCUErrorManager;
 
 

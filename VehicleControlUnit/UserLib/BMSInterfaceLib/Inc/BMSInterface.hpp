@@ -8,10 +8,10 @@
 
 namespace VehicleControlUnit { namespace BMSInterfaceLib {
 
-class BMSInteface
+class BMSInterface
 {
 public:
-	BMSInteface(UtilsLib::Logger& logger, DataStoreLib::DataStore& dataStore):
+	BMSInterface(UtilsLib::Logger& logger, DataStoreLib::DataStore& dataStore):
 			mLogger{logger},
 			mDataStore{dataStore}
 	{}

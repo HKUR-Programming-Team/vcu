@@ -2,13 +2,13 @@
 
 namespace VehicleControlUnit { namespace MCUInterfaceLib {
 
-UtilsLib::ErrorState MCUInteface::MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
+UtilsLib::ErrorState MCUInterface::MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
 {
 	mLogger.LogInfo("TODO: Handle the CAN message received from MCU, store the data in the DataStore");
 	return UtilsLib::ErrorState::INIT_SUCCESS; // placeholder
 }
 
-UtilsLib::ErrorState MCUInteface::SendMessage()
+UtilsLib::ErrorState MCUInterface::SendMessage()
 {
 	mLogger.LogInfo("TODO: Send message to motor controller");
 

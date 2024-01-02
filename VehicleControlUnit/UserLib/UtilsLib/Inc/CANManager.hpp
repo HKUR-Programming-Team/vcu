@@ -7,6 +7,11 @@
 
 #include <stm32f1xx.h>
 
+// Forward declaration to make circular dependency between CANManager and MCUInterface work
+namespace VehicleControlUnit { namespace MCUInterfaceLib {
+	class MCUInterface;
+}};
+
 namespace VehicleControlUnit { namespace UtilsLib {
 
 // TODO :: Write test cases for all these fuckers
@@ -54,7 +59,7 @@ class CANManangerForBMSAndMCU : public CANManager
 {
 
 public:
-	CANManangerForBMSAndMCU(UtilsLib::Logger& logger, CAN_HandleTypeDef& canHandler, const std::string & canPortName, BMSInterfaceLib::BMSInteface& BMSInterface, MCUInterfaceLib::MCUInteface& MCUInterface):
+	CANManangerForBMSAndMCU(UtilsLib::Logger& logger, CAN_HandleTypeDef& canHandler, const std::string & canPortName, BMSInterfaceLib::BMSInterface& BMSInterface, MCUInterfaceLib::MCUInterface& MCUInterface):
 			CANManager(logger, canHandler, canPortName),
 			mBMSInterface(BMSInterface),
 			mMCUInterface(MCUInterface)
@@ -65,7 +70,7 @@ public:
 
 private:
 	// TODO :: Inject dependency here: MCU interface library.
-	BMSInterfaceLib::BMSInteface &mBMSInterface;
+	BMSInterfaceLib::BMSInterface &mBMSInterface;
 	MCUInterfaceLib::MCUInterface &mMCUInterface;
 };
 
