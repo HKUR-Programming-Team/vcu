@@ -6,14 +6,13 @@ namespace VehicleControlUnit { namespace MainLib { namespace Settings {
 const bool spamLoggingEnabled = false;
 const bool infoLoggingEnabled = true;
 const bool errorLoggingEnabled = true;
+const bool customLoggingEnabled = false;
 
 // MCU
 const uint32_t implausibleThresholdInterval = 100;
 
-// ADC
+// ADC (Move these to ADC manager?)
 const uint32_t ADCDMABufferLength = 3;
-
-// SensorInterface
 const uint8_t throttleSignalADCIndex1 = 0;
 const uint8_t throttleSignalADCIndex2 = 1;
 

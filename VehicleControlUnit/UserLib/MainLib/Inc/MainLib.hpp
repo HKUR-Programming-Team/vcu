@@ -22,7 +22,8 @@ public:
 	Main(CAN_HandleTypeDef& canHandler, ADC_HandleTypeDef& adcHandler) :
 		mLogger{Settings::spamLoggingEnabled,
 				Settings::infoLoggingEnabled,
-				Settings::errorLoggingEnabled},
+				Settings::errorLoggingEnabled,
+				Settings::customLoggingEnabled},
 		mDataStore(),
 		mADCManager(mLogger, adcHandler, "ADC1", Settings::ADCDMABufferLength),
 		mCanManagerForBMSAndMCU(mLogger, canHandler, "CAN1", mBMSInterface, mMCUInterface),

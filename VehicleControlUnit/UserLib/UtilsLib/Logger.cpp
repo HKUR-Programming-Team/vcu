@@ -17,6 +17,11 @@ void Logger::LogError(const std::string & logMessage) const
 	PrintLogMsg("ERROR", logMessage);
 }
 
+void Logger::LogCustom(const std::string & logMessage) const
+{
+	PrintLogMsg("CUSTOM", logMessage);
+}
+
 void Logger::PrintLogMsg(const std::string & logType, const std::string & logMessage) const
 {
 	if (logType == "SPAM")
@@ -30,6 +35,10 @@ void Logger::PrintLogMsg(const std::string & logType, const std::string & logMes
 	else if (logType == "ERROR")
 	{
 		if (!errorLoggingEnabled) return;
+	}
+	else if (logType == "CUSTOM")
+	{
+		if (!customLoggingEnabled) return;
 	}
 	else
 	{
