@@ -19,12 +19,15 @@ public:
 		mImplausibleThresholdInterval{implausibleThresholdInterval}
 	{}
 
+	// To be called in the main library
 	void CheckImplausibility();
 
 	// To be called when error is resolved (i.e. you are ready to restart the car)
 	void ResetErrorState();
 
 private:
+	bool IsCurrentlyImplausible() const;
+
 	UtilsLib::Logger& mLogger;
 	DataStoreLib::DataStore& mDataStore;
 

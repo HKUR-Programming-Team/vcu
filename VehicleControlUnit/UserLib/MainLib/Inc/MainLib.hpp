@@ -31,7 +31,8 @@ public:
 		mBMSInterface(mLogger, mDataStore),
 		mMCUInterface(mLogger, mDataStore, mCanManagerForBMSAndMCU),
 		mMCUErrorManager(mLogger, mDataStore, Settings::implausibleThresholdInterval),
-		mReadyToDriveManager(mLogger, mDataStore, Settings::readyToDriveSoundDuration)
+		mReadyToDriveManager(mLogger, mDataStore, Settings::readyToDriveSoundDuration),
+		mSetupFailed{false}
 	{}
 
 	void Setup();
@@ -51,6 +52,8 @@ private:
 	MCUInterfaceLib::MCUInterface mMCUInterface;
 	MCUInterfaceLib::MCUErrorManager mMCUErrorManager;
 	ReadyToDriveLib::ReadyToDrive mReadyToDriveManager;
+
+	bool mSetupFailed;
 };
 
 }} // namespace VehicleControlUnit::MainLib

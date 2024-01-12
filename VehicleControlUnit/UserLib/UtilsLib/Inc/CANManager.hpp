@@ -63,13 +63,11 @@ public:
 			CANManager(logger, canHandler, canPortName),
 			mBMSInterface(BMSInterface),
 			mMCUInterface(MCUInterface)
-			// TODO :: Initialize dependency injection for MCU here
 	{}
 
 	virtual UtilsLib::ErrorState MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8]);
 
 private:
-	// TODO :: Inject dependency here: MCU interface library.
 	BMSInterfaceLib::BMSInterface &mBMSInterface;
 	MCUInterfaceLib::MCUInterface &mMCUInterface;
 };

@@ -8,13 +8,25 @@ void Main::Setup()
 	const auto canError = mCanManagerForBMSAndMCU.init();
 	const auto adcError = mADCManager.init();
 
-	mLogger.LogInfo("TODO: what if init failed in setup?");
+	if (canError != UtilsLib::ErrorState::INIT_SUCCESS || adcError != UtilsLib::ErrorState::INIT_SUCCESS)
+	{
+		mSetupFailed = true;
+		mLogger.LogInfo("--VCU Setup Failed-- (TODO: Better error message");
+		return;
+	}
 
+	mSetupFailed = false;
 	mLogger.LogInfo("--VCU Setup Finish--");
 }
 
 void Main::Loop()
 {
+	if (mSetupFailed)
+	{
+		mLogger.LogInfo("TODO: what has to be done if in error");
+		return;
+	}
+
 	mLogger.LogSpam("--VCU Loop Starts--");
 
 	// Sensor
@@ -22,6 +34,8 @@ void Main::Loop()
 
 	// MCU
 	mMCUErrorManager.CheckImplausibility(); // update implausible status
+	mLogger.LogCustom("Persisted: " + std::to_string(mDataStore.GetPersistedImplausibleStatus()));
+
 	mMCUInterface.SendMessage(); // send packet to motor controller
 
 	// Ready to Drive
