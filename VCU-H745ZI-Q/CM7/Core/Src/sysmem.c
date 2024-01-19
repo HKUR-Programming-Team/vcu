@@ -24,10 +24,6 @@
 #include <errno.h>
 #include <stdint.h>
 
-#ifndef NULL
-#define NULL   ((void *) 0)
-#endif
-
 /**
  * Pointer to the current high watermark of the heap usage
  */

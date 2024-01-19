@@ -128,6 +128,7 @@ UtilsLib::ErrorState CANManangerForBMSAndMCU::MessageReceiveHandler(const CAN_Rx
 		return UtilsLib::ErrorState::CAN_MSG_RECEIVE_FAIL;
 	}
 
+
 	// TODO :: Map CAN message ID to action (call a function from another library)
 	// You can call mBMSInterface.MessageReceiveHandler(header, message) to pass the message to BMS interface library
 	mLogger.LogInfo("TODO: Map the received CAN Message's ID to an action for CANManangerForBMSAndMCU");
