@@ -36,12 +36,16 @@ void Main::Loop()
 	mSensorInterface.ReadADC(); // Read throttle and other analog signals and store it to dataStore
 
 	uint8_t txArr[8] = {1,3,5,6,9,12,14,15};
-	mCanManagerForSensors.SetTransmitHeader(0x22, false);
+	mCanManagerForSensors.SetTransmitHeader(0x10, false);
 	mCanManagerForSensors.SendMessage(txArr);
 
 	uint8_t txArr2[8] = {1,3,5,6,9,12,14,16};
-	mCanManagerForBMSAndMCU.SetTransmitHeader(0x22, false);
+	mCanManagerForBMSAndMCU.SetTransmitHeader(0x10, false);
 	mCanManagerForBMSAndMCU.SendMessage(txArr2);
+
+//	uint8_t txArr2[8] = {1,3,5,6,9,12,14,16};
+//	mCanManagerForBMSAndMCU.SetTransmitHeader(0x22, false);
+//	mCanManagerForBMSAndMCU.SendMessage(txArr2);
 //
 //	// MCU
 //	mMCUErrorManager.CheckImplausibility(); // update implausible status
