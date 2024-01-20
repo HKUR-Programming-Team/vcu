@@ -14,14 +14,14 @@ UtilsLib::ErrorState CANManager::init()
 	}
 
 	// Activate interrupts
-	if (mReceiveInterrupt == CANReceiveInterrupt::Interrupt0)
-	{
-		error = HAL_FDCAN_ActivateNotification(&mCanHandler, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, FDCAN_TX_BUFFER0);
-	}
-	else
-	{
-		error = HAL_FDCAN_ActivateNotification(&mCanHandler, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, FDCAN_TX_BUFFER0);
-	}
+//	if (mReceiveFIFONum == CANReceiveFIFONum::ZERO)
+//	{
+//		error = HAL_FDCAN_ActivateNotification(&mCanHandler, FDCAN_IT_RX_FIFO0_NEW_MESSAGE, FDCAN_TX_BUFFER0);
+//	}
+//	else
+//	{
+//		error = HAL_FDCAN_ActivateNotification(&mCanHandler, FDCAN_IT_RX_FIFO1_NEW_MESSAGE, FDCAN_TX_BUFFER0);
+//	}
 
 	if (error != HAL_OK)
 	{
@@ -79,6 +79,38 @@ void CANManager::SetTransmitHeader(
 	mTransmitHeader.MessageMarker = 0;
 }
 
+void CANManager::CheckReceiveFIFO()
+{
+	auto CheckFillLevel = [&]()
+	{
+		if (mReceiveFIFONum == CANReceiveFIFONum::ZERO)
+		{
+			return HAL_FDCAN_GetRxFifoFillLevel(&mCanHandler, FDCAN_RX_FIFO0);
+		}
+		else
+		{
+			return HAL_FDCAN_GetRxFifoFillLevel(&mCanHandler, FDCAN_RX_FIFO1);
+		}
+	};
+
+	uint32_t fillLevel = CheckFillLevel();
+
+	while (fillLevel != 0)
+	{
+		mLogger.LogCustom(mCanPortName + " fillLevel = " + std::to_string(fillLevel));
+		if (mReceiveFIFONum == CANReceiveFIFONum::ZERO)
+		{
+			HAL_FDCAN_GetRxMessage(&mCanHandler, FDCAN_RX_FIFO0, &mReceiveHeader, mReceiveBuffer);
+		}
+		else
+		{
+			HAL_FDCAN_GetRxMessage(&mCanHandler, FDCAN_RX_FIFO1, &mReceiveHeader, mReceiveBuffer);
+		}
+		MessageReceiveHandler();
+		fillLevel = CheckFillLevel();
+	}
+}
+
 UtilsLib::ErrorState CANManager::SendMessage(const uint8_t message[8])
 {
 	mLogger.LogInfo("TODO: Send CAN message");
@@ -111,17 +143,26 @@ UtilsLib::ErrorState CANManager::SendMessage(const uint8_t message[8])
 	return UtilsLib::ErrorState::CAN_MSG_TRANSMIT_FAIL;
 }
 
-UtilsLib::ErrorState CANManangerForBMSAndMCU::MessageReceiveHandler(const FDCAN_RxHeaderTypeDef& header, const uint8_t message[8])
+UtilsLib::ErrorState CANManangerForBMSAndMCU::MessageReceiveHandler()
 {
 	// TODO :: Map CAN message ID to action (call a function from another library)
 	// You can call mBMSInterface.MessageReceiveHandler(header, message) to pass the message to BMS interface library
+
+	//Example
+	mBMSInterface.MessageReceiveHandler(mReceiveHeader, mReceiveBuffer);
+	mMCUInterface.MessageReceiveHandler(mReceiveHeader, mReceiveBuffer);
+
 	mLogger.LogInfo("TODO: Map the received CAN Message's ID to an action for CANManangerForBMSAndMCU");
 	return UtilsLib::ErrorState::CAN_MSG_RECEIVE_SUCCESS;
 }
 
-UtilsLib::ErrorState CANManangerForSensors::MessageReceiveHandler(const FDCAN_RxHeaderTypeDef& header, const uint8_t message[8])
+UtilsLib::ErrorState CANManangerForSensors::MessageReceiveHandler()
 {
 	// TODO :: Map CAN message ID to action (call a function from another library)
+
+	//Example
+	mSensorInterface.MessageReceiveHandler(mReceiveHeader, mReceiveBuffer);
+
 	mLogger.LogInfo("TODO: Map the received CAN Message's ID to an action for CANManangerForSensors");
 	return UtilsLib::ErrorState::INIT_SUCCESS;
 }

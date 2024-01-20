@@ -4,6 +4,7 @@
 #include <MCUInterfaceLib/Inc/MCUInterface.hpp>
 #include <UtilsLib/Inc/Logger.hpp>
 #include <UtilsLib/Inc/ErrorState.hpp>
+#include <SensorInterfaceLib/Inc/SensorInterface.hpp>
 
 #include <stm32h7xx.h>
 
@@ -35,20 +36,20 @@ enum class CANDataLength
 	EIGHT
 };
 
-enum class CANReceiveInterrupt
+enum class CANReceiveFIFONum
 {
-	Interrupt0,
-	Interrupt1
+	ZERO,
+	ONE
 };
 
 class CANManager
 {
 public:
-	CANManager(UtilsLib::Logger& logger, FDCAN_HandleTypeDef& canHandler, const std::string & canPortName, const CANReceiveInterrupt receiveInterrupt):
+	CANManager(UtilsLib::Logger& logger, FDCAN_HandleTypeDef& canHandler, const std::string & canPortName, const CANReceiveFIFONum receiveFIFONum):
 		mLogger{logger},
 		mCanHandler{canHandler},
 		mCanPortName(canPortName),
-		mReceiveInterrupt{receiveInterrupt}
+		mReceiveFIFONum{receiveFIFONum}
 	{}
 
 	ErrorState init();
@@ -60,9 +61,10 @@ public:
 			const CANDataLength dataLength = CANDataLength::EIGHT);
 
 	UtilsLib::ErrorState SendMessage(const uint8_t message[8]);
+	void CheckReceiveFIFO();
 
 	// MessageHandler of different CAN transceiver should have different implementations
-	virtual UtilsLib::ErrorState MessageReceiveHandler(const FDCAN_RxHeaderTypeDef& header, const uint8_t message[8]) = 0;
+	virtual UtilsLib::ErrorState MessageReceiveHandler() = 0;
 
 protected:
 	const Logger& mLogger;
@@ -76,7 +78,7 @@ protected:
 	// Receive
 	FDCAN_RxHeaderTypeDef mReceiveHeader;
 	uint8_t mReceiveBuffer[8];
-	CANReceiveInterrupt mReceiveInterrupt;
+	CANReceiveFIFONum mReceiveFIFONum;
 };
 
 
@@ -89,13 +91,13 @@ public:
 			const std::string & canPortName,
 			BMSInterfaceLib::BMSInterface& BMSInterface,
 			MCUInterfaceLib::MCUInterface& MCUInterface,
-			const CANReceiveInterrupt receiveInterrupt):
-		CANManager(logger, canHandler, canPortName, receiveInterrupt),
+			const CANReceiveFIFONum receiveFIFONum):
+		CANManager(logger, canHandler, canPortName, receiveFIFONum),
 		mBMSInterface(BMSInterface),
 		mMCUInterface(MCUInterface)
 	{}
 
-	virtual UtilsLib::ErrorState MessageReceiveHandler(const FDCAN_RxHeaderTypeDef& header, const uint8_t message[8]);
+	virtual UtilsLib::ErrorState MessageReceiveHandler();
 
 private:
 	BMSInterfaceLib::BMSInterface &mBMSInterface;
@@ -106,15 +108,19 @@ class CANManangerForSensors : public CANManager
 {
 
 public:
-	CANManangerForSensors(UtilsLib::Logger& logger, FDCAN_HandleTypeDef& canHandler, const std::string & canPortName, const CANReceiveInterrupt receiveInterrupt):
-			CANManager(logger, canHandler, canPortName, receiveInterrupt)
-			// TODO :: Initialize dependency injection here
+	CANManangerForSensors(UtilsLib::Logger& logger,
+			FDCAN_HandleTypeDef& canHandler,
+			const std::string & canPortName,
+			SensorInterfaceLib::SensorInterface &sensorInterface,
+			const CANReceiveFIFONum receiveFIFONum):
+		CANManager(logger, canHandler, canPortName, receiveFIFONum),
+		mSensorInterface(sensorInterface)
 	{}
 
-	virtual UtilsLib::ErrorState MessageReceiveHandler(const FDCAN_RxHeaderTypeDef& header, const uint8_t message[8]);
+	virtual UtilsLib::ErrorState MessageReceiveHandler();
 
 private:
-	// TODO :: Inject dependency here: Sensor interface libraries.
+	SensorInterfaceLib::SensorInterface &mSensorInterface;
 };
 
 }}

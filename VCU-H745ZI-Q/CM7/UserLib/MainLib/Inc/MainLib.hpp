@@ -26,9 +26,9 @@ public:
 				Settings::customLoggingEnabled},
 		mDataStore(),
 		mADCManager(mLogger, adcHandler, "ADC1", Settings::ADCDMABufferLength),
-		mCanManagerForBMSAndMCU(mLogger, canHandlerForBMSAndMCU, "CANForBMSAndMCU", mBMSInterface, mMCUInterface, UtilsLib::CANReceiveInterrupt::Interrupt0),
-		mCanManagerForSensors(mLogger, canHandlerForSensor, "CANForSensors", UtilsLib::CANReceiveInterrupt::Interrupt1),
 		mSensorInterface(mLogger, mDataStore, mADCManager, Settings::throttleSignalADCIndex1, Settings::throttleSignalADCIndex2),
+		mCanManagerForBMSAndMCU(mLogger, canHandlerForBMSAndMCU, "CANForBMSAndMCU", mBMSInterface, mMCUInterface, UtilsLib::CANReceiveFIFONum::ZERO),
+		mCanManagerForSensors(mLogger, canHandlerForSensor, "CANForSensors", mSensorInterface, UtilsLib::CANReceiveFIFONum::ONE),
 		mBMSInterface(mLogger, mDataStore),
 		mMCUInterface(mLogger, mDataStore, mCanManagerForBMSAndMCU),
 //		mMCUErrorManager(mLogger, mDataStore, Settings::implausibleThresholdInterval),
@@ -39,18 +39,15 @@ public:
 	void Setup();
 	void Loop();
 
-	void HAL_FDCAN_RxFifo0Callback(const FDCAN_RxHeaderTypeDef& header, const uint8_t message[8]);
-	void HAL_FDCAN_RxFifo1Callback(const FDCAN_RxHeaderTypeDef& header, const uint8_t message[8]);
-
 private:
 	UtilsLib::Logger mLogger;
 	DataStoreLib::DataStore mDataStore;
 
 	UtilsLib::ADCManager mADCManager;
+	SensorInterfaceLib::SensorInterface mSensorInterface;
 	UtilsLib::CANManangerForBMSAndMCU mCanManagerForBMSAndMCU;
 	UtilsLib::CANManangerForSensors mCanManagerForSensors;
 
-	SensorInterfaceLib::SensorInterface mSensorInterface;
 	BMSInterfaceLib::BMSInterface mBMSInterface;
 	MCUInterfaceLib::MCUInterface mMCUInterface;
 //	MCUInterfaceLib::MCUErrorManager mMCUErrorManager;

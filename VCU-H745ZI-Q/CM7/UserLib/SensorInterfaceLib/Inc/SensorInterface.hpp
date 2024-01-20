@@ -32,6 +32,7 @@ public:
 	{}
 
 	void ReadADC();
+	UtilsLib::ErrorState MessageReceiveHandler(const FDCAN_RxHeaderTypeDef& header, const uint8_t message[8]);
 
 private:
 	void ReadThrottleSignal();

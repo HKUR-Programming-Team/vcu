@@ -70,21 +70,6 @@ static void MX_FDCAN2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-void HAL_FDCAN_RxFifo0Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo0ITs)
-{
-	FDCAN_RxHeaderTypeDef rxHeader;
-	uint8_t rxData[8] = {};
-	HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO0, &rxHeader, rxData);
-	VCU.HAL_FDCAN_RxFifo0Callback(rxHeader, rxData);
-}
-
-void HAL_FDCAN_RxFifo1Callback(FDCAN_HandleTypeDef *hfdcan, uint32_t RxFifo1ITs)
-{
-	FDCAN_RxHeaderTypeDef rxHeader;
-	uint8_t rxData[8] = {};
-	HAL_FDCAN_GetRxMessage(hfdcan, FDCAN_RX_FIFO1, &rxHeader, rxData);
-	VCU.HAL_FDCAN_RxFifo1Callback(rxHeader, rxData);
-}
 /* USER CODE END 0 */
 
 /**

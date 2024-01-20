@@ -6,7 +6,7 @@ namespace VehicleControlUnit { namespace MainLib { namespace Settings {
 const bool spamLoggingEnabled = false;
 const bool infoLoggingEnabled = true;
 const bool errorLoggingEnabled = true;
-const bool customLoggingEnabled = false;
+const bool customLoggingEnabled = true;
 
 // MCU
 const uint32_t implausibleThresholdInterval = 100;
