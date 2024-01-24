@@ -4,25 +4,34 @@
 #include <MCUInterfaceLib/Inc/MCUInterface.hpp>
 #include <UtilsLib/Inc/Logger.hpp>
 #include <UtilsLib/Inc/ErrorState.hpp>
+#include <SensorInterfaceLib/Inc/SensorInterface.hpp>
 
 #include <stm32f1xx.h>
 
 // Forward declaration to make circular dependency between CANManager and MCUInterface work
-namespace VehicleControlUnit { namespace MCUInterfaceLib {
+namespace VehicleControlUnit::MCUInterfaceLib {
 	class MCUInterface;
-}};
+};
 
-namespace VehicleControlUnit { namespace UtilsLib {
+namespace VehicleControlUnit::UtilsLib {
 
 // TODO :: Write test cases for all these fuckers
 
 class CANManager
 {
 public:
-	CANManager(UtilsLib::Logger& logger, CAN_HandleTypeDef& canHandler, const std::string & canPortName):
+	CANManager(UtilsLib::Logger& logger,
+			CAN_HandleTypeDef& canHandler,
+			const std::string & canPortName,
+			BMSInterfaceLib::BMSInterface& BMSInterface,
+			MCUInterfaceLib::MCUInterface& MCUInterface,
+			SensorInterfaceLib::SensorInterface& sensorInterface):
 		mLogger{logger},
 		mCanHandler{canHandler},
-		mCanPortName(canPortName)
+		mCanPortName(canPortName),
+		mBMSInterface{BMSInterface},
+		mMCUInterface{MCUInterface},
+		mSensorInterface{sensorInterface}
 	{}
 
 	ErrorState init();
@@ -35,11 +44,11 @@ public:
 			const bool transmitGlobalTime = false);
 
 	UtilsLib::ErrorState SendMessage(const uint8_t message[8]);
+	UtilsLib::ErrorState CheckReceiveFIFO();
 
-	// MessageHandler of different CAN transceiver should have different implementations
-	virtual UtilsLib::ErrorState MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8]) = 0;
+private:
+	UtilsLib::ErrorState MessageReceiveHandler();
 
-protected:
 	const Logger& mLogger;
 	CAN_HandleTypeDef& mCanHandler;
 	const std::string mCanPortName;
@@ -52,39 +61,10 @@ protected:
 	// Receive
 	CAN_RxHeaderTypeDef mReceiveHeader;
 	uint8_t mReceiveBuffer[8];
-};
 
-
-class CANManangerForBMSAndMCU : public CANManager
-{
-
-public:
-	CANManangerForBMSAndMCU(UtilsLib::Logger& logger, CAN_HandleTypeDef& canHandler, const std::string & canPortName, BMSInterfaceLib::BMSInterface& BMSInterface, MCUInterfaceLib::MCUInterface& MCUInterface):
-			CANManager(logger, canHandler, canPortName),
-			mBMSInterface(BMSInterface),
-			mMCUInterface(MCUInterface)
-	{}
-
-	virtual UtilsLib::ErrorState MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8]);
-
-private:
 	BMSInterfaceLib::BMSInterface &mBMSInterface;
 	MCUInterfaceLib::MCUInterface &mMCUInterface;
+	SensorInterfaceLib::SensorInterface &mSensorInterface;
 };
 
-class CANManangerForSensors : public CANManager
-{
-
-public:
-	CANManangerForSensors(UtilsLib::Logger& logger, CAN_HandleTypeDef& canHandler, const std::string & canPortName):
-			CANManager(logger, canHandler, canPortName)
-			// TODO :: Initialize dependency injection here
-	{}
-
-	virtual UtilsLib::ErrorState MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8]);
-
-private:
-	// TODO :: Inject dependency here: Sensor interface libraries.
-};
-
-}}
+}

@@ -1,6 +1,6 @@
 #include <MCUInterfaceLib/Inc/MCUInterface.hpp>
 
-namespace VehicleControlUnit { namespace MCUInterfaceLib {
+namespace VehicleControlUnit::MCUInterfaceLib {
 
 UtilsLib::ErrorState MCUInterface::MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
 {
@@ -27,4 +27,4 @@ UtilsLib::ErrorState MCUInterface::SendMessage()
 	return UtilsLib::ErrorState::INIT_SUCCESS; // placeholder
 }
 
-}}
+}

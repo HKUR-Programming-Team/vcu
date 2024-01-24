@@ -1,6 +1,6 @@
 #include <MCUInterfaceLib/Inc/MCUErrorManager.hpp>
 
-namespace VehicleControlUnit { namespace MCUInterfaceLib {
+namespace VehicleControlUnit::MCUInterfaceLib {
 
 void MCUErrorManager::CheckImplausibility()
 {
@@ -44,4 +44,4 @@ bool MCUErrorManager::IsCurrentlyImplausible() const
 	return implausible;
 }
 
-}}
+}

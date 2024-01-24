@@ -5,7 +5,7 @@
 #include <UtilsLib/Inc/ADCManager.hpp>
 #include <UtilsLib/Inc/ErrorState.hpp>
 
-namespace VehicleControlUnit { namespace SensorInterfaceLib {
+namespace VehicleControlUnit::SensorInterfaceLib {
 
 class SensorInterface
 {
@@ -32,6 +32,7 @@ public:
 	{}
 
 	void ReadADC();
+	UtilsLib::ErrorState MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8]);
 
 private:
 	void ReadThrottleSignal();
@@ -44,4 +45,4 @@ private:
 	const uint8_t mThrottleSignalADCIndex1;
 };
 
-}}
+}

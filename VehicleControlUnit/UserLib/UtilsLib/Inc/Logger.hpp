@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <string>
 
-namespace VehicleControlUnit { namespace UtilsLib {
+namespace VehicleControlUnit::UtilsLib {
 
 class Logger
 {
@@ -33,5 +33,5 @@ private:
 	bool customLoggingEnabled;
 };
 
-}} // namespace VehicleControlUnit::UtilsLib
+} // namespace VehicleControlUnit::UtilsLib
 

@@ -4,7 +4,7 @@
 
 #include <stm32f1xx.h>
 
-namespace VehicleControlUnit { namespace DataStoreLib {
+namespace VehicleControlUnit::DataStoreLib {
 
 class DataStore
 {
@@ -31,5 +31,5 @@ private:
 	bool mPersistedImplausibleStatus;
 };
 
-}} // namespace VehicleControlUnit::DataStore
+} // namespace VehicleControlUnit::DataStore
 

@@ -1,6 +1,6 @@
 #include <UtilsLib/Inc/ADCManager.hpp>
 
-namespace VehicleControlUnit { namespace UtilsLib {
+namespace VehicleControlUnit::UtilsLib {
 
 ErrorState ADCManager::init()
 {
@@ -40,4 +40,4 @@ uint8_t ADCManager::GetBufferLength() const
 	return mBufferLength;
 }
 
-}}
+}

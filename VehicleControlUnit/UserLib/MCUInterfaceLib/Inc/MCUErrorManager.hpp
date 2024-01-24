@@ -6,7 +6,7 @@
 #include <UtilsLib/Inc/ErrorState.hpp>
 #include <UtilsLib/Inc/Logger.hpp>
 
-namespace VehicleControlUnit { namespace MCUInterfaceLib {
+namespace VehicleControlUnit::MCUInterfaceLib {
 
 class MCUErrorManager
 {
@@ -38,4 +38,4 @@ private:
 
 };
 
-}}
+}

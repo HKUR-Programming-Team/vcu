@@ -1,6 +1,6 @@
 #include <ReadyToDriveLib/Inc/ReadyToDrive.hpp>
 
-namespace VehicleControlUnit { namespace ReadyToDriveLib {
+namespace VehicleControlUnit::ReadyToDriveLib {
 
 void ReadyToDrive::CheckReadyToDrive()
 {
@@ -11,4 +11,4 @@ void ReadyToDrive::CheckReadyToDrive()
 	mLogger.LogInfo("Ready to drive sound trigger: CAN or GPIO?");
 }
 
-}};
+};

@@ -8,16 +8,16 @@
 #include <UtilsLib/Inc/Logger.hpp>
 
 // Forward declaration to make circular dependency between CANManager and MCUInterface work
-namespace VehicleControlUnit { namespace UtilsLib {
-	class CANManangerForBMSAndMCU;
-}};
+namespace VehicleControlUnit::UtilsLib {
+	class CANManager;
+};
 
-namespace VehicleControlUnit { namespace MCUInterfaceLib {
+namespace VehicleControlUnit::MCUInterfaceLib {
 
 class MCUInterface
 {
 public:
-	MCUInterface(UtilsLib::Logger& logger, DataStoreLib::DataStore& dataStore, UtilsLib::CANManangerForBMSAndMCU& CANManager):
+	MCUInterface(UtilsLib::Logger& logger, DataStoreLib::DataStore& dataStore, UtilsLib::CANManager& CANManager):
 			mLogger{logger},
 			mDataStore{dataStore},
 			mCANManager{CANManager}
@@ -30,7 +30,7 @@ public:
 protected:
 	UtilsLib::Logger& mLogger;
 	DataStoreLib::DataStore& mDataStore;
-	UtilsLib::CANManangerForBMSAndMCU& mCANManager;
+	UtilsLib::CANManager& mCANManager;
 };
 
-}};
+};

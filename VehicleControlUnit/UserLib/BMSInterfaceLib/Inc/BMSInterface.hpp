@@ -6,7 +6,7 @@
 #include <UtilsLib/Inc/ErrorState.hpp>
 #include <UtilsLib/Inc/Logger.hpp>
 
-namespace VehicleControlUnit { namespace BMSInterfaceLib {
+namespace VehicleControlUnit::BMSInterfaceLib {
 
 class BMSInterface
 {
@@ -22,4 +22,4 @@ protected:
 	DataStoreLib::DataStore& mDataStore;
 };
 
-}};
+};

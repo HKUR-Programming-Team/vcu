@@ -36,12 +36,12 @@ void Main::Loop()
 	mSensorInterface.ReadADC(); // Read throttle and other analog signals and store it to dataStore
 
 	uint8_t txArr[8] = {1,3,5,6,9,12,14,15};
-//	mCanManagerForSensors.SetTransmitHeader(0x10, false);
-//	mCanManagerForSensors.SendMessage(txArr);
+	mCanManagerForSensors.SetTransmitHeader(0x10, false);
+	mCanManagerForSensors.SendMessage(txArr);
 
 	uint8_t txArr2[8] = {2,4,5,6,9,12,14,16};
-//	mCanManagerForBMSAndMCU.SetTransmitHeader(0x10, false);
-//	mCanManagerForBMSAndMCU.SendMessage(txArr2);
+	mCanManagerForBMSAndMCU.SetTransmitHeader(0x10, false);
+	mCanManagerForBMSAndMCU.SendMessage(txArr2);
 
 	mCanManagerForSensors.CheckReceiveFIFO();
 	mCanManagerForBMSAndMCU.CheckReceiveFIFO();

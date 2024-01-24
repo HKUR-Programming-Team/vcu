@@ -5,7 +5,7 @@
 
 #include <stm32f1xx.h>
 
-namespace VehicleControlUnit { namespace UtilsLib {
+namespace VehicleControlUnit::UtilsLib {
 
 class ADCManager
 {
@@ -30,4 +30,4 @@ private:
 	uint16_t mDataBuffer[16];
 };
 
-}};
+};

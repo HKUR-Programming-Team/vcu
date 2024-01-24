@@ -1,6 +1,6 @@
 #include <SensorInterfaceLib/Inc/SensorInterface.hpp>
 
-namespace VehicleControlUnit { namespace SensorInterfaceLib {
+namespace VehicleControlUnit::SensorInterfaceLib {
 
 void SensorInterface::ReadADC()
 {
@@ -71,4 +71,12 @@ void SensorInterface::ReadThrottleSignal()
 	return;
 }
 
-}}
+UtilsLib::ErrorState SensorInterface::MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
+{
+	mLogger.LogInfo("TODO: Handle the CAN message received from Sensors, store the data in the DataStore");
+	mLogger.LogCustom("SensorCAN receives: " + std::to_string(header.StdId) + " " + std::to_string(message[0]) + ", " +
+					std::to_string(message[1]));
+	return UtilsLib::ErrorState::INIT_SUCCESS; // placeholder
+}
+
+}

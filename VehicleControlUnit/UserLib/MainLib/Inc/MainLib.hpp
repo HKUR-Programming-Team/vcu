@@ -13,7 +13,7 @@
 
 #include <stm32f1xx.h>
 
-namespace VehicleControlUnit { namespace MainLib {
+namespace VehicleControlUnit::MainLib {
 
 class Main
 {
@@ -26,10 +26,10 @@ public:
 				Settings::customLoggingEnabled},
 		mDataStore(),
 		mADCManager(mLogger, adcHandler, "ADC1", Settings::ADCDMABufferLength),
-		mCanManagerForBMSAndMCU(mLogger, canHandler, "CAN1", mBMSInterface, mMCUInterface),
 		mSensorInterface(mLogger, mDataStore, mADCManager, Settings::throttleSignalADCIndex1, Settings::throttleSignalADCIndex2),
+		mCANManager(mLogger, canHandler, "CAN1", mBMSInterface, mMCUInterface, mSensorInterface),
 		mBMSInterface(mLogger, mDataStore),
-		mMCUInterface(mLogger, mDataStore, mCanManagerForBMSAndMCU),
+		mMCUInterface(mLogger, mDataStore, mCANManager),
 		mMCUErrorManager(mLogger, mDataStore, Settings::implausibleThresholdInterval),
 		mReadyToDriveManager(mLogger, mDataStore, Settings::readyToDriveSoundDuration),
 		mSetupFailed{false}
@@ -38,16 +38,13 @@ public:
 	void Setup();
 	void Loop();
 
-	void CANMessageReceiveHandlerFIFO0(const CAN_RxHeaderTypeDef& header, const uint8_t message[8]);
-
 private:
 	UtilsLib::Logger mLogger;
 	DataStoreLib::DataStore mDataStore;
 
 	UtilsLib::ADCManager mADCManager;
-	UtilsLib::CANManangerForBMSAndMCU mCanManagerForBMSAndMCU;
-
 	SensorInterfaceLib::SensorInterface mSensorInterface;
+	UtilsLib::CANManager mCANManager;
 	BMSInterfaceLib::BMSInterface mBMSInterface;
 	MCUInterfaceLib::MCUInterface mMCUInterface;
 	MCUInterfaceLib::MCUErrorManager mMCUErrorManager;
@@ -56,6 +53,6 @@ private:
 	bool mSetupFailed;
 };
 
-}} // namespace VehicleControlUnit::MainLib
+} // namespace VehicleControlUnit::MainLib
 
 

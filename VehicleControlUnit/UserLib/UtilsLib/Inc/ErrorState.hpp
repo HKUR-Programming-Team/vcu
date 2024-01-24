@@ -1,6 +1,6 @@
 #pragma once
 
-namespace VehicleControlUnit { namespace UtilsLib {
+namespace VehicleControlUnit::UtilsLib {
 
 enum class ErrorState
 {
@@ -14,4 +14,4 @@ enum class ErrorState
 	ADC_DMA_SUCCESS
 };
 
-}}
+}

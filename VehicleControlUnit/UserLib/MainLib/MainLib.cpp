@@ -1,11 +1,11 @@
 #include <MainLib/Inc/MainLib.hpp>
 
-namespace VehicleControlUnit { namespace MainLib {
+namespace VehicleControlUnit::MainLib {
 
 void Main::Setup()
 {
 	mLogger.LogInfo("--VCU Setup Starts--");
-	const auto canError = mCanManagerForBMSAndMCU.init();
+	const auto canError = mCANManager.init();
 	const auto adcError = mADCManager.init();
 
 	if (canError != UtilsLib::ErrorState::INIT_SUCCESS || adcError != UtilsLib::ErrorState::INIT_SUCCESS)
@@ -28,6 +28,11 @@ void Main::Loop()
 	}
 
 	mLogger.LogSpam("--VCU Loop Starts--");
+	uint8_t test[8] = {1,2,3,4,5,6,7,8};
+	mCANManager.SetTransmitHeader(0x0C0, 8, false);
+	mCANManager.SendMessage(test);
+
+	mCANManager.CheckReceiveFIFO();
 
 	// Sensor
 	mSensorInterface.ReadADC(); // Read throttle and other analog signals and store it to dataStore
@@ -42,18 +47,4 @@ void Main::Loop()
 	mReadyToDriveManager.CheckReadyToDrive();
 }
 
-void Main::CANMessageReceiveHandlerFIFO0(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
-{
-	// Copy the message so that the message does not get overwritten
-	// TODO :: determine whether CANMessageReceiveHandlerFIFO0 message copy is necessary
-	mLogger.LogInfo("TODO: is CANMessageReceiveHandlerFIFO0 message copy necessary?");
-	uint8_t messageBuffer[8];
-	for (int i = 0; i < 8; i++)
-	{
-		messageBuffer[i] = message[i];
-	}
-
-	mCanManagerForBMSAndMCU.MessageReceiveHandler(header, messageBuffer);
 }
-
-}}

@@ -2,7 +2,7 @@
 
 #include <stm32f1xx.h>
 
-namespace VehicleControlUnit { namespace DataStoreLib {
+namespace VehicleControlUnit::DataStoreLib {
 
 enum class Gear
 {
@@ -75,4 +75,4 @@ private:
 	Gear mGear;
 };
 
-}};
+};

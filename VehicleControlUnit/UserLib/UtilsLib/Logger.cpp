@@ -1,6 +1,6 @@
 #include <UtilsLib/Inc/Logger.hpp>
 
-namespace VehicleControlUnit { namespace UtilsLib {
+namespace VehicleControlUnit::UtilsLib {
 
 void Logger::LogSpam(const std::string & logMessage) const
 {
@@ -50,4 +50,4 @@ void Logger::PrintLogMsg(const std::string & logType, const std::string & logMes
 	printf("%lu [%s] %s\n", currentTick, logType.c_str(), logMessage.c_str());
 }
 
-}}
+}

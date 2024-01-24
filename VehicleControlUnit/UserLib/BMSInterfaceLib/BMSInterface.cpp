@@ -1,6 +1,6 @@
 #include <BMSInterfaceLib/Inc/BMSInterface.hpp>
 
-namespace VehicleControlUnit { namespace BMSInterfaceLib {
+namespace VehicleControlUnit::BMSInterfaceLib {
 
 UtilsLib::ErrorState BMSInterface::MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
 {
@@ -8,4 +8,4 @@ UtilsLib::ErrorState BMSInterface::MessageReceiveHandler(const CAN_RxHeaderTypeD
 	return UtilsLib::ErrorState::INIT_SUCCESS; // placeholder
 }
 
-}}
+}

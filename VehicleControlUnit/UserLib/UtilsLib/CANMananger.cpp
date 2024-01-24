@@ -1,6 +1,6 @@
 #include <UtilsLib/Inc/CANManager.hpp>
 
-namespace VehicleControlUnit { namespace UtilsLib {
+namespace VehicleControlUnit::UtilsLib {
 
 UtilsLib::ErrorState CANManager::init()
 {
@@ -109,53 +109,48 @@ UtilsLib::ErrorState CANManager::SendMessage(const uint8_t message[8])
 	return UtilsLib::ErrorState::CAN_MSG_TRANSMIT_FAIL;
 }
 
-UtilsLib::ErrorState CANManangerForBMSAndMCU::MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
+UtilsLib::ErrorState CANManager::CheckReceiveFIFO()
+{
+	auto CheckFillLevel = [&]()
+	{
+		return HAL_CAN_GetRxFifoFillLevel(&mCanHandler, CAN_RX_FIFO0);
+	};
+
+	uint32_t fillLevel = CheckFillLevel();
+
+	while (fillLevel != 0)
+	{
+		mLogger.LogCustom(mCanPortName + " fillLevel = " + std::to_string(fillLevel));
+		HAL_CAN_GetRxMessage(&mCanHandler, CAN_RX_FIFO0, &mReceiveHeader, mReceiveBuffer);
+		MessageReceiveHandler();
+		fillLevel = CheckFillLevel();
+	}
+}
+
+UtilsLib::ErrorState CANManager::MessageReceiveHandler()
 {
 	// Check the CAN message header
 	uint32_t messageID;
 
-	if (header.IDE == CAN_ID_STD)
+	if (mReceiveHeader.IDE == CAN_ID_STD)
 	{
-		messageID = header.StdId;
+		messageID = mReceiveHeader.StdId;
 	}
-	else if (header.IDE == CAN_ID_EXT)
+	else if (mReceiveHeader.IDE == CAN_ID_EXT)
 	{
-		messageID = header.ExtId;
+		messageID = mReceiveHeader.ExtId;
 	}
 	else
 	{
 		mLogger.LogError("CAN Message with unknown IDE is received. canPortName: " + mCanPortName);
 		return UtilsLib::ErrorState::CAN_MSG_RECEIVE_FAIL;
 	}
-
+	mLogger.LogCustom("CAN Message received:" + std::to_string(messageID) + ", first:" + std::to_string(mReceiveBuffer[0]) + ", second: " + std::to_string(mReceiveBuffer[1]));
 
 	// TODO :: Map CAN message ID to action (call a function from another library)
 	// You can call mBMSInterface.MessageReceiveHandler(header, message) to pass the message to BMS interface library
-	mLogger.LogInfo("TODO: Map the received CAN Message's ID to an action for CANManangerForBMSAndMCU");
+	mLogger.LogInfo("TODO: Map the received CAN Message's ID to an action for CANMananger");
 	return UtilsLib::ErrorState::CAN_MSG_RECEIVE_SUCCESS;
 }
 
-UtilsLib::ErrorState CANManangerForSensors::MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
-{
-	// Check the CAN message header
-	uint32_t messageID;
-
-	if (header.IDE == CAN_ID_STD)
-	{
-		messageID = header.StdId;
-	}
-	else if (header.IDE == CAN_ID_EXT)
-	{
-		messageID = header.ExtId;
-	}
-	else
-	{
-		mLogger.LogError("CAN Message with unknown IDE is received. canPortName: " + mCanPortName);
-	}
-
-	// TODO :: Map CAN message ID to action (call a function from another library)
-	mLogger.LogInfo("TODO: Map the received CAN Message's ID to an action for CANManangerForBMSAndMCU");
-	return UtilsLib::ErrorState::INIT_SUCCESS;
 }
-
-}}

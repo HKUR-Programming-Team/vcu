@@ -113,8 +113,6 @@ void CANManager::CheckReceiveFIFO()
 
 UtilsLib::ErrorState CANManager::SendMessage(const uint8_t message[8])
 {
-	mLogger.LogInfo("TODO: Send CAN message");
-
 	// TODO :: use HAL_CAN_GetTxMailboxesFreeLevel() to check whether a mailbox is free
 	// What to do if none is free? Implausible? abortPendingMessage?
 
@@ -136,6 +134,16 @@ UtilsLib::ErrorState CANManager::SendMessage(const uint8_t message[8])
 	else if (returnStatus == HAL_ERROR)
 	{
 		mLogger.LogInfo("TODO: Send CAN message HAL ERROR");
+		return UtilsLib::ErrorState::CAN_MSG_TRANSMIT_FAIL;
+	}
+	else if (returnStatus == HAL_TIMEOUT)
+	{
+		mLogger.LogInfo("TODO: Send CAN message HAL TIMEOUT");
+		return UtilsLib::ErrorState::CAN_MSG_TRANSMIT_FAIL;
+	}
+	else if (returnStatus == HAL_BUSY)
+	{
+		mLogger.LogInfo("TODO: Send CAN message HAL BUSY");
 		return UtilsLib::ErrorState::CAN_MSG_TRANSMIT_FAIL;
 	}
 

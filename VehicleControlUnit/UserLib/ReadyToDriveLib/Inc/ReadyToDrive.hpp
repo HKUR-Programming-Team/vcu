@@ -3,7 +3,7 @@
 #include <UtilsLib/Inc/Logger.hpp>
 #include <DataStoreLib/Inc/DataStore.hpp>
 
-namespace VehicleControlUnit { namespace ReadyToDriveLib {
+namespace VehicleControlUnit::ReadyToDriveLib {
 
 class ReadyToDrive
 {
@@ -28,4 +28,4 @@ private:
 	const uint32_t mReadyToDriveSoundDuration;
 };
 
-}};
+};
