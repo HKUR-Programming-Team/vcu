@@ -27,11 +27,12 @@ void Main::Loop()
 		return;
 	}
 
-	mLogger.LogSpam("--VCU Loop Starts--");
-	uint8_t test[8] = {1,2,3,4,5,6,7,8};
-	mCANManager.SetTransmitHeader(0x0C0, 8, false);
-	mCANManager.SendMessage(test);
+	UtilsLib::GPIOManager::digitalRead(UtilsLib::GPIOPort::A, UtilsLib::GPIOPinNum::Pin1);
 
+	mLogger.LogSpam("--VCU Loop Starts--");
+//	uint8_t test[8] = {1,2,3,4,5,6,7,8};
+//	mCANManager.SetTransmitHeader(0x0C0, 8, false);
+//	mCANManager.SendMessage(test);
 	mCANManager.CheckReceiveFIFO();
 
 	// Sensor
@@ -39,7 +40,7 @@ void Main::Loop()
 
 	// MCU
 	mMCUErrorManager.CheckImplausibility(); // update implausible status
-	mLogger.LogCustom("Persisted: " + std::to_string(mDataStore.GetPersistedImplausibleStatus()));
+	mLogger.LogSpam("Persisted: " + std::to_string(mDataStore.GetPersistedImplausibleStatus()));
 
 	mMCUInterface.SendMessage(); // send packet to motor controller
 

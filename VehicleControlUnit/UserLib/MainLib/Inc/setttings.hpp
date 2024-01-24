@@ -4,7 +4,7 @@ namespace VehicleControlUnit::MainLib::Settings {
 
 // Logger
 const bool spamLoggingEnabled = false;
-const bool infoLoggingEnabled = false;
+const bool infoLoggingEnabled = true;
 const bool errorLoggingEnabled = false;
 const bool customLoggingEnabled = true;
 

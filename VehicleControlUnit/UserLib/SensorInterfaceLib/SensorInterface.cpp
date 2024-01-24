@@ -15,7 +15,7 @@ void SensorInterface::ReadThrottleSignal()
 	mADCManager.GetBufferByIndex(mThrottleSignalADCIndex0, reading0);
 	mADCManager.GetBufferByIndex(mThrottleSignalADCIndex1, reading1);
 
-	mLogger.LogCustom("Read signals: " + std::to_string(reading0) + ", " + std::to_string(reading1));
+	mLogger.LogSpam("Read signals: " + std::to_string(reading0) + ", " + std::to_string(reading1));
 
 	// Check if the raw value deviates from max/min value of the throttle too much. FSUK2024 T11.9.2(c)
 	if (reading0 < ThrottleMinPin0 - ThrottleSignalOutOfRangeThreshold || reading0 > ThrottleMaxPin0 + ThrottleSignalOutOfRangeThreshold)
@@ -62,7 +62,7 @@ void SensorInterface::ReadThrottleSignal()
 		return;
 	}
 
-	mLogger.LogCustom("Throttle: " + std::to_string(throttle0) + ", " + std::to_string(throttle1));
+	mLogger.LogSpam("Throttle: " + std::to_string(throttle0) + ", " + std::to_string(throttle1));
 
 	mDataStore.mDriveDataStore.SetError(false);
 	mDataStore.mDriveDataStore.SetThrottleSignal(throttle0);
@@ -74,7 +74,7 @@ void SensorInterface::ReadThrottleSignal()
 UtilsLib::ErrorState SensorInterface::MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
 {
 	mLogger.LogInfo("TODO: Handle the CAN message received from Sensors, store the data in the DataStore");
-	mLogger.LogCustom("SensorCAN receives: " + std::to_string(header.StdId) + " " + std::to_string(message[0]) + ", " +
+	mLogger.LogSpam("SensorCAN receives: " + std::to_string(header.StdId) + " " + std::to_string(message[0]) + ", " +
 					std::to_string(message[1]));
 	return UtilsLib::ErrorState::INIT_SUCCESS; // placeholder
 }

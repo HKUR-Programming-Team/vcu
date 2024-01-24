@@ -4,6 +4,7 @@
 #include <DataStoreLib/Inc/DataStore.hpp>
 #include <UtilsLib/Inc/ADCManager.hpp>
 #include <UtilsLib/Inc/Logger.hpp>
+#include <UtilsLib/Inc/GPIOManager.hpp>
 #include <UtilsLib/Inc/CANManager.hpp>
 #include <MainLib/Inc/setttings.hpp>
 #include <MCUInterfaceLib/Inc/MCUErrorManager.hpp>

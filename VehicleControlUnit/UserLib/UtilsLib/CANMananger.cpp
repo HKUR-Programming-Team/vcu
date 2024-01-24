@@ -13,14 +13,6 @@ UtilsLib::ErrorState CANManager::init()
 		return ErrorState::INIT_FAIL;
 	}
 
-	// Activate interrupts
-	error = HAL_CAN_ActivateNotification(&mCanHandler, CAN_IT_RX_FIFO0_MSG_PENDING);
-	if (error == HAL_ERROR)
-	{
-		mLogger.LogError("Activation of CAN_IT_RX_FIFO0_MSG_PENDING failed. Please raise to developers");
-		return ErrorState::INIT_FAIL;
-	}
-
 	mLogger.LogInfo("Initialization of CAN Manager Success");
 	return ErrorState::INIT_SUCCESS;
 }
@@ -111,20 +103,19 @@ UtilsLib::ErrorState CANManager::SendMessage(const uint8_t message[8])
 
 UtilsLib::ErrorState CANManager::CheckReceiveFIFO()
 {
-	auto CheckFillLevel = [&]()
-	{
-		return HAL_CAN_GetRxFifoFillLevel(&mCanHandler, CAN_RX_FIFO0);
-	};
-
-	uint32_t fillLevel = CheckFillLevel();
+	uint32_t fillLevel = HAL_CAN_GetRxFifoFillLevel(&mCanHandler, CAN_RX_FIFO0);
+	mLogger.LogSpam(mCanPortName + " fillLevel = " + std::to_string(fillLevel));
 
 	while (fillLevel != 0)
 	{
-		mLogger.LogCustom(mCanPortName + " fillLevel = " + std::to_string(fillLevel));
 		HAL_CAN_GetRxMessage(&mCanHandler, CAN_RX_FIFO0, &mReceiveHeader, mReceiveBuffer);
 		MessageReceiveHandler();
-		fillLevel = CheckFillLevel();
+		fillLevel = HAL_CAN_GetRxFifoFillLevel(&mCanHandler, CAN_RX_FIFO0);
 	}
+
+	mLogger.LogInfo("TODO: CheckReceiveFIFO error handling");
+
+	return UtilsLib::ErrorState::CAN_MSG_RECEIVE_SUCCESS; // Placeholder
 }
 
 UtilsLib::ErrorState CANManager::MessageReceiveHandler()
@@ -145,7 +136,10 @@ UtilsLib::ErrorState CANManager::MessageReceiveHandler()
 		mLogger.LogError("CAN Message with unknown IDE is received. canPortName: " + mCanPortName);
 		return UtilsLib::ErrorState::CAN_MSG_RECEIVE_FAIL;
 	}
-	mLogger.LogCustom("CAN Message received:" + std::to_string(messageID) + ", first:" + std::to_string(mReceiveBuffer[0]) + ", second: " + std::to_string(mReceiveBuffer[1]));
+	mLogger.LogCustom("CANMsg:" + std::to_string(messageID) + ", " + std::to_string(mReceiveBuffer[0]) + ", " + std::to_string(mReceiveBuffer[1])
+			+ ", " + std::to_string(mReceiveBuffer[2]) + ", " + std::to_string(mReceiveBuffer[3])
+			+ ", " + std::to_string(mReceiveBuffer[4]) + ", " + std::to_string(mReceiveBuffer[5])
+			+ ", " + std::to_string(mReceiveBuffer[6]) + ", " + std::to_string(mReceiveBuffer[7]));
 
 	// TODO :: Map CAN message ID to action (call a function from another library)
 	// You can call mBMSInterface.MessageReceiveHandler(header, message) to pass the message to BMS interface library
