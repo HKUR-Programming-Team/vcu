@@ -26,14 +26,14 @@ void Main::Loop()
 		mLogger.LogInfo("TODO: what has to be done if in error");
 		return;
 	}
-
-	UtilsLib::GPIOManager::digitalRead(UtilsLib::GPIOPort::A, UtilsLib::GPIOPinNum::Pin1);
+	bool button = UtilsLib::GPIOManager::digitalRead(UtilsLib::GPIOPort::C, UtilsLib::GPIOPinNum::Pin7);
+	UtilsLib::GPIOManager::digitalWrite(UtilsLib::GPIOPort::A, UtilsLib::GPIOPinNum::Pin9,button);
 
 	mLogger.LogSpam("--VCU Loop Starts--");
 //	uint8_t test[8] = {1,2,3,4,5,6,7,8};
 //	mCANManager.SetTransmitHeader(0x0C0, 8, false);
 //	mCANManager.SendMessage(test);
-	mCANManager.CheckReceiveFIFO();
+//	mCANManager.CheckReceiveFIFO();
 
 	// Sensor
 	mSensorInterface.ReadADC(); // Read throttle and other analog signals and store it to dataStore

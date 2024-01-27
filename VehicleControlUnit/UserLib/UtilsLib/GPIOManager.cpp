@@ -2,7 +2,7 @@
 
 namespace VehicleControlUnit::UtilsLib {
 
-static const bool GPIOManager::digitalRead(const GPIOPort& alphabet, const GPIOPinNum& pinNumber) const
+const bool GPIOManager::digitalRead(const GPIOPort& alphabet, const GPIOPinNum& pinNumber)
 {
 	auto HALportTypeDef = GPIOAlphabetToHALTypeDef(alphabet);
 	const auto& HALpinNum = GPIOPinToHALPin(pinNumber);
@@ -12,7 +12,7 @@ static const bool GPIOManager::digitalRead(const GPIOPort& alphabet, const GPIOP
 	return result == GPIO_PIN_SET ? true : false;
 }
 
-static void GPIOManager::digitalWrite(const GPIOPort& alphabet, const GPIOPinNum& pinNumber, const bool high) const
+void GPIOManager::digitalWrite(const GPIOPort& alphabet, const GPIOPinNum& pinNumber, const bool high)
 {
 	auto HALportTypeDef = GPIOAlphabetToHALTypeDef(alphabet);
 	const auto& HALpinNum = GPIOPinToHALPin(pinNumber);
@@ -21,7 +21,7 @@ static void GPIOManager::digitalWrite(const GPIOPort& alphabet, const GPIOPinNum
 	HAL_GPIO_WritePin(HALportTypeDef, HALpinNum, HALpinState);
 }
 
-static GPIO_TypeDef* GPIOManager::GPIOAlphabetToHALTypeDef(const GPIOPort& gpioAlphabet) const
+GPIO_TypeDef* GPIOManager::GPIOAlphabetToHALTypeDef(const GPIOPort& gpioAlphabet)
 {
 	switch (gpioAlphabet)
 	{
@@ -33,7 +33,7 @@ static GPIO_TypeDef* GPIOManager::GPIOAlphabetToHALTypeDef(const GPIOPort& gpioA
 	}
 }
 
-static uint32_t GPIOManager::GPIOPinToHALPin(const GPIOPinNum& gpioPinNum) const
+uint32_t GPIOManager::GPIOPinToHALPin(const GPIOPinNum& gpioPinNum)
 {
 	switch (gpioPinNum)
 	{

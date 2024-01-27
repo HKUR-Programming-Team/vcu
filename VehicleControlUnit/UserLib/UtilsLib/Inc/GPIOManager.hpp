@@ -39,12 +39,12 @@ class GPIOManager
 {
 public:
 
-	static const bool digitalRead(const GPIOPort& alphabet, const GPIOPinNum& pinNumber) const;
-	static void digitalWrite(const GPIOPort& alphabet, const GPIOPinNum& pinNumber, const bool value) const;
+	static const bool digitalRead(const GPIOPort& alphabet, const GPIOPinNum& pinNumber);
+	static void digitalWrite(const GPIOPort& alphabet, const GPIOPinNum& pinNumber, const bool value);
 
 private:
-	static GPIO_TypeDef* GPIOAlphabetToHALTypeDef(const GPIOPort& gpioAlphabet) const;
-	static uint32_t GPIOPinToHALPin(const GPIOPinNum& gpioPinNum) const;
+	static GPIO_TypeDef* GPIOAlphabetToHALTypeDef(const GPIOPort& gpioAlphabet);
+	static uint32_t GPIOPinToHALPin(const GPIOPinNum& gpioPinNum);
 
 };
 
