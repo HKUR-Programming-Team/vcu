@@ -3,6 +3,7 @@
 #include <stm32f1xx.h>
 
 #include <DataStoreLib/Inc/DataStore.hpp>
+#include <SensorInterfaceLib/Inc/SensorInterface.hpp>
 #include <UtilsLib/Inc/CANManager.hpp>
 #include <UtilsLib/Inc/ErrorState.hpp>
 #include <UtilsLib/Inc/Logger.hpp>
@@ -25,12 +26,31 @@ public:
 
 	UtilsLib::ErrorState MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8]);
 
-	UtilsLib::ErrorState SendMessage();
+	void SendCommandMessageInErrorState();
+	UtilsLib::ErrorState SendCommandMessage();
 
-protected:
+private:
 	UtilsLib::Logger& mLogger;
 	DataStoreLib::DataStore& mDataStore;
 	UtilsLib::CANManager& mCANManager;
+
+	uint8_t mTransmitBuffer[8];
+
+	const uint32_t CommandMessageHeaderId = 0x0C0;
+	const uint32_t CommandMessageLength = 8;
+
+	const uint32_t CommandMessageTransmitInterval = 2;
+
+	const double InverterEnableTorqueThreshold = 0.005;
+
+	// Traction Control System
+
+
+	void SetCommandMessageInNonErrorState();
+	void SetCommandMessage(uint16_t torque, uint16_t angularVelocity, bool directionForward, bool inverter, bool inverterDischarge, bool speedMode, uint16_t torqueLimit);
+	bool TractionControlShouldBeTriggered();
+	void ModifyCommandMessageByTractionControl();
+
 };
 
 };

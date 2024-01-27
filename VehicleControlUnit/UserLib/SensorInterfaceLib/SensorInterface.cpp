@@ -15,7 +15,7 @@ void SensorInterface::ReadThrottleSignal()
 	mADCManager.GetBufferByIndex(mThrottleSignalADCIndex0, reading0);
 	mADCManager.GetBufferByIndex(mThrottleSignalADCIndex1, reading1);
 
-	mLogger.LogSpam("Read signals: " + std::to_string(reading0) + ", " + std::to_string(reading1));
+	mLogger.LogCustom("Read signals: " + std::to_string(reading0) + ", " + std::to_string(reading1));
 
 	// Check if the raw value deviates from max/min value of the throttle too much. FSUK2024 T11.9.2(c)
 	if (reading0 < ThrottleMinPin0 - ThrottleSignalOutOfRangeThreshold || reading0 > ThrottleMaxPin0 + ThrottleSignalOutOfRangeThreshold)
@@ -65,8 +65,8 @@ void SensorInterface::ReadThrottleSignal()
 	mLogger.LogSpam("Throttle: " + std::to_string(throttle0) + ", " + std::to_string(throttle1));
 
 	mDataStore.mDriveDataStore.SetError(false);
-	mDataStore.mDriveDataStore.SetThrottleSignal(throttle0);
-	mLogger.LogSpam("Throttle Final: " + std::to_string(throttle0));
+	mDataStore.mDriveDataStore.SetTorque(throttle0);
+	mLogger.LogCustom("Throttle Final: " + std::to_string(throttle0));
 
 	return;
 }

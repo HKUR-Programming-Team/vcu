@@ -15,7 +15,7 @@ class DriveDataStore
 public:
 	DriveDataStore():
 			mError{false},
-			mThrottleSignal{0},
+			mTorque{0},
 			mRegen{0},
 			mGear{Gear::NEUTRAL}
 	{}
@@ -31,21 +31,21 @@ public:
 	}
 
 	// Make sure to check that the throttle has no error before using the throttle value
-	uint16_t GetThrottleSignal() const
+	uint16_t GetTorque() const
 	{
 		if (mError)
 		{
 			return 0;
 		}
 
-		return mThrottleSignal;
+		return mTorque;
 	}
 
 	// Make sure to set the error status before using the throttle
-	// Unit: torque. [0,MaxTorque]
-	void SetThrottleSignal(const uint16_t throttle)
+	// Unit: torque in 0.1 [0,MaxTorque]
+	void SetTorque(const uint16_t throttle)
 	{
-		mThrottleSignal = throttle;
+		mTorque = throttle;
 	}
 
 	uint16_t GetRegen() const
@@ -70,7 +70,7 @@ public:
 
 private:
 	bool mError;
-	uint16_t mThrottleSignal;
+	uint16_t mTorque;
 	uint16_t mRegen;
 	Gear mGear;
 };

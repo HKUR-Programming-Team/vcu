@@ -24,6 +24,7 @@ void Main::Loop()
 	if (mSetupFailed)
 	{
 		mLogger.LogInfo("TODO: what has to be done if in error");
+		mMCUInterface.SendCommandMessageInErrorState();
 		return;
 	}
 	bool button = UtilsLib::GPIOManager::digitalRead(UtilsLib::GPIOPort::C, UtilsLib::GPIOPinNum::Pin7);
@@ -39,10 +40,10 @@ void Main::Loop()
 	mSensorInterface.ReadADC(); // Read throttle and other analog signals and store it to dataStore
 
 	// MCU
-	mMCUErrorManager.CheckImplausibility(); // update implausible status
-	mLogger.LogSpam("Persisted: " + std::to_string(mDataStore.GetPersistedImplausibleStatus()));
+//	mMCUErrorManager.CheckImplausibility(); // update implausible status
+//	mLogger.LogSpam("Persisted: " + std::to_string(mDataStore.GetPersistedImplausibleStatus()));
 
-	mMCUInterface.SendMessage(); // send packet to motor controller
+	mMCUInterface.SendCommandMessage(); // send packet to motor controller
 
 	// Ready to Drive
 	mReadyToDriveManager.CheckReadyToDrive();
