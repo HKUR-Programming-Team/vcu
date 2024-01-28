@@ -1,7 +1,13 @@
 #pragma once
 
-#include <UtilsLib/Inc/Logger.hpp>
 #include <DataStoreLib/Inc/DataStore.hpp>
+
+#ifndef MOCK_TEST
+	#include <stm32f1xx.h>
+	#include <UtilsLib/Inc/Logger.hpp>
+#else
+	#include <MockLibraries.hpp>
+#endif
 
 namespace VehicleControlUnit::ReadyToDriveLib {
 

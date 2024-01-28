@@ -18,16 +18,16 @@ void SensorInterface::ReadThrottleSignal()
 	mLogger.LogCustom("Read signals: " + std::to_string(reading0) + ", " + std::to_string(reading1));
 
 	// Check if the raw value deviates from max/min value of the throttle too much. FSUK2024 T11.9.2(c)
-	if (reading0 < ThrottleMinPin0 - ThrottleSignalOutOfRangeThreshold || reading0 > ThrottleMaxPin0 + ThrottleSignalOutOfRangeThreshold)
+	if (reading0 < mParameters.ThrottleMinPin0 - mParameters.ThrottleSignalOutOfRangeThreshold || reading0 > mParameters.ThrottleMaxPin0 + mParameters.ThrottleSignalOutOfRangeThreshold)
 	{
 		mDataStore.mDriveDataStore.SetError(true);
-		mLogger.LogError("Throttle Pin 0 giving impossible value. min = " + std::to_string(ThrottleMinPin0) + ", max = " + std::to_string(ThrottleMaxPin0) + ", reading = " + std::to_string(reading0));
+		mLogger.LogError("Throttle Pin 0 giving impossible value. min = " + std::to_string(mParameters.ThrottleMinPin0) + ", max = " + std::to_string(mParameters.ThrottleMaxPin0) + ", reading = " + std::to_string(reading0));
 		return;
 	}
-	if (reading1 < ThrottleMinPin1 - ThrottleSignalOutOfRangeThreshold || reading1 > ThrottleMaxPin1 + ThrottleSignalOutOfRangeThreshold)
+	if (reading1 < mParameters.ThrottleMinPin1 - mParameters.ThrottleSignalOutOfRangeThreshold || reading1 > mParameters.ThrottleMaxPin1 + mParameters.ThrottleSignalOutOfRangeThreshold)
 	{
 		mDataStore.mDriveDataStore.SetError(true);
-		mLogger.LogError("Throttle Pin 1 giving impossible value. min = " + std::to_string(ThrottleMinPin1) + ", max = " + std::to_string(ThrottleMaxPin1) + ", reading = " + std::to_string(reading1));
+		mLogger.LogError("Throttle Pin 1 giving impossible value. min = " + std::to_string(mParameters.ThrottleMinPin1) + ", max = " + std::to_string(mParameters.ThrottleMaxPin1) + ", reading = " + std::to_string(reading1));
 		return;
 	}
 
@@ -40,22 +40,22 @@ void SensorInterface::ReadThrottleSignal()
 		}
 		if (reading > readingMax - SignalDeadzone)
 		{
-			return MaxTorque;
+			return mParameters.MaxTorque;
 		}
 
-		return (reading - readingMin) * MaxTorque / (readingMax - readingMin);
+		return (reading - readingMin) * mParameters.MaxTorque / (readingMax - readingMin);
 	};
 
-	const auto throttle0 = mapThrottle(ThrottleMinPin0, ThrottleMaxPin0, reading0);
-	const auto throttle1 = mapThrottle(ThrottleMinPin1, ThrottleMaxPin1, reading1);
+	const auto throttle0 = mapThrottle(mParameters.ThrottleMinPin0, mParameters.ThrottleMaxPin0, reading0);
+	const auto throttle1 = mapThrottle(mParameters.ThrottleMinPin1, mParameters.ThrottleMaxPin1, reading1);
 
-	if (throttle0 > throttle1 && throttle0 - throttle1 > ThrottleSignalDeviationThreshold)
+	if (throttle0 > throttle1 && throttle0 - throttle1 > mParameters.ThrottleSignalDeviationThreshold)
 	{
 		mDataStore.mDriveDataStore.SetError(true);
 		mLogger.LogError("Throttle signal deviation more than 10%");
 		return;
 	}
-	if (throttle1 > throttle0 && throttle1 - throttle0 > ThrottleSignalDeviationThreshold)
+	if (throttle1 > throttle0 && throttle1 - throttle0 > mParameters.ThrottleSignalDeviationThreshold)
 	{
 		mDataStore.mDriveDataStore.SetError(true);
 		mLogger.LogError("Throttle signal deviation more than 10%");

@@ -1,10 +1,14 @@
 #pragma once
 
-#include <stm32f1xx.h>
-
 #include <DataStoreLib/Inc/DataStore.hpp>
 #include <UtilsLib/Inc/ErrorState.hpp>
-#include <UtilsLib/Inc/Logger.hpp>
+
+#ifndef MOCK_TEST
+	#include <stm32f1xx.h>
+	#include <UtilsLib/Inc/Logger.hpp>
+#else
+	#include <MockLibraries.hpp>
+#endif
 
 namespace VehicleControlUnit::BMSInterfaceLib {
 

@@ -1,7 +1,12 @@
 #pragma once
 
 #include <DataStoreLib/Inc/DriveDataStore.hpp>
-#include <stm32f1xx.h>
+
+#ifndef MOCK_TEST
+	#include <stm32f1xx.h>
+#else
+	#include <MockLibraries.hpp>
+#endif
 
 namespace VehicleControlUnit::DataStoreLib {
 

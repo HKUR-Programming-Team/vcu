@@ -1,12 +1,15 @@
 #pragma once
 
-#include <stm32f1xx.h>
+#ifndef MOCK_TEST
+	#include <UtilsLib/Inc/CANManager.hpp>
+	#include <UtilsLib/Inc/Logger.hpp>
+#else
+	#include <MockLibraries.hpp>
+#endif
 
 #include <DataStoreLib/Inc/DataStore.hpp>
 #include <SensorInterfaceLib/Inc/SensorInterface.hpp>
-#include <UtilsLib/Inc/CANManager.hpp>
 #include <UtilsLib/Inc/ErrorState.hpp>
-#include <UtilsLib/Inc/Logger.hpp>
 
 // Forward declaration to make circular dependency between CANManager and MCUInterface work
 namespace VehicleControlUnit::UtilsLib {

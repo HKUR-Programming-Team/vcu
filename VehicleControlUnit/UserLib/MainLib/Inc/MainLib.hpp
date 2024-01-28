@@ -6,7 +6,7 @@
 #include <UtilsLib/Inc/Logger.hpp>
 #include <UtilsLib/Inc/GPIOManager.hpp>
 #include <UtilsLib/Inc/CANManager.hpp>
-#include <MainLib/Inc/setttings.hpp>
+#include <MainLib/Inc/settings.hpp>
 #include <MCUInterfaceLib/Inc/MCUErrorManager.hpp>
 #include <MCUInterfaceLib/Inc/MCUInterface.hpp>
 #include <ReadyToDriveLib/Inc/ReadyToDrive.hpp>
@@ -27,7 +27,7 @@ public:
 				Settings::customLoggingEnabled},
 		mDataStore(),
 		mADCManager(mLogger, adcHandler, "ADC1", Settings::ADCDMABufferLength),
-		mSensorInterface(mLogger, mDataStore, mADCManager, Settings::throttleSignalADCIndex1, Settings::throttleSignalADCIndex2),
+		mSensorInterface(mLogger, mDataStore, mADCManager, Settings::throttleSignalADCIndex1, Settings::throttleSignalADCIndex2, Settings::sensorInterfaceParameters),
 		mCANManager(mLogger, canHandler, "CAN1", mBMSInterface, mMCUInterface, mSensorInterface),
 		mBMSInterface(mLogger, mDataStore),
 		mMCUInterface(mLogger, mDataStore, mCANManager),
