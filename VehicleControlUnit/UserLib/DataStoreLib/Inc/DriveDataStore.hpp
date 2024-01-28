@@ -19,7 +19,6 @@ public:
 	DriveDataStore():
 			mError{false},
 			mTorque{0},
-			mRegen{0},
 			mGear{Gear::NEUTRAL}
 	{}
 
@@ -34,7 +33,7 @@ public:
 	}
 
 	// Make sure to check that the throttle has no error before using the throttle value
-	uint16_t GetTorque() const
+	int16_t GetTorque() const
 	{
 		if (mError)
 		{
@@ -46,19 +45,9 @@ public:
 
 	// Make sure to set the error status before using the throttle
 	// Unit: torque in 0.1 [0,MaxTorque]
-	void SetTorque(const uint16_t throttle)
+	void SetTorque(const int16_t throttle)
 	{
 		mTorque = throttle;
-	}
-
-	uint16_t GetRegen() const
-	{
-		return mRegen;
-	}
-
-	void SetRegen(const uint16_t regen)
-	{
-		mRegen = regen;
 	}
 
 	Gear GetGear() const
@@ -73,8 +62,7 @@ public:
 
 private:
 	bool mError;
-	uint16_t mTorque;
-	uint16_t mRegen;
+	int16_t mTorque;
 	Gear mGear;
 };
 

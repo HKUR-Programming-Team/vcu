@@ -27,17 +27,15 @@ TEST_CASE("SensorInterface Test Cases") {
 
     SUBCASE("WHEN one throttle sensor is at 0 percent and one throttle sensor is at 100 percent THEN error is set in dataStore correctly")
     {
-        const uint16_t RawValueForSensor0 = sensorLib::SensorInterface::ThrottleMinPin0;
-        const uint16_t RawValueForSensor1 = sensorLib::SensorInterface::ThrottleMaxPin1;
-        adcManager.buffer[ThrottleSignalADCIndex0] = RawValueForSensor0;
-        adcManager.buffer[ThrottleSignalADCIndex1] = RawValueForSensor1;
+        adcManager.buffer[ThrottleSignalADCIndex0] = sensorInterfaceParams.ThrottleMinPin0;
+        adcManager.buffer[ThrottleSignalADCIndex1] = sensorInterfaceParams.ThrottleMaxPin1;
 
         uint16_t checkADC1 = 0;
         uint16_t checkADC2 = 0;
         adcManager.GetBufferByIndex(ThrottleSignalADCIndex0, checkADC1);
         adcManager.GetBufferByIndex(ThrottleSignalADCIndex1, checkADC2);
-        REQUIRE(checkADC1 == RawValueForSensor0);
-        REQUIRE(checkADC2 == RawValueForSensor1);
+        REQUIRE(checkADC1 == sensorInterfaceParams.ThrottleMinPin0);
+        REQUIRE(checkADC2 == sensorInterfaceParams.ThrottleMaxPin1);
 
         sensorInterface.ReadADC();
         CHECK(dataStore.mDriveDataStore.GetError());

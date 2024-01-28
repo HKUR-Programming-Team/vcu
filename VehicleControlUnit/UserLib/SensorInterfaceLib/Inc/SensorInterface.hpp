@@ -17,16 +17,6 @@ namespace VehicleControlUnit::SensorInterfaceLib {
 class SensorInterface
 {
 public:
-	// Constants
-	const static uint16_t ThrottleMinPin0 = 500;
-	const static uint16_t ThrottleMaxPin0 = 3500;
-	const static uint16_t ThrottleMinPin1 = 500;
-	const static uint16_t ThrottleMaxPin1 = 3500;
-	const static uint16_t MaxTorque = 1660;
-
-	const static uint16_t ThrottleSignalOutOfRangeThreshold = 20;
-	const static uint16_t ThrottleSignalDeviationThreshold = MaxTorque / 10; // Maximum 10% deviation allowed. FSUK2024 T11.8.9
-	const static uint16_t SignalDeadzone = 50;
 
 	SensorInterface(UtilsLib::Logger& logger, DataStoreLib::DataStore& dataStore, UtilsLib::ADCManager& ADCManager,
 			const uint8_t throttleSignalADCIndex0,

@@ -143,6 +143,12 @@ UtilsLib::ErrorState CANManager::MessageReceiveHandler()
 
 	// TODO :: Map CAN message ID to action (call a function from another library)
 	// You can call mBMSInterface.MessageReceiveHandler(header, message) to pass the message to BMS interface library
+	if (messageID == 0x0A5 || messageID == 0x0A6 || messageID == 0x0A7 || messageID == 0x0AA)
+	{
+		mMCUInterface.MessageReceiveHandler(messageID, mReceiveHeader, mReceiveBuffer);
+		return UtilsLib::ErrorState::CAN_MSG_RECEIVE_SUCCESS;
+	}
+
 	mLogger.LogInfo("TODO: Map the received CAN Message's ID to an action for CANMananger");
 	return UtilsLib::ErrorState::CAN_MSG_RECEIVE_SUCCESS;
 }

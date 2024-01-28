@@ -1,6 +1,7 @@
 #pragma once
 
 #include <DataStoreLib/Inc/DriveDataStore.hpp>
+#include <DataStoreLib/Inc/MCUAndBMSDataStore.hpp>
 
 #ifndef MOCK_TEST
 	#include <stm32f1xx.h>
@@ -30,6 +31,7 @@ public:
 	}
 
 	DriveDataStore mDriveDataStore;
+	MCUAndBMSDataStore mMCUAndBMSDataStore;
 
 private:
 	bool mPersistedImplausibleStatus;

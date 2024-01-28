@@ -26,7 +26,7 @@ struct SensorInterfaceParameters
 	uint16_t ThrottleMaxPin0 = 3500;
 	uint16_t ThrottleMinPin1 = 500;
 	uint16_t ThrottleMaxPin1 = 3500;
-	uint16_t MaxTorque = 1660;
+	int16_t MaxTorque = 1660;
 
 	uint16_t ThrottleSignalOutOfRangeThreshold = 20;
 	uint16_t ThrottleSignalDeviationThreshold = MaxTorque / 10; // Maximum 10% deviation allowed. FSUK2024 T11.8.9

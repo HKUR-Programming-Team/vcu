@@ -31,14 +31,14 @@ void SensorInterface::ReadThrottleSignal()
 		return;
 	}
 
-	auto mapThrottle = [&](const uint16_t readingMin, const uint16_t readingMax, const uint16_t reading) -> uint16_t
+	auto mapThrottle = [&](const uint16_t readingMin, const uint16_t readingMax, const uint16_t reading) -> int16_t
 	{
 		// Slightly out of range signal due to noises. Deadzone of throttle signal
-		if (reading < readingMin + SignalDeadzone)
+		if (reading < readingMin + mParameters.SignalDeadzone)
 		{
 			return 0;
 		}
-		if (reading > readingMax - SignalDeadzone)
+		if (reading > readingMax - mParameters.SignalDeadzone)
 		{
 			return mParameters.MaxTorque;
 		}
@@ -46,8 +46,8 @@ void SensorInterface::ReadThrottleSignal()
 		return (reading - readingMin) * mParameters.MaxTorque / (readingMax - readingMin);
 	};
 
-	const auto throttle0 = mapThrottle(mParameters.ThrottleMinPin0, mParameters.ThrottleMaxPin0, reading0);
-	const auto throttle1 = mapThrottle(mParameters.ThrottleMinPin1, mParameters.ThrottleMaxPin1, reading1);
+	const int16_t throttle0 = mapThrottle(mParameters.ThrottleMinPin0, mParameters.ThrottleMaxPin0, reading0);
+	const int16_t throttle1 = mapThrottle(mParameters.ThrottleMinPin1, mParameters.ThrottleMaxPin1, reading1);
 
 	if (throttle0 > throttle1 && throttle0 - throttle1 > mParameters.ThrottleSignalDeviationThreshold)
 	{

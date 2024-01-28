@@ -2,10 +2,52 @@
 
 namespace VehicleControlUnit::MCUInterfaceLib {
 
-UtilsLib::ErrorState MCUInterface::MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
+void MCUInterface::MessageReceiveHandler(const uint32_t messageID, const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
 {
-	mLogger.LogInfo("TODO: Handle the CAN message received from MCU, store the data in the DataStore");
-	return UtilsLib::ErrorState::INIT_SUCCESS; // placeholder
+	mLogger.LogInfo("TODO: unit test cases for MCUInterface messageReceiveHandler. two's complement");
+	switch(messageID) {
+	    case 0x0A5: { // Motor Speed
+	        const int16_t motorSpeed = static_cast<uint16_t>(message[3]) << 8 | static_cast<uint16_t>(message[2]);
+	        mDataStore.mMCUAndBMSDataStore.SetMotorSpeed(motorSpeed);
+	        break;
+	    }
+	    case 0x0A6: { // DC Bus Current
+	        const auto dcBusCurrent = ~(static_cast<uint16_t>(message[7]) << 8 | static_cast<uint16_t>(message[6]));
+	        mDataStore.mMCUAndBMSDataStore.SetDCBusCurrent(dcBusCurrent);
+	        break;
+	    }
+	    case 0x0A7: { // DC Bus Voltage
+	    	const auto dcBusVoltage = (static_cast<uint16_t>(message[1]) << 8 | static_cast<uint16_t>(message[0]));
+	        mDataStore.mMCUAndBMSDataStore.SetDCBusVoltage(dcBusVoltage);
+	        break;
+	    }
+	    case 0x0AA: { // VSM State
+	        uint8_t vsmState = message[0];
+	        auto GetVSMStateDescription = [](const uint8_t vsmState){
+				switch(vsmState) {
+						case 0: return DataStoreLib::VSMState::StartUp; break;
+						case 1: return DataStoreLib::VSMState::PreChargeInit; break;
+						case 2: return DataStoreLib::VSMState::PreChargeActivate; break;
+						case 3: return DataStoreLib::VSMState::PreChangeComplete; break;
+						case 4: return DataStoreLib::VSMState::Idle; break;
+						case 5: return DataStoreLib::VSMState::Ready; break;
+						case 6: return DataStoreLib::VSMState::MotorRunning; break;
+						case 7: return DataStoreLib::VSMState::BlinkFaultCode; break;
+						case 14: return DataStoreLib::VSMState::ShutdownInProgress; break;
+						case 15: return DataStoreLib::VSMState::PowerRecycling; break;
+						default: return DataStoreLib::VSMState::Unknown; break;
+				}
+	        };
+	        mDataStore.mMCUAndBMSDataStore.SetVSMState(GetVSMStateDescription(vsmState));
+	    }
+	    // ... Other cases ...
+	    default: {
+	        mLogger.LogError("Received unknown CAN ID in MessageReceiveHandler of MCUInterface. Please raise to developer");
+			return;
+	        break;
+	    }
+	}
+	mDataStore.mMCUAndBMSDataStore.SetMCUUpdateTs(HAL_GetTick());
 }
 
 void MCUInterface::SendCommandMessageInErrorState()
@@ -45,11 +87,11 @@ UtilsLib::ErrorState MCUInterface::SendCommandMessage()
 
 void MCUInterface::SetCommandMessageInNonErrorState()
 {
-	mLogger.LogInfo("TODO: MCUInterface Torque");
+	mLogger.LogInfo("TODO: MCUInterface Torque change to two's complement");
 	const uint16_t torque = mDataStore.mDriveDataStore.GetTorque();
 	const uint16_t angularVelocity = 0;
 	const bool directionForward = mDataStore.mDriveDataStore.GetGear() == DataStoreLib::Gear::FORWARD;
-	const bool inverter = torque >= InverterEnableTorqueThreshold * SensorInterfaceLib::SensorInterface::MaxTorque;
+	const bool inverter = torque >= InverterEnableTorqueThreshold * MainLib::Settings::sensorInterfaceParameters.MaxTorque;
 	const bool inverterDischarge = !inverter;
 	const auto speedMode = false;
 	const uint32_t torqueLimit = 0;

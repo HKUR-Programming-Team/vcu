@@ -3,6 +3,7 @@
 #ifndef MOCK_TEST
 	#include <UtilsLib/Inc/CANManager.hpp>
 	#include <UtilsLib/Inc/Logger.hpp>
+	#include <stm32f1xx.h>
 #else
 	#include <MockLibraries.hpp>
 #endif
@@ -27,7 +28,7 @@ public:
 			mCANManager{CANManager}
 	{}
 
-	UtilsLib::ErrorState MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8]);
+	void MessageReceiveHandler(const uint32_t messageID, const CAN_RxHeaderTypeDef& header, const uint8_t message[8]);
 
 	void SendCommandMessageInErrorState();
 	UtilsLib::ErrorState SendCommandMessage();
