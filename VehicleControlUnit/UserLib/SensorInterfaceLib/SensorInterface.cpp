@@ -40,10 +40,10 @@ void SensorInterface::ReadThrottleSignal()
 		}
 		if (reading > readingMax - mParameters.SignalDeadzone)
 		{
-			return mParameters.MaxTorque;
+			return static_cast<int16_t>(mParameters.MaxTorque);
 		}
 
-		return (reading - readingMin) * mParameters.MaxTorque / (readingMax - readingMin);
+		return static_cast<int16_t>((reading - readingMin) * mParameters.MaxTorque / (readingMax - readingMin));
 	};
 
 	const int16_t throttle0 = mapThrottle(mParameters.ThrottleMinPin0, mParameters.ThrottleMaxPin0, reading0);

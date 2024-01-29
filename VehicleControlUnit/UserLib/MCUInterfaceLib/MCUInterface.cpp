@@ -7,17 +7,17 @@ void MCUInterface::MessageReceiveHandler(const uint32_t messageID, const CAN_RxH
 	mLogger.LogInfo("TODO: unit test cases for MCUInterface messageReceiveHandler. two's complement");
 	switch(messageID) {
 	    case 0x0A5: { // Motor Speed
-	        const int16_t motorSpeed = static_cast<uint16_t>(message[3]) << 8 | static_cast<uint16_t>(message[2]);
+	        const int16_t motorSpeed = static_cast<int16_t>(static_cast<uint16_t>(message[3]) << 8 | static_cast<uint16_t>(message[2]));
 	        mDataStore.mMCUAndBMSDataStore.SetMotorSpeed(motorSpeed);
 	        break;
 	    }
 	    case 0x0A6: { // DC Bus Current
-	        const auto dcBusCurrent = ~(static_cast<uint16_t>(message[7]) << 8 | static_cast<uint16_t>(message[6]));
+	        const int16_t dcBusCurrent = static_cast<int16_t>(static_cast<uint16_t>(message[7]) << 8 | static_cast<uint16_t>(message[6]));
 	        mDataStore.mMCUAndBMSDataStore.SetDCBusCurrent(dcBusCurrent);
 	        break;
 	    }
 	    case 0x0A7: { // DC Bus Voltage
-	    	const auto dcBusVoltage = (static_cast<uint16_t>(message[1]) << 8 | static_cast<uint16_t>(message[0]));
+	    	const int16_t dcBusVoltage = static_cast<int16_t>(static_cast<uint16_t>(message[1]) << 8 | static_cast<uint16_t>(message[0]));
 	        mDataStore.mMCUAndBMSDataStore.SetDCBusVoltage(dcBusVoltage);
 	        break;
 	    }
