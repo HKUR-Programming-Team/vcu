@@ -37,6 +37,11 @@ public:
         volatile int x = 0;
         return ErrorState::INIT_SUCCESS;
     }
+
+    uint32_t mMessageId = 0;
+    uint32_t mMessageLength = 0;
+    uint8_t buffer[8];
+    bool SendMessageError = false;
 };
 
 class ADCManager

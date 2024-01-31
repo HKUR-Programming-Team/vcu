@@ -5,9 +5,11 @@
 #include <doctest.h>
 #include <string>
 #include <SensorInterfaceLib/Inc/SensorInterface.hpp>
+#include <MCUInterfaceLib/Inc/MCUInterface.hpp>
 #include <MainLib/Inc/settings.hpp>
 
 namespace sensorLib = VehicleControlUnit::SensorInterfaceLib;
+namespace mcuLib = VehicleControlUnit::MCUInterfaceLib;
 namespace utilsLib = VehicleControlUnit::UtilsLib;
 namespace dataLib = VehicleControlUnit::DataStoreLib;
 namespace settings = VehicleControlUnit::MainLib::Settings;
@@ -38,7 +40,17 @@ TEST_CASE("SensorInterface Test Cases") {
         REQUIRE(checkADC2 == sensorInterfaceParams.ThrottleMaxPin1);
 
         sensorInterface.ReadADC();
-        CHECK(dataStore.mDriveDataStore.GetError());
-        CHECK(dataStore.mDriveDataStore.GetTorque() == 0);
+        CHECK(dataStore.mDrivingInputDataStore.GetError());
+        CHECK(dataStore.mDrivingInputDataStore.GetTorque() == 0);
     }
+}
+
+TEST_CASE("MCUInterface Test Cases")
+{
+    dataLib::DataStore dataStore;
+    utilsLib::CANManager canManager;
+    utilsLib::Logger logger;
+    settings::MCUInterfaceParameters mcuinterfaceParameters;
+
+    mcuLib::MCUInterface mcuInterface(logger, dataStore, canManager, mcuinterfaceParameters);
 }

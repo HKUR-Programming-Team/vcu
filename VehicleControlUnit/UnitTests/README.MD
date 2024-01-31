@@ -1,3 +1,4 @@
+Pre-requisite: if you are using a Windows Machine, you have to download Visual Studio and its c++ compiler, make, cmake...<BR>
 Create a folder called build<BR>
 Then, do the following in your cmd:<BR>
 cmake ..<BR>
