@@ -2,7 +2,11 @@ VehicleControlUnit/SWV_export
 VehicleControlUnit/Debug
 VehicleControlUnit/Drivers
 VehicleControlUnit/UnitTests/build
+VehicleControlUnit/.settings/*
 VCU-H745ZI-Q/SWV_export
 VCU-H745ZI-Q/Debug
 VCU-H745ZI-Q/Drivers
+VCU-H745ZI-Q/CM7/.settings/*
+VCU-H745ZI-Q/.settings/*
 VehicleControlUnit(R2D Mode Test)
+.metadata/*
