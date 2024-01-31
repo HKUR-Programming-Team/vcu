@@ -8,17 +8,17 @@ void MCUInterface::MessageReceiveHandler(const uint32_t messageID, const CAN_RxH
 	switch(messageID) {
 	    case 0x0A5: { // Motor Speed
 	        const int16_t motorSpeed = static_cast<int16_t>(static_cast<uint16_t>(message[3]) << 8 | static_cast<uint16_t>(message[2]));
-	        mDataStore.mMCUAndBMSDataStore.SetMotorSpeed(motorSpeed);
+	        mDataStore.mMCUDataStore.SetMotorSpeed(motorSpeed);
 	        break;
 	    }
 	    case 0x0A6: { // DC Bus Current
 	        const int16_t dcBusCurrent = static_cast<int16_t>(static_cast<uint16_t>(message[7]) << 8 | static_cast<uint16_t>(message[6]));
-	        mDataStore.mMCUAndBMSDataStore.SetDCBusCurrent(dcBusCurrent);
+	        mDataStore.mMCUDataStore.SetDCBusCurrent(dcBusCurrent);
 	        break;
 	    }
 	    case 0x0A7: { // DC Bus Voltage
 	    	const int16_t dcBusVoltage = static_cast<int16_t>(static_cast<uint16_t>(message[1]) << 8 | static_cast<uint16_t>(message[0]));
-	        mDataStore.mMCUAndBMSDataStore.SetDCBusVoltage(dcBusVoltage);
+	        mDataStore.mMCUDataStore.SetDCBusVoltage(dcBusVoltage);
 	        break;
 	    }
 	    case 0x0AA: { // VSM State
@@ -38,7 +38,7 @@ void MCUInterface::MessageReceiveHandler(const uint32_t messageID, const CAN_RxH
 						default: return DataStoreLib::VSMState::Unknown; break;
 				}
 	        };
-	        mDataStore.mMCUAndBMSDataStore.SetVSMState(GetVSMStateDescription(vsmState));
+	        mDataStore.mMCUDataStore.SetVSMState(GetVSMStateDescription(vsmState));
 	    }
 	    // ... Other cases ...
 	    default: {
@@ -47,13 +47,13 @@ void MCUInterface::MessageReceiveHandler(const uint32_t messageID, const CAN_RxH
 	        break;
 	    }
 	}
-	mDataStore.mMCUAndBMSDataStore.SetMCUUpdateTs(HAL_GetTick());
+	mDataStore.mMCUDataStore.SetUpdateTs(HAL_GetTick());
 }
 
 void MCUInterface::SendCommandMessageInErrorState()
 {
-	mCANManager.SetTransmitHeader(CommandMessageHeaderId, CommandMessageLength);
-	SetCommandMessage(0, 0, true, false, true, false, 0);
+	mCANManager.SetTransmitHeader(mParameters.CommandMessageHeaderId, mParameters.CommandMessageLength);
+	SetCommandMessage(0, true, false, true, false, 0);
 	mCANManager.SendMessage(mTransmitBuffer);
 }
 
@@ -70,15 +70,20 @@ UtilsLib::ErrorState MCUInterface::SendCommandMessage()
 
 	SetCommandMessageInNonErrorState();
 
-	if (TractionControlShouldBeTriggered())
+	mLogger.LogInfo("TODO: Button to toggle TCS");
+	if (mTCSEnabled)
 	{
-		ModifyCommandMessageByTractionControl();
-	}
+		CheckTractionControlTriggered();
 
-	mCANManager.SetTransmitHeader(CommandMessageHeaderId, CommandMessageLength);
+		if (mTCSTriggered)
+		{
+			ModifyCommandMessageByTractionControl();
+		}
+	}
+	mCANManager.SetTransmitHeader(mParameters.CommandMessageHeaderId, mParameters.CommandMessageLength);
 	const auto error = mCANManager.SendMessage(mTransmitBuffer);
 
-	mLogger.LogInfo("TODO: MCUInterface set error");
+	mLogger.LogInfo("TODO: MCUInterface set error (implausible)");
 
 	// If there is error state, store it to the data store
 
@@ -87,16 +92,23 @@ UtilsLib::ErrorState MCUInterface::SendCommandMessage()
 
 void MCUInterface::SetCommandMessageInNonErrorState()
 {
-	mLogger.LogInfo("TODO: MCUInterface Torque change to two's complement");
-	const uint16_t torque = mDataStore.mDriveDataStore.GetTorque();
-	const uint16_t angularVelocity = 0;
-	const bool directionForward = mDataStore.mDriveDataStore.GetGear() == DataStoreLib::Gear::FORWARD;
-	const bool inverter = torque >= InverterEnableTorqueThreshold * MainLib::Settings::sensorInterfaceParameters.MaxTorque;
-	const bool inverterDischarge = !inverter;
-	const auto speedMode = false;
-	const uint32_t torqueLimit = 0;
+	const int16_t torqueFromPedals = mDataStore.mDrivingInputDataStore.GetTorque();
+	const int16_t regen = mDataStore.mDrivingInputDataStore.GetRegen();
+	int16_t torqueCommand = torqueFromPedals;
+	if (torqueCommand <= mParameters.RegenEnableTorqueThreshold)
+	{
+		torqueCommand = regen;
+	}
 
-	SetCommandMessage(torque, angularVelocity, directionForward, inverter, inverterDischarge, speedMode, torqueLimit);
+	const bool directionForward = mDataStore.mDrivingInputDataStore.GetGear() == DataStoreLib::Gear::FORWARD;
+
+	const bool inverter = torqueCommand >= mParameters.InverterEnableTorqueThreshold || torqueCommand <= -mParameters.InverterEnableTorqueThreshold;
+	const bool inverterDischarge = !inverter;
+
+	const auto speedMode = false;
+	const uint16_t torqueLimit = 0;
+
+	SetCommandMessage(torqueCommand, directionForward, inverter, inverterDischarge, speedMode, torqueLimit);
 
 	mLogger.LogCustom("Before TCS:" + std::to_string(mTransmitBuffer[0]) + ", " + std::to_string(mTransmitBuffer[1])
 				+ ", " + std::to_string(mTransmitBuffer[2]) + ", " + std::to_string(mTransmitBuffer[3])
@@ -104,41 +116,82 @@ void MCUInterface::SetCommandMessageInNonErrorState()
 				+ ", " + std::to_string(mTransmitBuffer[6]) + ", " + std::to_string(mTransmitBuffer[7]));
 }
 
-void MCUInterface::SetCommandMessage(uint16_t torque,
-		uint16_t angularVelocity,
+void MCUInterface::SetCommandMessage(int16_t torque,
 		bool directionForward,
 		bool inverter,
 		bool inverterDischarge,
 		bool speedMode,
 		uint16_t torqueLimit)
 {
-	mTransmitBuffer[0] = torque % 256;
-	mTransmitBuffer[1] = torque / 256;
-	mTransmitBuffer[2] = angularVelocity % 256;
-	mTransmitBuffer[3] = angularVelocity / 256;
+	SetCommandMessageTorque(torque);
+	mTransmitBuffer[2] = 0;
+	mTransmitBuffer[3] = 0;
 	mTransmitBuffer[4] = (directionForward ? 1 : 0);
 	mTransmitBuffer[5] = (inverter ? 1 : 0) + 2 * (inverterDischarge ? 1 : 0) + 4 * (speedMode ? 1 : 0);
 	mTransmitBuffer[6] = torqueLimit % 256;
 	mTransmitBuffer[7] = torqueLimit / 256;
 }
 
-bool MCUInterface::TractionControlShouldBeTriggered()
+int16_t MCUInterface::GetCommandMessageTorque() const
+{
+	const uint16_t torqueTwosComplement = static_cast<uint16_t>(mTransmitBuffer[1]) << 8 | static_cast<uint16_t>(mTransmitBuffer[0]);
+	return static_cast<int16_t>(torqueTwosComplement);
+}
+
+void MCUInterface::SetCommandMessageTorque(int16_t torque)
+{
+	const uint16_t torqueTwosComplement = static_cast<uint16_t>(torque);
+	mTransmitBuffer[0] = torqueTwosComplement % 256;
+	mTransmitBuffer[1] = torqueTwosComplement / 256;
+}
+
+void MCUInterface::CheckTractionControlTriggered()
 {
 	mLogger.LogInfo("TODO: MCUInterface decide TCS on or off");
 
-	const bool decision = false;
-	mLogger.LogCustom("TCS Decision:" + std::to_string(decision));
-	return false;
+	const auto optLeftWheelSpeed = mDataStore.mVehicleSensorDataStore.GetAngularWheelSpeedRearLeft();
+	const auto optRightWheelSpeed = mDataStore.mVehicleSensorDataStore.GetAngularWheelSpeedRearRight();
+	const auto optLinearSpeed = mDataStore.mVehicleSensorDataStore.GetLinearVelocity();
+	if(!optLeftWheelSpeed.has_value() || !optRightWheelSpeed.has_value() || !optLinearSpeed.has_value())
+	{
+		mTCSTriggered = false;
+		return;
+	}
+
+	const auto linearSpeed = optLinearSpeed.value();
+	if (linearSpeed < mParameters.MinimumTCSTriggeringLinearSpeed)
+	{
+		mTCSTriggered = false;
+		return;
+	}
+
+	const auto leftWheelSpeed = optLeftWheelSpeed.value();
+	const auto rightWheelSpeed = optRightWheelSpeed.value();
+	const auto maxWheelSpeed = leftWheelSpeed > rightWheelSpeed ? leftWheelSpeed : rightWheelSpeed;
+
+	const auto slipRatio = (mParameters.WheelRadius * maxWheelSpeed - linearSpeed)/linearSpeed;
+
+	if (!mTCSTriggered)
+	{
+		if (slipRatio > mParameters.TCSTriggeringSlipRatioThreshold)
+		{
+			mTCSTriggered = true;
+			mTCSTriggeredStartTorque = mDataStore.mDrivingInputDataStore.GetTorque();
+			return;
+		}
+	}
+	else if (slipRatio < mParameters.TCSHaltSlipRatioThreshold)
+	{
+		mTCSTriggered = false;
+	}
 }
 
 void MCUInterface::ModifyCommandMessageByTractionControl()
 {
-
-
-	mLogger.LogCustom("After TCS:" + std::to_string(mTransmitBuffer[0]) + ", " + std::to_string(mTransmitBuffer[1])
-			+ ", " + std::to_string(mTransmitBuffer[2]) + ", " + std::to_string(mTransmitBuffer[3])
-			+ ", " + std::to_string(mTransmitBuffer[4]) + ", " + std::to_string(mTransmitBuffer[5])
-			+ ", " + std::to_string(mTransmitBuffer[6]) + ", " + std::to_string(mTransmitBuffer[7]));
+	const int16_t torqueFromPedalSensor = GetCommandMessageTorque();
+	const int16_t minTorque = mTCSTriggeredStartTorque < torqueFromPedalSensor ? mTCSTriggeredStartTorque : torqueFromPedalSensor;
+	SetCommandMessageTorque(minTorque);
+	mLogger.LogCustom("After TCS:" + std::to_string(mTransmitBuffer[0]) + ", " + std::to_string(mTransmitBuffer[1]) + ", torque: " );
 }
 
 }

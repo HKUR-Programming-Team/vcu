@@ -22,12 +22,12 @@ public:
 			const uint8_t throttleSignalADCIndex0,
 			const uint8_t throttleSignalADCIndex1,
 			const MainLib::Settings::SensorInterfaceParameters& parameters):
+		mParameters{parameters},
 		mLogger{logger},
 		mDataStore{dataStore},
 		mADCManager{ADCManager},
 		mThrottleSignalADCIndex0{throttleSignalADCIndex0},
-		mThrottleSignalADCIndex1{throttleSignalADCIndex1},
-		mParameters{parameters}
+		mThrottleSignalADCIndex1{throttleSignalADCIndex1}
 	{}
 
 	void ReadADC();

@@ -13,10 +13,10 @@ enum class Gear
 	NEUTRAL
 };
 
-class DriveDataStore
+class DrivingInputDataStore
 {
 public:
-	DriveDataStore():
+	DrivingInputDataStore():
 			mError{false},
 			mTorque{0},
 			mGear{Gear::NEUTRAL}
@@ -50,6 +50,16 @@ public:
 		mTorque = throttle;
 	}
 
+	int16_t GetRegen() const
+	{
+		return mRegen;
+	}
+
+	void SetRegen(const int16_t& regen)
+	{
+		mRegen = regen;
+	}
+
 	Gear GetGear() const
 	{
 		return mGear;
@@ -63,6 +73,7 @@ public:
 private:
 	bool mError;
 	int16_t mTorque;
+	int16_t mRegen;
 	Gear mGear;
 };
 

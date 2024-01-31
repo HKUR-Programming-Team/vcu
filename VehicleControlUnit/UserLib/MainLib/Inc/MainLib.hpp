@@ -30,7 +30,7 @@ public:
 		mSensorInterface(mLogger, mDataStore, mADCManager, Settings::throttleSignalADCIndex1, Settings::throttleSignalADCIndex2, Settings::sensorInterfaceParameters),
 		mCANManager(mLogger, canHandler, "CAN1", mBMSInterface, mMCUInterface, mSensorInterface),
 		mBMSInterface(mLogger, mDataStore),
-		mMCUInterface(mLogger, mDataStore, mCANManager),
+		mMCUInterface(mLogger, mDataStore, mCANManager, Settings::mcuInterfaceParameters),
 		mMCUErrorManager(mLogger, mDataStore, Settings::implausibleThresholdInterval),
 		mReadyToDriveManager(mLogger, mDataStore, Settings::readyToDriveSoundDuration),
 		mSetupFailed{false}

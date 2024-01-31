@@ -20,13 +20,13 @@ void SensorInterface::ReadThrottleSignal()
 	// Check if the raw value deviates from max/min value of the throttle too much. FSUK2024 T11.9.2(c)
 	if (reading0 < mParameters.ThrottleMinPin0 - mParameters.ThrottleSignalOutOfRangeThreshold || reading0 > mParameters.ThrottleMaxPin0 + mParameters.ThrottleSignalOutOfRangeThreshold)
 	{
-		mDataStore.mDriveDataStore.SetError(true);
+		mDataStore.mDrivingInputDataStore.SetError(true);
 		mLogger.LogError("Throttle Pin 0 giving impossible value. min = " + std::to_string(mParameters.ThrottleMinPin0) + ", max = " + std::to_string(mParameters.ThrottleMaxPin0) + ", reading = " + std::to_string(reading0));
 		return;
 	}
 	if (reading1 < mParameters.ThrottleMinPin1 - mParameters.ThrottleSignalOutOfRangeThreshold || reading1 > mParameters.ThrottleMaxPin1 + mParameters.ThrottleSignalOutOfRangeThreshold)
 	{
-		mDataStore.mDriveDataStore.SetError(true);
+		mDataStore.mDrivingInputDataStore.SetError(true);
 		mLogger.LogError("Throttle Pin 1 giving impossible value. min = " + std::to_string(mParameters.ThrottleMinPin1) + ", max = " + std::to_string(mParameters.ThrottleMaxPin1) + ", reading = " + std::to_string(reading1));
 		return;
 	}
@@ -51,21 +51,21 @@ void SensorInterface::ReadThrottleSignal()
 
 	if (throttle0 > throttle1 && throttle0 - throttle1 > mParameters.ThrottleSignalDeviationThreshold)
 	{
-		mDataStore.mDriveDataStore.SetError(true);
+		mDataStore.mDrivingInputDataStore.SetError(true);
 		mLogger.LogError("Throttle signal deviation more than 10%");
 		return;
 	}
 	if (throttle1 > throttle0 && throttle1 - throttle0 > mParameters.ThrottleSignalDeviationThreshold)
 	{
-		mDataStore.mDriveDataStore.SetError(true);
+		mDataStore.mDrivingInputDataStore.SetError(true);
 		mLogger.LogError("Throttle signal deviation more than 10%");
 		return;
 	}
 
 	mLogger.LogSpam("Throttle: " + std::to_string(throttle0) + ", " + std::to_string(throttle1));
 
-	mDataStore.mDriveDataStore.SetError(false);
-	mDataStore.mDriveDataStore.SetTorque(throttle0);
+	mDataStore.mDrivingInputDataStore.SetError(false);
+	mDataStore.mDrivingInputDataStore.SetTorque(throttle0);
 	mLogger.LogCustom("Throttle Final: " + std::to_string(throttle0));
 
 	return;

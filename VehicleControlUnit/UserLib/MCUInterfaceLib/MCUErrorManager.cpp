@@ -40,7 +40,7 @@ void MCUErrorManager::ResetErrorState()
 bool MCUErrorManager::IsCurrentlyImplausible() const
 {
 	mLogger.LogInfo("TODO: MCUErrorManager check if currently implausible ");
-	const auto implausible = mDataStore.mDriveDataStore.GetError(); // More conditions to be added?
+	const auto implausible = mDataStore.mDrivingInputDataStore.GetError(); // More conditions to be added?
 	return implausible;
 }
 

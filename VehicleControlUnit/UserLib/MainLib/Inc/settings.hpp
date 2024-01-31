@@ -34,5 +34,19 @@ struct SensorInterfaceParameters
 };
 const SensorInterfaceParameters sensorInterfaceParameters;
 
+struct MCUInterfaceParameters
+{
+	uint32_t CommandMessageHeaderId = 0x0C0;
+	uint32_t CommandMessageLength = 8;
+	uint32_t CommandMessageTransmitInterval = 2;
+	int16_t InverterEnableTorqueThreshold = 10;
+	int16_t RegenEnableTorqueThreshold = 10;
+	double WheelRadius = 0.2;
+	double MinimumTCSTriggeringLinearSpeed = 1.0;
+	double TCSTriggeringSlipRatioThreshold = 1;
+	double TCSHaltSlipRatioThreshold = 0.5;
+};
+const MCUInterfaceParameters mcuInterfaceParameters;
+
 } // namespace VehicleControlUnit::MainLib::Settings
 

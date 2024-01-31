@@ -24,15 +24,15 @@ enum class VSMState
     Unknown
 };
 
-class MCUAndBMSDataStore
+class MCUDataStore
 {
 public:
-	MCUAndBMSDataStore():
+	MCUDataStore():
 			mMotorSpeed{0},
 			mDCBusCurrent{0},
 			mDCBusVoltage{0},
 			mVSMState{VSMState::Unknown},
-            mMCUUpdateTs{0}
+            mUpdateTs{0}
 	{}
 
     void SetMotorSpeed(const int16_t motorSpeed)
@@ -55,9 +55,9 @@ public:
         mVSMState = vsmState;
     }
 
-    void SetMCUUpdateTs(const uint32_t ts)
+    void SetUpdateTs(const uint32_t ts)
     {
-        mMCUUpdateTs = ts;
+        mUpdateTs = ts;
     }
 
     // actual velocity (in RPM)
@@ -83,9 +83,9 @@ public:
         return mVSMState;
     }
 
-    uint16_t GetMCUUpdateTs() const
+    uint16_t GetUpdateTs() const
     {
-        return mMCUUpdateTs;
+        return mUpdateTs;
     }
 
 private:
@@ -93,7 +93,7 @@ private:
     int16_t mDCBusCurrent;
     int16_t mDCBusVoltage;
     VSMState mVSMState;
-    uint32_t mMCUUpdateTs;
+    uint32_t mUpdateTs;
 };
 
 };

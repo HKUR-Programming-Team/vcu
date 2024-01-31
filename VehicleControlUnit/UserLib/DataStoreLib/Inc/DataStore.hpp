@@ -1,7 +1,8 @@
 #pragma once
 
-#include <DataStoreLib/Inc/DriveDataStore.hpp>
-#include <DataStoreLib/Inc/MCUAndBMSDataStore.hpp>
+#include <DataStoreLib/Inc/DrivingInputDataStore.hpp>
+#include <DataStoreLib/Inc/MCUDataStore.hpp>
+#include <DataStoreLib/Inc/VehicleSensorDataStore.hpp>
 
 #ifndef MOCK_TEST
 	#include <stm32f1xx.h>
@@ -16,7 +17,7 @@ class DataStore
 public:
 
 	DataStore():
-		mDriveDataStore(),
+		mDrivingInputDataStore(),
 		mPersistedImplausibleStatus{false}
 	{}
 
@@ -30,8 +31,9 @@ public:
 		mPersistedImplausibleStatus = status;
 	}
 
-	DriveDataStore mDriveDataStore;
-	MCUAndBMSDataStore mMCUAndBMSDataStore;
+	DrivingInputDataStore mDrivingInputDataStore;
+	MCUDataStore mMCUDataStore;
+	VehicleSensorDataStore mVehicleSensorDataStore;
 
 private:
 	bool mPersistedImplausibleStatus;

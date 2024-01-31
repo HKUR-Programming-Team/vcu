@@ -11,6 +11,7 @@
 #include <DataStoreLib/Inc/DataStore.hpp>
 #include <SensorInterfaceLib/Inc/SensorInterface.hpp>
 #include <UtilsLib/Inc/ErrorState.hpp>
+#include <MainLib/Inc/settings.hpp>
 
 // Forward declaration to make circular dependency between CANManager and MCUInterface work
 namespace VehicleControlUnit::UtilsLib {
@@ -22,10 +23,17 @@ namespace VehicleControlUnit::MCUInterfaceLib {
 class MCUInterface
 {
 public:
-	MCUInterface(UtilsLib::Logger& logger, DataStoreLib::DataStore& dataStore, UtilsLib::CANManager& CANManager):
-			mLogger{logger},
-			mDataStore{dataStore},
-			mCANManager{CANManager}
+	MCUInterface(UtilsLib::Logger& logger,
+			DataStoreLib::DataStore& dataStore,
+			UtilsLib::CANManager& CANManager,
+			const MainLib::Settings::MCUInterfaceParameters& mcuinterfaceParameters):
+		mLogger{logger},
+		mDataStore{dataStore},
+		mCANManager{CANManager},
+		mParameters{mcuinterfaceParameters},
+		mTCSEnabled{false},
+		mTCSTriggered{false},
+		mTCSTriggeredStartTorque{MainLib::Settings::sensorInterfaceParameters.MaxTorque}
 	{}
 
 	void MessageReceiveHandler(const uint32_t messageID, const CAN_RxHeaderTypeDef& header, const uint8_t message[8]);
@@ -40,19 +48,19 @@ private:
 
 	uint8_t mTransmitBuffer[8];
 
-	const uint32_t CommandMessageHeaderId = 0x0C0;
-	const uint32_t CommandMessageLength = 8;
+	const MainLib::Settings::MCUInterfaceParameters mParameters;
 
-	const uint32_t CommandMessageTransmitInterval = 2;
-
-	const double InverterEnableTorqueThreshold = 0.005;
+	bool mTCSEnabled;
+	bool mTCSTriggered;
+	int16_t mTCSTriggeredStartTorque;
 
 	// Traction Control System
 
-
+	void SetCommandMessageTorque(int16_t torque);
+	int16_t GetCommandMessageTorque() const;
 	void SetCommandMessageInNonErrorState();
-	void SetCommandMessage(uint16_t torque, uint16_t angularVelocity, bool directionForward, bool inverter, bool inverterDischarge, bool speedMode, uint16_t torqueLimit);
-	bool TractionControlShouldBeTriggered();
+	void SetCommandMessage(int16_t torque, bool directionForward, bool inverter, bool inverterDischarge, bool speedMode, uint16_t torqueLimit);
+	void CheckTractionControlTriggered();
 	void ModifyCommandMessageByTractionControl();
 
 };
