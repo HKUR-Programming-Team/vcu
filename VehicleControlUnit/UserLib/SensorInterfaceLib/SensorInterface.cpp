@@ -18,13 +18,18 @@ void SensorInterface::ReadThrottleSignal()
 	mLogger.LogCustom("Read signals: " + std::to_string(reading0) + ", " + std::to_string(reading1));
 
 	// Check if the raw value deviates from max/min value of the throttle too much. FSUK2024 T11.9.2(c)
-	if (reading0 < mParameters.ThrottleMinPin0 - mParameters.ThrottleSignalOutOfRangeThreshold || reading0 > mParameters.ThrottleMaxPin0 + mParameters.ThrottleSignalOutOfRangeThreshold)
+	const bool pin0OutOfBottomRange = mParameters.ThrottleMinPin0 > mParameters.ThrottleSignalOutOfRangeThreshold && reading0 < mParameters.ThrottleMinPin0 - mParameters.ThrottleSignalOutOfRangeThreshold;
+	const bool pin0OutOfTopRange = reading0 > mParameters.ThrottleMaxPin0 + mParameters.ThrottleSignalOutOfRangeThreshold;
+	if (pin0OutOfBottomRange || pin0OutOfTopRange)
 	{
 		mDataStore.mDrivingInputDataStore.SetError(true);
 		mLogger.LogError("Throttle Pin 0 giving impossible value. min = " + std::to_string(mParameters.ThrottleMinPin0) + ", max = " + std::to_string(mParameters.ThrottleMaxPin0) + ", reading = " + std::to_string(reading0));
 		return;
 	}
-	if (reading1 < mParameters.ThrottleMinPin1 - mParameters.ThrottleSignalOutOfRangeThreshold || reading1 > mParameters.ThrottleMaxPin1 + mParameters.ThrottleSignalOutOfRangeThreshold)
+
+	const bool pin1OutOfBottomRange = mParameters.ThrottleMinPin1 > mParameters.ThrottleSignalOutOfRangeThreshold && reading1 < mParameters.ThrottleMinPin1 - mParameters.ThrottleSignalOutOfRangeThreshold;
+	const bool pin1OutOfTopRange = reading1 > mParameters.ThrottleMaxPin1 + mParameters.ThrottleSignalOutOfRangeThreshold;
+	if (pin1OutOfBottomRange || pin1OutOfTopRange)
 	{
 		mDataStore.mDrivingInputDataStore.SetError(true);
 		mLogger.LogError("Throttle Pin 1 giving impossible value. min = " + std::to_string(mParameters.ThrottleMinPin1) + ", max = " + std::to_string(mParameters.ThrottleMaxPin1) + ", reading = " + std::to_string(reading1));
