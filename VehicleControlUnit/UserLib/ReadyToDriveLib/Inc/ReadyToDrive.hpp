@@ -2,7 +2,7 @@
 
 #include <DataStoreLib/Inc/DataStore.hpp>
 #include <MainLib/Inc/settings.hpp>
-
+ 
 #ifndef MOCK_TEST
 	#include <stm32f1xx.h>
 	#include <UtilsLib/Inc/Logger.hpp>

@@ -4,12 +4,15 @@
 #include <MockLibraries.hpp>
 #include <doctest.h>
 #include <string>
+#include <optional>
 #include <SensorInterfaceLib/Inc/SensorInterface.hpp>
 #include <MCUInterfaceLib/Inc/MCUInterface.hpp>
+#include <ReadyToDriveLib/Inc/ReadyToDrive.hpp>
 #include <MainLib/Inc/settings.hpp>
 
 namespace sensorLib = VehicleControlUnit::SensorInterfaceLib;
 namespace mcuLib = VehicleControlUnit::MCUInterfaceLib;
+namespace r2dLib = VehicleControlUnit::ReadyToDriveLib;
 namespace utilsLib = VehicleControlUnit::UtilsLib;
 namespace dataLib = VehicleControlUnit::DataStoreLib;
 namespace settings = VehicleControlUnit::MainLib::Settings;
@@ -398,4 +401,121 @@ TEST_CASE("MCUInterface driving input")
             CHECK(canManager.buffer[7] == 0);
         }
     }
+}
+
+TEST_CASE("Ready to drive")
+{
+    dataLib::DataStore dataStore;
+    utilsLib::Logger logger;
+    settings::ReadyToDriveParameters r2dparams;
+
+    r2dparams.readyToDriveSoundDuration = 1000;
+	r2dparams.readyToDriveTriggeringBrakeThreshold = 100;
+	r2dparams.readyToDriveButtonPort = utilsLib::GPIOPort::A;
+	r2dparams.readyToDriveButtonPinNum = utilsLib::GPIOPinNum::Pin0;
+	r2dparams.readyToDriveSoundPort = utilsLib::GPIOPort::B;
+	r2dparams.readyToDriveSoundPinNum = utilsLib::GPIOPinNum::Pin1;
+
+    r2dLib::ReadyToDrive r2d(logger, dataStore, r2dparams);
+
+    SUBCASE("WHEN it is initially not in ready to drive mode and Gear is set to neutral in data store")
+    {
+        MockCurrentTick = 2000;
+        dataStore.mDrivingInputDataStore.SetBrake(0);
+        utilsLib::GPIOManager::A0 = false;
+        r2d.Check();
+        REQUIRE(dataStore.mDrivingInputDataStore.GetGear() == dataLib::Gear::NEUTRAL);
+
+        // Button returns to HIGH
+        utilsLib::GPIOManager::A0 = true;
+        r2d.Check();
+        REQUIRE(dataStore.mDrivingInputDataStore.GetGear() == dataLib::Gear::NEUTRAL);
+
+        SUBCASE("WHEN the brake is higher than triggering threshold AND a voltage fall from the button is detected THEN ready to drive mode is enabled AND gear is set in data store correctly AND ready to drive sound is enabled")
+        {
+            dataStore.mDrivingInputDataStore.SetBrake(200);
+            utilsLib::GPIOManager::A0 = false;
+            r2d.Check();
+            CHECK(dataStore.mDrivingInputDataStore.GetGear() == dataLib::Gear::FORWARD);
+            CHECK(utilsLib::GPIOManager::B1);
+        }
+
+        SUBCASE("WHEN the brake is lower than triggering threshold AND a voltage fall from the button is detected THEN ready to drive mode is not enabled and gear is set in data store correctly AND ready to drive sound is not enabled")
+        {
+            dataStore.mDrivingInputDataStore.SetBrake(90);
+            utilsLib::GPIOManager::A0 = false;
+            r2d.Check();
+            CHECK(dataStore.mDrivingInputDataStore.GetGear() == dataLib::Gear::NEUTRAL);
+            CHECK(!utilsLib::GPIOManager::B1);
+        }
+
+        SUBCASE("WHEN the brake is undefined THEN ready to drive mode is not enabled and gear is set in data store correctly AND ready to drive sound is not enabled")
+        {
+            dataStore.mDrivingInputDataStore.SetBrake(std::nullopt);
+            utilsLib::GPIOManager::A0 = false;
+            r2d.Check();
+            CHECK(dataStore.mDrivingInputDataStore.GetGear() == dataLib::Gear::NEUTRAL);
+            CHECK(!utilsLib::GPIOManager::B1);
+        }
+
+        SUBCASE("WHEN button has rise in voltage AND the brake is higher than triggering threshold THEN ready to drive mode is not enabled")
+        {
+            // TODO
+        }
+    }
+
+    SUBCASE("WHEN it is in ready to drive mode and Gear is set to FORWARD in data store")
+    {
+        MockCurrentTick = 2000;
+        dataStore.mDrivingInputDataStore.SetBrake(200);
+        utilsLib::GPIOManager::A0 = false;
+        r2d.Check();
+        REQUIRE(dataStore.mDrivingInputDataStore.GetGear() == dataLib::Gear::FORWARD);
+
+        // Button returns to HIGH
+        utilsLib::GPIOManager::A0 = true;
+        r2d.Check();
+        REQUIRE(dataStore.mDrivingInputDataStore.GetGear() == dataLib::Gear::FORWARD);
+
+        SUBCASE("WHEN the brake is higher than triggering threshold AND a voltage fall from the button is detected THEN ready to drive mode is enabled and gear is set in data store correctly AND ready to drive sound is enabled")
+        {
+            MockCurrentTick = 2500;
+            dataStore.mDrivingInputDataStore.SetBrake(200);
+            utilsLib::GPIOManager::A0 = false;
+            r2d.Check();
+            CHECK(dataStore.mDrivingInputDataStore.GetGear() == dataLib::Gear::FORWARD);
+            CHECK(utilsLib::GPIOManager::B1);
+        }
+
+        SUBCASE("WHEN the brake is lower than triggering threshold AND a voltage fall from the button is detected THEN ready to drive mode is not enabled and gear is set in data store correctly AND ready to drive sound is not enabled")
+        {
+            dataStore.mDrivingInputDataStore.SetBrake(90);
+            utilsLib::GPIOManager::A0 = false;
+            r2d.Check();
+            CHECK(dataStore.mDrivingInputDataStore.GetGear() == dataLib::Gear::NEUTRAL);
+            CHECK(!utilsLib::GPIOManager::B1);
+        }
+
+        SUBCASE("WHEN voltage has not fall AND ready to drive sound duration has not yet passed THEN ready to drive sound is enabled")
+        {
+            MockCurrentTick = 2500;
+            utilsLib::GPIOManager::A0 = true;
+            r2d.Check();
+            CHECK(utilsLib::GPIOManager::B1);
+        }
+
+        SUBCASE("WHEN voltage has not fall AND ready to drive sound duration has passed THEN ready to drive sound is disabled")
+        {
+            MockCurrentTick = 4000;
+            utilsLib::GPIOManager::A0 = true;
+            r2d.Check();
+            CHECK(!utilsLib::GPIOManager::B1);
+        }
+
+        SUBCASE("WHEN button has rise in voltage THEN ready to drive mode is not disabled")
+        {
+            // TODO
+        }
+    }
+
 }

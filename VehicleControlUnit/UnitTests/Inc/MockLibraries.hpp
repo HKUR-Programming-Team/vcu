@@ -91,6 +91,86 @@ public:
     }
 };
 
+enum class GPIOPort
+{
+	A,
+	B,
+	C,
+	D,
+	E
+};
+
+enum class GPIOPinNum
+{
+	Pin0,
+	Pin1,
+	Pin2,
+	Pin3,
+	Pin4,
+	Pin5,
+	Pin6,
+	Pin7,
+	Pin8,
+	Pin9,
+	Pin10,
+	Pin11,
+	Pin12,
+	Pin13,
+	Pin14,
+	Pin15
+};
+
+class GPIOManager
+{
+public:
+
+	static const bool digitalRead(const GPIOPort& alphabet, const GPIOPinNum& pinNumber)
+    {
+        if (alphabet == GPIOPort::A && pinNumber == GPIOPinNum::Pin0)
+        {
+            return A0;
+        }
+        if (alphabet == GPIOPort::A && pinNumber == GPIOPinNum::Pin1)
+        {
+            return A1;
+        }
+        if (alphabet == GPIOPort::B && pinNumber == GPIOPinNum::Pin0)
+        {
+            return B0;
+        }
+        if (alphabet == GPIOPort::B && pinNumber == GPIOPinNum::Pin1)
+        {
+            return B1;
+        }
+
+        return false;
+    }
+	static void digitalWrite(const GPIOPort& alphabet, const GPIOPinNum& pinNumber, const bool value)
+    {
+        if (alphabet == GPIOPort::A && pinNumber == GPIOPinNum::Pin0)
+        {
+            A0 = value;
+        }
+        if (alphabet == GPIOPort::A && pinNumber == GPIOPinNum::Pin1)
+        {
+            A1 = value;
+        }
+        if (alphabet == GPIOPort::B && pinNumber == GPIOPinNum::Pin0)
+        {
+            B0 = value;
+        }
+        if (alphabet == GPIOPort::B && pinNumber == GPIOPinNum::Pin1)
+        {
+            B1 = value;
+        }
+    }
+
+    static bool A0;
+    static bool A1;
+    static bool B0;
+    static bool B1;
+};
+
 }
 
 inline extern uint32_t MockCurrentTick = 0;

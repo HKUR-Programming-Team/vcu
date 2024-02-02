@@ -11,9 +11,11 @@ file(GLOB SOURCES
     ../UserLib/MCUInterfaceLib/*.cpp
     ../UserLib/DataStoreLib/*.cpp
     ../UserLib/UtlisLib/*.cpp
+    ../UserLib/ReadyToDriveLib/*.cpp
+    *.cpp
 )
 
-add_executable(unit-tests test.cpp ${SOURCES})
+add_executable(unit-tests ${SOURCES})
 
 target_compile_definitions(unit-tests PUBLIC MOCK_TEST=1)
 target_include_directories(unit-tests PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/doctest")

@@ -1,6 +1,10 @@
 #pragma once
 
-#include <UtilsLib/Inc/GPIOManager.hpp>
+#ifndef MOCK_TEST
+	#include <UtilsLib/Inc/GPIOManager.hpp>
+#else
+	#include <MockLibraries.hpp>
+#endif
 
 namespace VehicleControlUnit::MainLib::Settings {
 
