@@ -26,6 +26,7 @@ void MCUErrorManager::CheckImplausibility()
 
 	if (HAL_GetTick() - mImplausibleStartTs > mImplausibleThresholdInterval)
 	{
+		mLogger.LogError("There is Persisted Implausibility!");
 		mDataStore.SetPersistedImplausibleStatus(true);
 		return;
 	}

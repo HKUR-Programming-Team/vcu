@@ -27,26 +27,29 @@ void Main::Loop()
 		mMCUInterface.SendCommandMessageInErrorState();
 		return;
 	}
-	bool button = UtilsLib::GPIOManager::digitalRead(UtilsLib::GPIOPort::C, UtilsLib::GPIOPinNum::Pin7);
-	UtilsLib::GPIOManager::digitalWrite(UtilsLib::GPIOPort::A, UtilsLib::GPIOPinNum::Pin9,button);
+
+	// TEST CODE STARTS
+	//	bool button = UtilsLib::GPIOManager::digitalRead(UtilsLib::GPIOPort::C, UtilsLib::GPIOPinNum::Pin7);
+	//	UtilsLib::GPIOManager::digitalWrite(UtilsLib::GPIOPort::A, UtilsLib::GPIOPinNum::Pin9,button);
+	//	uint8_t test[8] = {1,2,3,4,5,6,7,8};
+	//	mCANManager.SetTransmitHeader(0x0C0, 8, false);
+	//	mCANManager.SendMessage(test);
+	// TEST CODE ENDS
 
 	mLogger.LogSpam("--VCU Loop Starts--");
-//	uint8_t test[8] = {1,2,3,4,5,6,7,8};
-//	mCANManager.SetTransmitHeader(0x0C0, 8, false);
-//	mCANManager.SendMessage(test);
-//	mCANManager.CheckReceiveFIFO();
+	mCANManager.CheckReceiveFIFO();
+
+	// Ready to Drive
+	mReadyToDriveManager.Check();
+	mDataStore.mDrivingInputDataStore.SetGear(DataStoreLib::Gear::FORWARD);
 
 	// Sensor
 	mSensorInterface.ReadADC(); // Read throttle and other analog signals and store it to dataStore
 
 	// MCU
-//	mMCUErrorManager.CheckImplausibility(); // update implausible status
-//	mLogger.LogSpam("Persisted: " + std::to_string(mDataStore.GetPersistedImplausibleStatus()));
+	mMCUErrorManager.CheckImplausibility(); // update implausible status
 
 	mMCUInterface.SendCommandMessage(); // send packet to motor controller
-
-	// Ready to Drive
-	mReadyToDriveManager.CheckReadyToDrive();
 }
 
 }

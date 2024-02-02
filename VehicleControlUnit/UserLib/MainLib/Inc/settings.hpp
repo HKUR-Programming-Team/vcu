@@ -1,12 +1,14 @@
 #pragma once
 
+#include <UtilsLib/Inc/GPIOManager.hpp>
+
 namespace VehicleControlUnit::MainLib::Settings {
 
 // Logger
 const bool spamLoggingEnabled = false;
-const bool infoLoggingEnabled = false;
-const bool errorLoggingEnabled = false;
-const bool customLoggingEnabled = true;
+const bool infoLoggingEnabled = true;
+const bool errorLoggingEnabled = true;
+const bool customLoggingEnabled = false;
 
 // MCU
 const uint32_t implausibleThresholdInterval = 100;
@@ -17,7 +19,16 @@ const uint8_t throttleSignalADCIndex1 = 0;
 const uint8_t throttleSignalADCIndex2 = 1;
 
 // Ready to drive sound
-const uint32_t readyToDriveSoundDuration = 1500;
+struct ReadyToDriveParameters
+{
+	uint32_t readyToDriveSoundDuration = 1500;
+	uint16_t readyToDriveTriggeringBrakeThreshold = 20;
+	UtilsLib::GPIOPort readyToDriveButtonPort = UtilsLib::GPIOPort::A;
+	UtilsLib::GPIOPinNum readyToDriveButtonPinNum = UtilsLib::GPIOPinNum::Pin0;
+	UtilsLib::GPIOPort readyToDriveSoundPort = UtilsLib::GPIOPort::C;
+	UtilsLib::GPIOPinNum readyToDriveSoundPinNum = UtilsLib::GPIOPinNum::Pin1;
+};
+const ReadyToDriveParameters readyToDriveParameters;
 
 // Sensor Interface
 struct SensorInterfaceParameters

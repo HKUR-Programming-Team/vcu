@@ -32,7 +32,7 @@ public:
 		mBMSInterface(mLogger, mDataStore),
 		mMCUInterface(mLogger, mDataStore, mCANManager, Settings::mcuInterfaceParameters),
 		mMCUErrorManager(mLogger, mDataStore, Settings::implausibleThresholdInterval),
-		mReadyToDriveManager(mLogger, mDataStore, Settings::readyToDriveSoundDuration),
+		mReadyToDriveManager(mLogger, mDataStore, Settings::readyToDriveParameters),
 		mSetupFailed{false}
 	{}
 
