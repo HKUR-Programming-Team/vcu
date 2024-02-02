@@ -1,5 +1,7 @@
 #pragma once
 
+#include <optional>
+
 #ifndef MOCK_TEST
 	#include <stm32f1xx.h>
 #else
@@ -19,7 +21,8 @@ public:
 	DrivingInputDataStore():
 			mThrottleError{false},
 			mTorque{0},
-			mGear{Gear::NEUTRAL}
+			mGear{Gear::NEUTRAL},
+			mBrake{std::nullopt}
 	{}
 
 	bool GetThrottleError() const
@@ -70,11 +73,23 @@ public:
 		mGear = gear;
 	}
 
+	std::optional<uint16_t> GetBrake() const 
+	{
+		return mBrake;
+	}
+
+	void SetBrake(const std::optional<uint16_t> brake)
+	{
+		mBrake = brake;
+	}
+	
+
 private:
 	bool mThrottleError;
 	int16_t mTorque;
 	int16_t mRegen;
 	Gear mGear;
+	std::optional<uint16_t> mBrake;
 };
 
 };

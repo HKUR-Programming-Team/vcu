@@ -6,11 +6,11 @@
 #include <UtilsLib/Inc/Logger.hpp>
 #include <UtilsLib/Inc/GPIOManager.hpp>
 #include <UtilsLib/Inc/CANManager.hpp>
-#include <MainLib/Inc/settings.hpp>
 #include <MCUInterfaceLib/Inc/MCUErrorManager.hpp>
 #include <MCUInterfaceLib/Inc/MCUInterface.hpp>
 #include <ReadyToDriveLib/Inc/ReadyToDrive.hpp>
 #include <SensorInterfaceLib/Inc/SensorInterface.hpp>
+#include <MainLib/Inc/settings.hpp>
 
 #include <stm32f1xx.h>
 

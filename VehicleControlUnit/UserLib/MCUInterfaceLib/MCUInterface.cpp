@@ -97,7 +97,7 @@ void MCUInterface::SetCommandMessageInNonErrorState()
 	int16_t torqueCommand = torqueFromPedals;
 	if (torqueCommand <= mParameters.RegenEnableTorqueThreshold)
 	{
-		torqueCommand = regen;
+		torqueCommand = -regen;
 	}
 
 	const bool torqueEnablesInverter = torqueCommand >= mParameters.InverterEnableTorqueThreshold || torqueCommand <= -mParameters.InverterEnableTorqueThreshold;

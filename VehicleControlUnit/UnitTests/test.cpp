@@ -259,7 +259,7 @@ TEST_CASE("MCUInterface driving input")
 
         SUBCASE("WHEN torque is above RegenEnableTorqueThreshold and regen is positive and gear forward THEN correct command message is sent via CAN Manager")
         {
-            dataStore.mDrivingInputDataStore.SetTorque(300);
+            dataStore.mDrivingInputDataStore.SetTorque(10);
             dataStore.mDrivingInputDataStore.SetRegen(200);
             dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
 
@@ -270,8 +270,8 @@ TEST_CASE("MCUInterface driving input")
             CHECK(canManager.mMessageLength == 8);
 
             // Check the payload
-            CHECK(canManager.buffer[0] == 44);
-            CHECK(canManager.buffer[1] == 1);
+            CHECK(canManager.buffer[0] == 10);
+            CHECK(canManager.buffer[1] == 0);
             CHECK(canManager.buffer[2] == 0);
             CHECK(canManager.buffer[3] == 0);
             CHECK(canManager.buffer[4] == 0b00000001);
@@ -280,9 +280,99 @@ TEST_CASE("MCUInterface driving input")
             CHECK(canManager.buffer[7] == 0);
         }
 
-        SUBCASE("WHEN torque is below the and regen is positive THEN correct command message is sent via CAN Manager")
+        SUBCASE("WHEN torque is below RegenEnableTorqueThreshold the and regen is positive THEN correct command message is sent via CAN Manager")
         {
-            dataStore.mDrivingInputDataStore.SetTorque(0);
+            dataStore.mDrivingInputDataStore.SetTorque(3);
+            dataStore.mDrivingInputDataStore.SetRegen(320);
+            dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+
+            mcuInterface.SendCommandMessage();
+
+            // Check the header
+            CHECK(canManager.mMessageId == 0x0C0);
+            CHECK(canManager.mMessageLength == 8);
+
+            // Check the payload
+            CHECK(canManager.buffer[0] == 0b11000000);
+            CHECK(canManager.buffer[1] == 0b11111110);
+            CHECK(canManager.buffer[2] == 0);
+            CHECK(canManager.buffer[3] == 0);
+            CHECK(canManager.buffer[4] == 0b00000001);
+            CHECK(canManager.buffer[5] == 0b00000001);
+            CHECK(canManager.buffer[6] == 0);
+            CHECK(canManager.buffer[7] == 0);
+        }
+
+        SUBCASE("WHEN torque is between the InverterEnableTorqueThreshold THEN correct command message is sent via CAN Manager")
+        {
+            SUBCASE("Forward Torque > Regen")
+            {
+                dataStore.mDrivingInputDataStore.SetTorque(6);
+                dataStore.mDrivingInputDataStore.SetRegen(3);
+                dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+
+                mcuInterface.SendCommandMessage();
+
+                // Check the header
+                CHECK(canManager.mMessageId == 0x0C0);
+                CHECK(canManager.mMessageLength == 8);
+
+                // Check the payload
+                CHECK(canManager.buffer[0] == 0);
+                CHECK(canManager.buffer[1] == 0);
+                CHECK(canManager.buffer[2] == 0);
+                CHECK(canManager.buffer[3] == 0);
+                CHECK(canManager.buffer[4] == 0b00000001);
+                CHECK(canManager.buffer[5] == 0b00000010);
+                CHECK(canManager.buffer[6] == 0);
+                CHECK(canManager.buffer[7] == 0);
+            }
+
+            SUBCASE("Forward Torque < Regen")
+            {
+                dataStore.mDrivingInputDataStore.SetTorque(3);
+                dataStore.mDrivingInputDataStore.SetRegen(6);
+                dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+
+                mcuInterface.SendCommandMessage();
+
+                // Check the header
+                CHECK(canManager.mMessageId == 0x0C0);
+                CHECK(canManager.mMessageLength == 8);
+
+                // Check the payload
+                CHECK(canManager.buffer[0] == 0);
+                CHECK(canManager.buffer[1] == 0);
+                CHECK(canManager.buffer[2] == 0);
+                CHECK(canManager.buffer[3] == 0);
+                CHECK(canManager.buffer[4] == 0b00000001);
+                CHECK(canManager.buffer[5] == 0b00000010);
+                CHECK(canManager.buffer[6] == 0);
+                CHECK(canManager.buffer[7] == 0);
+            }
+
+            SUBCASE("Forward Torque == Regen == 0")
+            {
+                dataStore.mDrivingInputDataStore.SetTorque(0);
+                dataStore.mDrivingInputDataStore.SetRegen(0);
+                dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+
+                mcuInterface.SendCommandMessage();
+
+                // Check the header
+                CHECK(canManager.mMessageId == 0x0C0);
+                CHECK(canManager.mMessageLength == 8);
+
+                // Check the payload
+                CHECK(canManager.buffer[0] == 0);
+                CHECK(canManager.buffer[1] == 0);
+                CHECK(canManager.buffer[2] == 0);
+                CHECK(canManager.buffer[3] == 0);
+                CHECK(canManager.buffer[4] == 0b00000001);
+                CHECK(canManager.buffer[5] == 0b00000010);
+                CHECK(canManager.buffer[6] == 0);
+                CHECK(canManager.buffer[7] == 0);
+            }
         }
 
         SUBCASE("WHEN torque is positive and gear neutral THEN correct command message is sent via CAN Manager")
