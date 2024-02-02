@@ -47,7 +47,7 @@ TEST_CASE("SensorInterface ReadThrottleSignal Test Cases") {
             REQUIRE(checkADC2 == 1500);
 
             sensorInterface.ReadADC();
-            CHECK(dataStore.mDrivingInputDataStore.GetError());
+            CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
             CHECK(dataStore.mDrivingInputDataStore.GetTorque() == 0);
         }
 
@@ -57,7 +57,7 @@ TEST_CASE("SensorInterface ReadThrottleSignal Test Cases") {
             adcManager.buffer[ThrottleSignalADCIndex1] = 1475;
 
             sensorInterface.ReadADC();
-            CHECK(dataStore.mDrivingInputDataStore.GetError());
+            CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
             CHECK(dataStore.mDrivingInputDataStore.GetTorque() == 0);
         }
 
@@ -67,7 +67,7 @@ TEST_CASE("SensorInterface ReadThrottleSignal Test Cases") {
             adcManager.buffer[ThrottleSignalADCIndex1] = 2000;
 
             sensorInterface.ReadADC();
-            CHECK(dataStore.mDrivingInputDataStore.GetError());
+            CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
             CHECK(dataStore.mDrivingInputDataStore.GetTorque() == 0);
         }
 
@@ -77,7 +77,7 @@ TEST_CASE("SensorInterface ReadThrottleSignal Test Cases") {
             adcManager.buffer[ThrottleSignalADCIndex1] = 2025;
 
             sensorInterface.ReadADC();
-            CHECK(dataStore.mDrivingInputDataStore.GetError());
+            CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
             CHECK(dataStore.mDrivingInputDataStore.GetTorque() == 0);
         }
 
@@ -87,7 +87,7 @@ TEST_CASE("SensorInterface ReadThrottleSignal Test Cases") {
             adcManager.buffer[ThrottleSignalADCIndex1] = 1475;
 
             sensorInterface.ReadADC();
-            CHECK(dataStore.mDrivingInputDataStore.GetError());
+            CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
             CHECK(dataStore.mDrivingInputDataStore.GetTorque() == 0);
         }
     }
@@ -100,7 +100,7 @@ TEST_CASE("SensorInterface ReadThrottleSignal Test Cases") {
             adcManager.buffer[ThrottleSignalADCIndex1] = 1485;
 
             sensorInterface.ReadADC();
-            CHECK(!dataStore.mDrivingInputDataStore.GetError());
+            CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
             CHECK(dataStore.mDrivingInputDataStore.GetTorque() == 0);
         }
 
@@ -110,7 +110,7 @@ TEST_CASE("SensorInterface ReadThrottleSignal Test Cases") {
             adcManager.buffer[ThrottleSignalADCIndex1] = 2015;
 
             sensorInterface.ReadADC();
-            CHECK(!dataStore.mDrivingInputDataStore.GetError());
+            CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
             CHECK(dataStore.mDrivingInputDataStore.GetTorque() == sensorInterfaceParams.MaxTorque);
         }
     }
@@ -133,7 +133,7 @@ TEST_CASE("SensorInterface ReadThrottleSignal Test Cases") {
             adcManager.buffer[ThrottleSignalADCIndex1] = 1475;
 
             sensorInterfaceSpecial.ReadADC();
-            CHECK(dataStore.mDrivingInputDataStore.GetError());
+            CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
             CHECK(dataStore.mDrivingInputDataStore.GetTorque() == 0);
         }
     }
@@ -146,7 +146,7 @@ TEST_CASE("SensorInterface ReadThrottleSignal Test Cases") {
             adcManager.buffer[ThrottleSignalADCIndex1] = 1750;
 
             sensorInterface.ReadADC();
-            CHECK(!dataStore.mDrivingInputDataStore.GetError());
+            CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
             CHECK(dataStore.mDrivingInputDataStore.GetTorque() == sensorInterfaceParams.MaxTorque/2);
         }
 
@@ -156,7 +156,7 @@ TEST_CASE("SensorInterface ReadThrottleSignal Test Cases") {
             adcManager.buffer[ThrottleSignalADCIndex1] = 1625;
 
             sensorInterface.ReadADC();
-            CHECK(!dataStore.mDrivingInputDataStore.GetError());
+            CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
             CHECK(dataStore.mDrivingInputDataStore.GetTorque() == 125);
         }
         
@@ -166,7 +166,7 @@ TEST_CASE("SensorInterface ReadThrottleSignal Test Cases") {
             adcManager.buffer[ThrottleSignalADCIndex1] = 1875;
 
             sensorInterface.ReadADC();
-            CHECK(!dataStore.mDrivingInputDataStore.GetError());
+            CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
             CHECK(dataStore.mDrivingInputDataStore.GetTorque() == 375);
         }
     }
@@ -177,7 +177,7 @@ TEST_CASE("SensorInterface ReadThrottleSignal Test Cases") {
         adcManager.buffer[ThrottleSignalADCIndex1] = 1760; // Torque = 260
 
         sensorInterface.ReadADC();
-        CHECK(!dataStore.mDrivingInputDataStore.GetError());
+        CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
         CHECK(dataStore.mDrivingInputDataStore.GetTorque() == 240);
     }
 
@@ -187,7 +187,7 @@ TEST_CASE("SensorInterface ReadThrottleSignal Test Cases") {
         adcManager.buffer[ThrottleSignalADCIndex1] = 1755; // Torque = 255
 
         sensorInterface.ReadADC();
-        CHECK(dataStore.mDrivingInputDataStore.GetError());
+        CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
         CHECK(dataStore.mDrivingInputDataStore.GetTorque() == 0); 
     }
 }
@@ -198,11 +198,114 @@ TEST_CASE("MCUInterface driving input")
     dataLib::DataStore dataStore;
     utilsLib::Logger logger;
     settings::MCUInterfaceParameters mcuInterfaceParams;
+    mcuInterfaceParams.InverterEnableTorqueThreshold = 10;
+    mcuInterfaceParams.RegenEnableTorqueThreshold = 5;
 
     mcuLib::MCUInterface mcuInterface(logger, dataStore, canManager, mcuInterfaceParams);
 
     SUBCASE("WHEN persisted implausibility is set in data store THEN error command message is sent via CAN Manager")
     {
+        dataStore.SetPersistedImplausibleStatus(true);
+        mcuInterface.SetTCSEnabled(false);
 
+        dataStore.mDrivingInputDataStore.SetTorque(300);
+        dataStore.mDrivingInputDataStore.SetRegen(0);
+        dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+
+        mcuInterface.SendCommandMessage();
+
+        // Check the header
+        CHECK(canManager.mMessageId == 0x0C0);
+        CHECK(canManager.mMessageLength == 8);
+
+        // Check the payload
+        CHECK(canManager.buffer[0] == 0);
+        CHECK(canManager.buffer[1] == 0);
+        CHECK(canManager.buffer[2] == 0);
+        CHECK(canManager.buffer[3] == 0);
+        CHECK(canManager.buffer[4] == 0b00000001);
+        CHECK(canManager.buffer[5] == 0b00000010);
+        CHECK(canManager.buffer[6] == 0);
+        CHECK(canManager.buffer[7] == 0);
+    }
+
+    SUBCASE("WHEN there is no persisted implausibility and traction control is disabled")
+    {
+        dataStore.SetPersistedImplausibleStatus(false);
+        mcuInterface.SetTCSEnabled(false);
+        
+        SUBCASE("WHEN torque is positive and gear forward THEN correct command message is sent via CAN Manager")
+        {
+            dataStore.mDrivingInputDataStore.SetTorque(300);
+            dataStore.mDrivingInputDataStore.SetRegen(0);
+            dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+
+            mcuInterface.SendCommandMessage();
+
+            // Check the header
+            CHECK(canManager.mMessageId == 0x0C0);
+            CHECK(canManager.mMessageLength == 8);
+
+            // Check the payload
+            CHECK(canManager.buffer[0] == 44);
+            CHECK(canManager.buffer[1] == 1);
+            CHECK(canManager.buffer[2] == 0);
+            CHECK(canManager.buffer[3] == 0);
+            CHECK(canManager.buffer[4] == 0b00000001);
+            CHECK(canManager.buffer[5] == 0b00000001);
+            CHECK(canManager.buffer[6] == 0);
+            CHECK(canManager.buffer[7] == 0);
+        }
+
+        SUBCASE("WHEN torque is above RegenEnableTorqueThreshold and regen is positive and gear forward THEN correct command message is sent via CAN Manager")
+        {
+            dataStore.mDrivingInputDataStore.SetTorque(300);
+            dataStore.mDrivingInputDataStore.SetRegen(200);
+            dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+
+            mcuInterface.SendCommandMessage();
+
+            // Check the header
+            CHECK(canManager.mMessageId == 0x0C0);
+            CHECK(canManager.mMessageLength == 8);
+
+            // Check the payload
+            CHECK(canManager.buffer[0] == 44);
+            CHECK(canManager.buffer[1] == 1);
+            CHECK(canManager.buffer[2] == 0);
+            CHECK(canManager.buffer[3] == 0);
+            CHECK(canManager.buffer[4] == 0b00000001);
+            CHECK(canManager.buffer[5] == 0b00000001);
+            CHECK(canManager.buffer[6] == 0);
+            CHECK(canManager.buffer[7] == 0);
+        }
+
+        SUBCASE("WHEN torque is below the and regen is positive THEN correct command message is sent via CAN Manager")
+        {
+            dataStore.mDrivingInputDataStore.SetTorque(0);
+        }
+
+        SUBCASE("WHEN torque is positive and gear neutral THEN correct command message is sent via CAN Manager")
+        {
+            dataStore.mDrivingInputDataStore.SetTorque(300);
+            dataStore.mDrivingInputDataStore.SetRegen(0);
+            dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::NEUTRAL);
+
+            mcuInterface.SendCommandMessage();
+
+            // Check the header
+            CHECK(canManager.mMessageId == 0x0C0);
+            CHECK(canManager.mMessageLength == 8);
+
+            // Check the payload
+            CHECK(canManager.buffer[0] == 0);
+            CHECK(canManager.buffer[1] == 0);
+            CHECK(canManager.buffer[2] == 0);
+            CHECK(canManager.buffer[3] == 0);
+            CHECK(canManager.buffer[4] == 0b00000001);
+            CHECK(canManager.buffer[5] == 0b00000010);
+            CHECK(canManager.buffer[6] == 0);
+            CHECK(canManager.buffer[7] == 0);
+        }
     }
 }

@@ -53,7 +53,7 @@ void MCUInterface::MessageReceiveHandler(const uint32_t messageID, const CAN_RxH
 void MCUInterface::SendCommandMessageInErrorState()
 {
 	mCANManager.SetTransmitHeader(mParameters.CommandMessageHeaderId, mParameters.CommandMessageLength);
-	SetCommandMessage(0, true, false, true, false, 0);
+	SetCommandMessage(0, false, true, false, 0);
 	mCANManager.SendMessage(mTransmitBuffer);
 }
 
@@ -100,15 +100,15 @@ void MCUInterface::SetCommandMessageInNonErrorState()
 		torqueCommand = regen;
 	}
 
-	const bool directionForward = mDataStore.mDrivingInputDataStore.GetGear() == DataStoreLib::Gear::FORWARD;
+	const bool torqueEnablesInverter = torqueCommand >= mParameters.InverterEnableTorqueThreshold || torqueCommand <= -mParameters.InverterEnableTorqueThreshold;
+	const bool inverter = mDataStore.mDrivingInputDataStore.GetGear() == DataStoreLib::Gear::FORWARD && torqueEnablesInverter;
 
-	const bool inverter = torqueCommand >= mParameters.InverterEnableTorqueThreshold || torqueCommand <= -mParameters.InverterEnableTorqueThreshold;
 	const bool inverterDischarge = !inverter;
 
 	const auto speedMode = false;
 	const uint16_t torqueLimit = 0;
 
-	SetCommandMessage(torqueCommand, directionForward, inverter, inverterDischarge, speedMode, torqueLimit);
+	SetCommandMessage(torqueCommand, inverter, inverterDischarge, speedMode, torqueLimit);
 
 	mLogger.LogCustom("Before TCS:" + std::to_string(mTransmitBuffer[0]) + ", " + std::to_string(mTransmitBuffer[1])
 				+ ", " + std::to_string(mTransmitBuffer[2]) + ", " + std::to_string(mTransmitBuffer[3])
@@ -117,16 +117,22 @@ void MCUInterface::SetCommandMessageInNonErrorState()
 }
 
 void MCUInterface::SetCommandMessage(int16_t torque,
-		bool directionForward,
 		bool inverter,
 		bool inverterDischarge,
 		bool speedMode,
 		uint16_t torqueLimit)
 {
-	SetCommandMessageTorque(torque);
+	if (inverter)
+	{
+		SetCommandMessageTorque(torque);
+	}
+	else
+	{
+		SetCommandMessageTorque(0);
+	}
 	mTransmitBuffer[2] = 0;
 	mTransmitBuffer[3] = 0;
-	mTransmitBuffer[4] = (directionForward ? 1 : 0);
+	mTransmitBuffer[4] = 1; // FSUK2024: car going backward is illegal
 	mTransmitBuffer[5] = (inverter ? 1 : 0) + 2 * (inverterDischarge ? 1 : 0) + 4 * (speedMode ? 1 : 0);
 	mTransmitBuffer[6] = torqueLimit % 256;
 	mTransmitBuffer[7] = torqueLimit / 256;
@@ -192,6 +198,17 @@ void MCUInterface::ModifyCommandMessageByTractionControl()
 	const int16_t minTorque = mTCSTriggeredStartTorque < torqueFromPedalSensor ? mTCSTriggeredStartTorque : torqueFromPedalSensor;
 	SetCommandMessageTorque(minTorque);
 	mLogger.LogCustom("After TCS:" + std::to_string(mTransmitBuffer[0]) + ", " + std::to_string(mTransmitBuffer[1]) + ", torque: " );
+}
+
+bool MCUInterface::GetTCSEnabled() const
+{
+	return mTCSEnabled;
+}
+
+
+void MCUInterface::SetTCSEnabled(const bool tcsEnabled)
+{
+	mTCSEnabled = tcsEnabled;
 }
 
 }

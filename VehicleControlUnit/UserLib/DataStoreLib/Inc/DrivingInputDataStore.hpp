@@ -17,25 +17,25 @@ class DrivingInputDataStore
 {
 public:
 	DrivingInputDataStore():
-			mError{false},
+			mThrottleError{false},
 			mTorque{0},
 			mGear{Gear::NEUTRAL}
 	{}
 
-	bool GetError() const
+	bool GetThrottleError() const
 	{
-		return mError;
+		return mThrottleError;
 	}
 
-	void SetError(const bool error)
+	void SetThrottleError(const bool error)
 	{
-		mError = error;
+		mThrottleError = error;
 	}
 
 	// Make sure to check that the throttle has no error before using the throttle value
 	int16_t GetTorque() const
 	{
-		if (mError)
+		if (mThrottleError)
 		{
 			return 0;
 		}
@@ -71,7 +71,7 @@ public:
 	}
 
 private:
-	bool mError;
+	bool mThrottleError;
 	int16_t mTorque;
 	int16_t mRegen;
 	Gear mGear;

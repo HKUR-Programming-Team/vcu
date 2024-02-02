@@ -41,6 +41,9 @@ public:
 	void SendCommandMessageInErrorState();
 	UtilsLib::ErrorState SendCommandMessage();
 
+	bool GetTCSEnabled() const;
+	void SetTCSEnabled(const bool tcsEnabled);
+
 private:
 	UtilsLib::Logger& mLogger;
 	DataStoreLib::DataStore& mDataStore;
@@ -59,7 +62,7 @@ private:
 	void SetCommandMessageTorque(int16_t torque);
 	int16_t GetCommandMessageTorque() const;
 	void SetCommandMessageInNonErrorState();
-	void SetCommandMessage(int16_t torque, bool directionForward, bool inverter, bool inverterDischarge, bool speedMode, uint16_t torqueLimit);
+	void SetCommandMessage(int16_t torque, bool inverter, bool inverterDischarge, bool speedMode, uint16_t torqueLimit);
 	void CheckTractionControlTriggered();
 	void ModifyCommandMessageByTractionControl();
 

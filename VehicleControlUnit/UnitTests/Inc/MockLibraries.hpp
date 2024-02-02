@@ -22,13 +22,17 @@ public:
 			const bool isRemoteTransmissionRequest = false,
 			const bool transmitGlobalTime = false)
     {
-        volatile int x = 0;
+        mMessageId = messageIdentifier;
+        mMessageLength = messageLength;
         return;
     }
 
 	ErrorState SendMessage(const uint8_t message[8])
     {
-        volatile int x = 0;
+        for (int i = 0; i < 8; ++i)
+        {
+            buffer[i] = message[i];
+        }
         return ErrorState::INIT_SUCCESS;
     }
 
