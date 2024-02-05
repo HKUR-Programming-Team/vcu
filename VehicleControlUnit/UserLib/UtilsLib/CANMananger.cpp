@@ -72,53 +72,48 @@ void CANManager::SetTransmitHeader(
 
 UtilsLib::ErrorState CANManager::SendMessage(const uint8_t message[8])
 {
-	mLogger.LogInfo("TODO: Send CAN message");
-
-	// TODO :: use HAL_CAN_GetTxMailboxesFreeLevel() to check whether a mailbox is free
-	// What to do if none is free? Implausible? abortPendingMessage?
-
-	// Store the data to the buffer
-	for (uint32_t i = 0; i < mTransmitHeader.DLC; i++)
+	const auto numberOfFreeMailBoxes = HAL_CAN_GetTxMailboxesFreeLevel(&mCanHandler);
+	if (numberOfFreeMailBoxes == 0)
 	{
-		mTransmitBuffer[i] = message[i];
+		mLogger.LogSpam("CANManager: no free transmit mailbox");
+		return ErrorState::CAN_MSG_TRANSMIT_MAILBOX_FULL;
 	}
 
-	// Then request transmission of a message using HAL_CAN_AddTxMessage()
-	const auto returnStatus = HAL_CAN_AddTxMessage(&mCanHandler, &mTransmitHeader, mTransmitBuffer, &mLastMailboxUsed);
+	const auto returnStatus = HAL_CAN_AddTxMessage(&mCanHandler, &mTransmitHeader, message, &mLastMailboxUsed);
 
-	if (returnStatus == HAL_OK)
+	if (returnStatus != HAL_OK)
 	{
-		mLogger.LogInfo("TODO: Send CAN message HAL OK");
-		return UtilsLib::ErrorState::CAN_MSG_TRANSMIT_SUCCESS;
-	}
-	else if (returnStatus == HAL_ERROR)
-	{
-		mLogger.LogInfo("TODO: Send CAN message HAL ERROR");
-		return UtilsLib::ErrorState::CAN_MSG_TRANSMIT_FAIL;
+		mLogger.LogSpam("CANManager: no free transmit mailbox");
+		return ErrorState::CAN_MSG_TRANSMIT_MAILBOX_FULL;
 	}
 
-	// TODO :: Do appropriate action according to the return state: implausible? send again?
-	return UtilsLib::ErrorState::CAN_MSG_TRANSMIT_FAIL;
+	return UtilsLib::ErrorState::CAN_MSG_TRANSMIT_SUCCESS;
 }
 
-UtilsLib::ErrorState CANManager::CheckReceiveFIFO()
+void CANManager::AbortAllSendRequests()
+{
+	HAL_CAN_AbortTxRequest(&mCanHandler, CAN_TX_MAILBOX0 | CAN_TX_MAILBOX1 | CAN_TX_MAILBOX2);
+}
+
+void CANManager::CheckReceiveFIFO()
 {
 	uint32_t fillLevel = HAL_CAN_GetRxFifoFillLevel(&mCanHandler, CAN_RX_FIFO0);
 	mLogger.LogSpam(mCanPortName + " fillLevel = " + std::to_string(fillLevel));
 
 	while (fillLevel != 0)
 	{
-		HAL_CAN_GetRxMessage(&mCanHandler, CAN_RX_FIFO0, &mReceiveHeader, mReceiveBuffer);
-		MessageReceiveHandler();
+		const auto returnValue = HAL_CAN_GetRxMessage(&mCanHandler, CAN_RX_FIFO0, &mReceiveHeader, mReceiveBuffer);
+		if (returnValue == HAL_OK)
+		{
+			MessageReceiveHandler();
+		}
 		fillLevel = HAL_CAN_GetRxFifoFillLevel(&mCanHandler, CAN_RX_FIFO0);
 	}
 
-	mLogger.LogInfo("TODO: CheckReceiveFIFO error handling");
-
-	return UtilsLib::ErrorState::CAN_MSG_RECEIVE_SUCCESS; // Placeholder
+	return;
 }
 
-UtilsLib::ErrorState CANManager::MessageReceiveHandler()
+void CANManager::MessageReceiveHandler()
 {
 	// Check the CAN message header
 	uint32_t messageID;
@@ -133,8 +128,8 @@ UtilsLib::ErrorState CANManager::MessageReceiveHandler()
 	}
 	else
 	{
-		mLogger.LogError("CAN Message with unknown IDE is received. canPortName: " + mCanPortName);
-		return UtilsLib::ErrorState::CAN_MSG_RECEIVE_FAIL;
+		mLogger.LogInfo("CAN Message with unknown IDE is received. canPortName: " + mCanPortName);
+		return;
 	}
 	mLogger.LogCustom("CANMsg:" + std::to_string(messageID) + ", " + std::to_string(mReceiveBuffer[0]) + ", " + std::to_string(mReceiveBuffer[1])
 			+ ", " + std::to_string(mReceiveBuffer[2]) + ", " + std::to_string(mReceiveBuffer[3])
@@ -146,11 +141,11 @@ UtilsLib::ErrorState CANManager::MessageReceiveHandler()
 	if (messageID == 0x0A5 || messageID == 0x0A6 || messageID == 0x0A7 || messageID == 0x0AA)
 	{
 		mMCUInterface.MessageReceiveHandler(messageID, mReceiveHeader, mReceiveBuffer);
-		return UtilsLib::ErrorState::CAN_MSG_RECEIVE_SUCCESS;
+		return;
 	}
 
 	mLogger.LogInfo("TODO: Map the received CAN Message's ID to an action for CANMananger");
-	return UtilsLib::ErrorState::CAN_MSG_RECEIVE_SUCCESS;
+	return;
 }
 
 }

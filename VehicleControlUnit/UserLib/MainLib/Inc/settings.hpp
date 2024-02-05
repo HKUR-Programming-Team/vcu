@@ -53,7 +53,7 @@ struct MCUInterfaceParameters
 {
 	uint32_t CommandMessageHeaderId = 0x0C0;
 	uint32_t CommandMessageLength = 8;
-	uint32_t CommandMessageTransmitInterval = 2;
+	uint32_t CommandMessageTransmitInterval = 3;
 	int16_t InverterEnableTorqueThreshold = 10;
 	int16_t RegenEnableTorqueThreshold = 10;
 	double WheelRadius = 0.2;

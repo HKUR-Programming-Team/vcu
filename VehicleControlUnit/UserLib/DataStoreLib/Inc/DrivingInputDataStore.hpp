@@ -22,7 +22,8 @@ public:
 			mThrottleError{false},
 			mTorque{0},
 			mGear{Gear::NEUTRAL},
-			mBrake{std::nullopt}
+			mBrake{std::nullopt},
+			mTCSEnabled{0}
 	{}
 
 	bool GetThrottleError() const
@@ -83,6 +84,16 @@ public:
 		mBrake = brake;
 	}
 	
+	bool GetTCSEnabled() const
+	{
+		return mTCSEnabled;
+	}
+
+	void SetTCSEnabled(const bool tcsEnabled)
+	{
+		mTCSEnabled = tcsEnabled;
+	}
+
 
 private:
 	bool mThrottleError;
@@ -90,6 +101,7 @@ private:
 	int16_t mRegen;
 	Gear mGear;
 	std::optional<uint16_t> mBrake;
+	bool mTCSEnabled;
 };
 
 };

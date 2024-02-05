@@ -30,8 +30,8 @@ public:
 		mLogger{logger},
 		mDataStore{dataStore},
 		mCANManager{CANManager},
+		mLastCommandMessageSendTs{0},
 		mParameters{mcuinterfaceParameters},
-		mTCSEnabled{false},
 		mTCSTriggered{false},
 		mTCSTriggeredStartTorque{MainLib::Settings::sensorInterfaceParameters.MaxTorque}
 	{}
@@ -39,10 +39,7 @@ public:
 	void MessageReceiveHandler(const uint32_t messageID, const CAN_RxHeaderTypeDef& header, const uint8_t message[8]);
 
 	void SendCommandMessageInErrorState();
-	UtilsLib::ErrorState SendCommandMessage();
-
-	bool GetTCSEnabled() const;
-	void SetTCSEnabled(const bool tcsEnabled);
+	void SendCommandMessage();
 
 private:
 	UtilsLib::Logger& mLogger;
@@ -50,10 +47,10 @@ private:
 	UtilsLib::CANManager& mCANManager;
 
 	uint8_t mTransmitBuffer[8];
+	uint32_t mLastCommandMessageSendTs;
 
 	const MainLib::Settings::MCUInterfaceParameters mParameters;
 
-	bool mTCSEnabled;
 	bool mTCSTriggered;
 	int16_t mTCSTriggeredStartTorque;
 

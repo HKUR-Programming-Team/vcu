@@ -33,18 +33,22 @@ public:
         {
             buffer[i] = message[i];
         }
-        return ErrorState::INIT_SUCCESS;
+        return ErrorState::CAN_MSG_TRANSMIT_SUCCESS;
     }
 
-	ErrorState CheckReceiveFIFO()
+	void CheckReceiveFIFO()
     {
         volatile int x = 0;
-        return ErrorState::INIT_SUCCESS;
     }
+
+	void AbortAllSendRequests()
+	{
+		volatile int x = 0;
+	}
 
     uint32_t mMessageId = 0;
     uint32_t mMessageLength = 0;
-    uint8_t buffer[8];
+    uint8_t buffer[8] = {0,0,0,0,0,0,0,0};
     bool SendMessageError = false;
 };
 

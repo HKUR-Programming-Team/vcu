@@ -17,7 +17,7 @@ namespace utilsLib = VehicleControlUnit::UtilsLib;
 namespace dataLib = VehicleControlUnit::DataStoreLib;
 namespace settings = VehicleControlUnit::MainLib::Settings;
 
-TEST_CASE("SensorInterface ReadThrottleSignal Test Cases") {
+TEST_CASE("SensorInterface ReadThrottleSignal") {
     utilsLib::ADCManager adcManager;
     dataLib::DataStore dataStore;
     utilsLib::Logger logger;
@@ -203,13 +203,15 @@ TEST_CASE("MCUInterface driving input")
     settings::MCUInterfaceParameters mcuInterfaceParams;
     mcuInterfaceParams.InverterEnableTorqueThreshold = 10;
     mcuInterfaceParams.RegenEnableTorqueThreshold = 5;
+    mcuInterfaceParams.CommandMessageTransmitInterval = 5;
 
     mcuLib::MCUInterface mcuInterface(logger, dataStore, canManager, mcuInterfaceParams);
+    MockCurrentTick = 6;
 
     SUBCASE("WHEN persisted implausibility is set in data store THEN error command message is sent via CAN Manager")
     {
         dataStore.SetPersistedImplausibleStatus(true);
-        mcuInterface.SetTCSEnabled(false);
+        dataStore.mDrivingInputDataStore.SetTCSEnabled(false);
 
         dataStore.mDrivingInputDataStore.SetTorque(300);
         dataStore.mDrivingInputDataStore.SetRegen(0);
@@ -235,7 +237,7 @@ TEST_CASE("MCUInterface driving input")
     SUBCASE("WHEN there is no persisted implausibility and traction control is disabled")
     {
         dataStore.SetPersistedImplausibleStatus(false);
-        mcuInterface.SetTCSEnabled(false);
+        dataStore.mDrivingInputDataStore.SetTCSEnabled(false);
         
         SUBCASE("WHEN torque is positive and gear forward THEN correct command message is sent via CAN Manager")
         {
@@ -401,6 +403,189 @@ TEST_CASE("MCUInterface driving input")
             CHECK(canManager.buffer[7] == 0);
         }
     }
+
+    SUBCASE("Transmit Interval")
+    {
+        dataStore.SetPersistedImplausibleStatus(false);
+        dataStore.mDrivingInputDataStore.SetTCSEnabled(false);
+        
+        SUBCASE("WHEN the current tick has not yet past the transmit interval THEN no new command message is sent")
+        {
+            dataStore.mDrivingInputDataStore.SetTorque(300);
+            dataStore.mDrivingInputDataStore.SetRegen(0);
+            dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+
+            MockCurrentTick = 6;
+            mcuInterface.SendCommandMessage();
+
+            // Check the header
+            CHECK(canManager.mMessageId == 0x0C0);
+            CHECK(canManager.mMessageLength == 8);
+
+            // Check the payload
+            CHECK(canManager.buffer[0] == 44);
+            CHECK(canManager.buffer[1] == 1);
+            CHECK(canManager.buffer[2] == 0);
+            CHECK(canManager.buffer[3] == 0);
+            CHECK(canManager.buffer[4] == 0b00000001);
+            CHECK(canManager.buffer[5] == 0b00000001);
+            CHECK(canManager.buffer[6] == 0);
+            CHECK(canManager.buffer[7] == 0);
+
+            dataStore.mDrivingInputDataStore.SetTorque(150); // Torque changed
+            dataStore.mDrivingInputDataStore.SetRegen(0);
+            dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+
+            MockCurrentTick = 8; // Not yet past the CommandMessageTransmitInterval of 5 ms
+            mcuInterface.SendCommandMessage();
+
+            // Check the header
+            CHECK(canManager.mMessageId == 0x0C0);
+            CHECK(canManager.mMessageLength == 8);
+
+            // Check the payload: torque has not changed
+            CHECK(canManager.buffer[0] == 44);
+            CHECK(canManager.buffer[1] == 1);
+            CHECK(canManager.buffer[2] == 0);
+            CHECK(canManager.buffer[3] == 0);
+            CHECK(canManager.buffer[4] == 0b00000001);
+            CHECK(canManager.buffer[5] == 0b00000001);
+            CHECK(canManager.buffer[6] == 0);
+            CHECK(canManager.buffer[7] == 0);
+        }
+
+        SUBCASE("WHEN the current tick has past the transmit interval THEN no new command message is sent")
+        {
+            dataStore.mDrivingInputDataStore.SetTorque(300);
+            dataStore.mDrivingInputDataStore.SetRegen(0);
+            dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+
+            MockCurrentTick = 6;
+            mcuInterface.SendCommandMessage();
+
+            // Check the header
+            CHECK(canManager.mMessageId == 0x0C0);
+            CHECK(canManager.mMessageLength == 8);
+
+            // Check the payload
+            CHECK(canManager.buffer[0] == 44);
+            CHECK(canManager.buffer[1] == 1);
+            CHECK(canManager.buffer[2] == 0);
+            CHECK(canManager.buffer[3] == 0);
+            CHECK(canManager.buffer[4] == 0b00000001);
+            CHECK(canManager.buffer[5] == 0b00000001);
+            CHECK(canManager.buffer[6] == 0);
+            CHECK(canManager.buffer[7] == 0);
+
+            dataStore.mDrivingInputDataStore.SetTorque(150); // Torque changed
+            dataStore.mDrivingInputDataStore.SetRegen(0);
+            dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+
+            MockCurrentTick = 12; // Past the CommandMessageTransmitInterval of 5 ms
+            mcuInterface.SendCommandMessage();
+
+            // Check the header
+            CHECK(canManager.mMessageId == 0x0C0);
+            CHECK(canManager.mMessageLength == 8);
+
+            // Check the payload: torque has changed
+            CHECK(canManager.buffer[0] == 150);
+            CHECK(canManager.buffer[1] == 0);
+            CHECK(canManager.buffer[2] == 0);
+            CHECK(canManager.buffer[3] == 0);
+            CHECK(canManager.buffer[4] == 0b00000001);
+            CHECK(canManager.buffer[5] == 0b00000001);
+            CHECK(canManager.buffer[6] == 0);
+            CHECK(canManager.buffer[7] == 0);
+        }
+
+        SUBCASE("WHEN command message is sent THEN the last transmit time is updated")
+        {
+            dataStore.mDrivingInputDataStore.SetTorque(300);
+            dataStore.mDrivingInputDataStore.SetRegen(0);
+            dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+
+            MockCurrentTick = 6;
+            mcuInterface.SendCommandMessage();
+
+            // Check the header
+            CHECK(canManager.mMessageId == 0x0C0);
+            CHECK(canManager.mMessageLength == 8);
+
+            // Check the payload
+            CHECK(canManager.buffer[0] == 44);
+            CHECK(canManager.buffer[1] == 1);
+            CHECK(canManager.buffer[2] == 0);
+            CHECK(canManager.buffer[3] == 0);
+            CHECK(canManager.buffer[4] == 0b00000001);
+            CHECK(canManager.buffer[5] == 0b00000001);
+            CHECK(canManager.buffer[6] == 0);
+            CHECK(canManager.buffer[7] == 0);
+
+            dataStore.mDrivingInputDataStore.SetTorque(150); // Torque changed
+            dataStore.mDrivingInputDataStore.SetRegen(0);
+            dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+
+            MockCurrentTick = 12; // Past the CommandMessageTransmitInterval of 5 ms. The next transmit time should be 15 ms
+            mcuInterface.SendCommandMessage();
+
+            // Check the header
+            CHECK(canManager.mMessageId == 0x0C0);
+            CHECK(canManager.mMessageLength == 8);
+
+            // Check the payload: torque has changed
+            CHECK(canManager.buffer[0] == 150);
+            CHECK(canManager.buffer[1] == 0);
+            CHECK(canManager.buffer[2] == 0);
+            CHECK(canManager.buffer[3] == 0);
+            CHECK(canManager.buffer[4] == 0b00000001);
+            CHECK(canManager.buffer[5] == 0b00000001);
+            CHECK(canManager.buffer[6] == 0);
+            CHECK(canManager.buffer[7] == 0);
+
+            dataStore.mDrivingInputDataStore.SetTorque(220);
+            dataStore.mDrivingInputDataStore.SetRegen(0);
+            dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+
+            MockCurrentTick = 14; // Not yet past the CommandMessageTransmitInterval of 5 ms
+            mcuInterface.SendCommandMessage();
+
+            // Check the header
+            CHECK(canManager.mMessageId == 0x0C0);
+            CHECK(canManager.mMessageLength == 8);
+
+            // Check the payload: torque has changed
+            CHECK(canManager.buffer[0] == 150);
+            CHECK(canManager.buffer[1] == 0);
+            CHECK(canManager.buffer[2] == 0);
+            CHECK(canManager.buffer[3] == 0);
+            CHECK(canManager.buffer[4] == 0b00000001);
+            CHECK(canManager.buffer[5] == 0b00000001);
+            CHECK(canManager.buffer[6] == 0);
+            CHECK(canManager.buffer[7] == 0);
+
+            dataStore.mDrivingInputDataStore.SetTorque(220);
+            dataStore.mDrivingInputDataStore.SetRegen(0);
+            dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+
+            MockCurrentTick = 15; // past the CommandMessageTransmitInterval of 5 ms
+            mcuInterface.SendCommandMessage();
+
+            // Check the header
+            CHECK(canManager.mMessageId == 0x0C0);
+            CHECK(canManager.mMessageLength == 8);
+
+            // Check the payload: torque has changed
+            CHECK(canManager.buffer[0] == 220);
+            CHECK(canManager.buffer[1] == 0);
+            CHECK(canManager.buffer[2] == 0);
+            CHECK(canManager.buffer[3] == 0);
+            CHECK(canManager.buffer[4] == 0b00000001);
+            CHECK(canManager.buffer[5] == 0b00000001);
+            CHECK(canManager.buffer[6] == 0);
+            CHECK(canManager.buffer[7] == 0);
+        }
+    }
 }
 
 TEST_CASE("Ready to drive")
@@ -457,11 +642,6 @@ TEST_CASE("Ready to drive")
             CHECK(dataStore.mDrivingInputDataStore.GetGear() == dataLib::Gear::NEUTRAL);
             CHECK(!utilsLib::GPIOManager::B1);
         }
-
-        SUBCASE("WHEN button has rise in voltage AND the brake is higher than triggering threshold THEN ready to drive mode is not enabled")
-        {
-            // TODO
-        }
     }
 
     SUBCASE("WHEN it is in ready to drive mode and Gear is set to FORWARD in data store")
@@ -510,11 +690,6 @@ TEST_CASE("Ready to drive")
             utilsLib::GPIOManager::A0 = true;
             r2d.Check();
             CHECK(!utilsLib::GPIOManager::B1);
-        }
-
-        SUBCASE("WHEN button has rise in voltage THEN ready to drive mode is not disabled")
-        {
-            // TODO
         }
     }
 

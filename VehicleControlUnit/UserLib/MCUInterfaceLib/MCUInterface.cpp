@@ -57,21 +57,25 @@ void MCUInterface::SendCommandMessageInErrorState()
 	mCANManager.SendMessage(mTransmitBuffer);
 }
 
-UtilsLib::ErrorState MCUInterface::SendCommandMessage()
+void MCUInterface::SendCommandMessage()
 {
-	mLogger.LogInfo("TODO: Send message to motor controller");
+	// Send one command message every mParameters.CommandMessageTransmitInterval
+	if (HAL_GetTick() < mLastCommandMessageSendTs + mParameters.CommandMessageTransmitInterval)
+	{
+		return;
+	}
 
 	// Check if the engine should be stopped
 	if (mDataStore.GetPersistedImplausibleStatus())
 	{
 		SendCommandMessageInErrorState();
-		return UtilsLib::ErrorState::CAN_MSG_TRANSMIT_FAIL; // placeholder
+		return;
 	}
 
 	SetCommandMessageInNonErrorState();
 
 	mLogger.LogInfo("TODO: Button to toggle TCS");
-	if (mTCSEnabled)
+	if (mDataStore.mDrivingInputDataStore.GetTCSEnabled())
 	{
 		CheckTractionControlTriggered();
 
@@ -83,11 +87,23 @@ UtilsLib::ErrorState MCUInterface::SendCommandMessage()
 	mCANManager.SetTransmitHeader(mParameters.CommandMessageHeaderId, mParameters.CommandMessageLength);
 	const auto error = mCANManager.SendMessage(mTransmitBuffer);
 
+	if (error == UtilsLib::ErrorState::CAN_MSG_TRANSMIT_SUCCESS)
+	{
+		auto GetQuotient = [&](const uint32_t dividend, const uint32_t divisor) -> uint32_t
+		{
+			return dividend / divisor;
+		};
+
+		mLastCommandMessageSendTs = GetQuotient(HAL_GetTick(), mParameters.CommandMessageTransmitInterval) * mParameters.CommandMessageTransmitInterval;
+	}
+	else
+	{
+		mCANManager.AbortAllSendRequests(); // Clear transmit box. Try again in the next loop.
+	}
+
 	mLogger.LogInfo("TODO: MCUInterface set error (implausible)");
 
-	// If there is error state, store it to the data store
-
-	return UtilsLib::ErrorState::INIT_SUCCESS; // placeholder
+	return;
 }
 
 void MCUInterface::SetCommandMessageInNonErrorState()
@@ -198,17 +214,6 @@ void MCUInterface::ModifyCommandMessageByTractionControl()
 	const int16_t minTorque = mTCSTriggeredStartTorque < torqueFromPedalSensor ? mTCSTriggeredStartTorque : torqueFromPedalSensor;
 	SetCommandMessageTorque(minTorque);
 	mLogger.LogCustom("After TCS:" + std::to_string(mTransmitBuffer[0]) + ", " + std::to_string(mTransmitBuffer[1]) + ", torque: " );
-}
-
-bool MCUInterface::GetTCSEnabled() const
-{
-	return mTCSEnabled;
-}
-
-
-void MCUInterface::SetTCSEnabled(const bool tcsEnabled)
-{
-	mTCSEnabled = tcsEnabled;
 }
 
 }

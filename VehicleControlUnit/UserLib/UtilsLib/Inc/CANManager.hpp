@@ -44,10 +44,11 @@ public:
 			const bool transmitGlobalTime = false);
 
 	UtilsLib::ErrorState SendMessage(const uint8_t message[8]);
-	UtilsLib::ErrorState CheckReceiveFIFO();
+	void AbortAllSendRequests();
+	void CheckReceiveFIFO();
 
 private:
-	UtilsLib::ErrorState MessageReceiveHandler();
+	void MessageReceiveHandler();
 
 	const Logger& mLogger;
 	CAN_HandleTypeDef& mCanHandler;
@@ -55,7 +56,6 @@ private:
 
 	// Transmission
 	CAN_TxHeaderTypeDef mTransmitHeader;
-	uint8_t mTransmitBuffer[8];
 	uint32_t mLastMailboxUsed;
 
 	// Receive
