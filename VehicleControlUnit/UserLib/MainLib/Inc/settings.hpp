@@ -10,9 +10,9 @@ namespace VehicleControlUnit::MainLib::Settings {
 
 // Logger
 const bool spamLoggingEnabled = false;
-const bool infoLoggingEnabled = true;
-const bool errorLoggingEnabled = true;
-const bool customLoggingEnabled = false;
+const bool infoLoggingEnabled = false;
+const bool errorLoggingEnabled = false;
+const bool customLoggingEnabled = true;
 
 // MCU
 const uint32_t implausibleThresholdInterval = 100;

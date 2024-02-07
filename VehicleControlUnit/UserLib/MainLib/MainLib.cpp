@@ -28,13 +28,11 @@ void Main::Loop()
 		return;
 	}
 
-	// TEST CODE STARTS
-	//	bool button = UtilsLib::GPIOManager::digitalRead(UtilsLib::GPIOPort::C, UtilsLib::GPIOPinNum::Pin7);
-	//	UtilsLib::GPIOManager::digitalWrite(UtilsLib::GPIOPort::A, UtilsLib::GPIOPinNum::Pin9,button);
-	//	uint8_t test[8] = {1,2,3,4,5,6,7,8};
-	//	mCANManager.SetTransmitHeader(0x0C0, 8, false);
-	//	mCANManager.SendMessage(test);
-	// TEST CODE ENDS
+	// TEST CODE BEGIN
+//	uint8_t test[8] = {0,0,44,1,0, 0b00001000,0,0};
+//	mCANManager.SetTransmitHeader(0x0A5, 8, false);
+//	mCANManager.SendMessage(test);
+	// TEST CODE END
 
 	mLogger.LogSpam("--VCU Loop Starts--");
 	mCANManager.CheckReceiveFIFO();

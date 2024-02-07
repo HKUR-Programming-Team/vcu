@@ -138,7 +138,7 @@ void CANManager::MessageReceiveHandler()
 
 	// TODO :: Map CAN message ID to action (call a function from another library)
 	// You can call mBMSInterface.MessageReceiveHandler(header, message) to pass the message to BMS interface library
-	if (messageID == 0x0A5 || messageID == 0x0A6 || messageID == 0x0A7 || messageID == 0x0AA)
+	if (messageID == 0x0A5 || messageID == 0x0AB)
 	{
 		mMCUInterface.MessageReceiveHandler(messageID, mReceiveHeader, mReceiveBuffer);
 		return;

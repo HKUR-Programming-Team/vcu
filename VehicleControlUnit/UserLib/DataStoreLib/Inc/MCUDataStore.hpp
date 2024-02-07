@@ -9,91 +9,50 @@
 #endif
 namespace VehicleControlUnit::DataStoreLib {
 
-enum class VSMState 
-{
-    StartUp,
-    PreChargeInit,
-    PreChargeActivate,
-    PreChangeComplete,
-    Idle,
-    Ready,
-    MotorRunning,
-    BlinkFaultCode,
-    ShutdownInProgress,
-    PowerRecycling,
-    Unknown
-};
-
 class MCUDataStore
 {
 public:
 	MCUDataStore():
-			mMotorSpeed{0},
-			mDCBusCurrent{0},
-			mDCBusVoltage{0},
-			mVSMState{VSMState::Unknown},
-            mUpdateTs{0}
+			mMotorSpeed{std::nullopt},
+            mMotorSpeedUpdateTs{std::nullopt},
+            mMessageReceiveTimeoutError{false}
 	{}
 
-    void SetMotorSpeed(const int16_t motorSpeed)
+    void SetMotorSpeed(const std::optional<int16_t> motorSpeed)
     {
         mMotorSpeed = motorSpeed;
     }
 
-    void SetDCBusCurrent(const int16_t dcBusCurrent)
+    void SetMotorSpeedUpdateTs(const std::optional<uint32_t> ts)
     {
-        mDCBusCurrent = dcBusCurrent;
+        mMotorSpeedUpdateTs = ts;
     }
 
-    void SetDCBusVoltage(const int16_t dcBusVoltage)
+    void SetMessageReceiveTimeoutError(const bool error)
     {
-        mDCBusVoltage = dcBusVoltage;
-    }
-
-    void SetVSMState(const VSMState vsmState)
-    {
-        mVSMState = vsmState;
-    }
-
-    void SetUpdateTs(const uint32_t ts)
-    {
-        mUpdateTs = ts;
+        mMessageReceiveTimeoutError = error;
     }
 
     // actual velocity (in RPM)
-    int16_t GetMotorSpeed() const
+    std::optional<int16_t> GetMotorSpeed() const
     {
         return mMotorSpeed;
     }
 
-    // actual voltage (in Volts) times 10
-    int16_t GetDCBusCurrent() const
+    std::optional<uint32_t> GetMotorSpeedUpdateTs() const
     {
-        return mDCBusCurrent;
+        return mMotorSpeedUpdateTs;
     }
 
-    // actual current (in Amps) times 10
-    int16_t GetDCBusVoltage() const
+    bool GetMessageReceiveTimeoutError() const 
     {
-        return mDCBusVoltage;
-    }
-
-    VSMState GetVSMState() const
-    {
-        return mVSMState;
-    }
-
-    uint16_t GetUpdateTs() const
-    {
-        return mUpdateTs;
+        return mMessageReceiveTimeoutError;
     }
 
 private:
-    int16_t mMotorSpeed;
-    int16_t mDCBusCurrent;
-    int16_t mDCBusVoltage;
-    VSMState mVSMState;
-    uint32_t mUpdateTs;
+    std::optional<int16_t> mMotorSpeed;
+    std::optional<uint32_t> mMotorSpeedUpdateTs;
+    bool mMessageReceiveTimeoutError;
 };
 
 };

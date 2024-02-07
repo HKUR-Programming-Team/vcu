@@ -588,6 +588,81 @@ TEST_CASE("MCUInterface driving input")
     }
 }
 
+TEST_CASE("MCUInterface MessageReceiveHandler")
+{
+    utilsLib::CANManager canManager;
+    dataLib::DataStore dataStore;
+    utilsLib::Logger logger;
+    settings::MCUInterfaceParameters mcuInterfaceParams;
+
+    mcuLib::MCUInterface mcuInterface(logger, dataStore, canManager, mcuInterfaceParams);
+    uint8_t payload[8] = {0,0,0,0,0,0,0,0};
+    CAN_RxHeaderTypeDef header;
+    MockCurrentTick = 10;
+
+    SUBCASE("WHEN no meesage from MCUInterface has yet been received THEN member variables in MCUDataStore gives empty value")
+    {
+        CHECK(!dataStore.mMCUDataStore.GetMotorSpeed().has_value());
+        CHECK(!dataStore.mMCUDataStore.GetMotorSpeedUpdateTs().has_value());
+        CHECK(!dataStore.mMCUDataStore.GetMessageReceiveTimeoutError());
+    }
+
+    SUBCASE("WHEN a motor speed message with message id 0x0A5 has been received THEN data is stored correctly")
+    {
+        const uint32_t messageId = 0x0A5;
+        header.StdId = 0x0A5;
+
+        payload[2] = 44;
+        payload[3] = 1; 
+
+        mcuInterface.MessageReceiveHandler(messageId, header, payload);
+
+        REQUIRE(dataStore.mMCUDataStore.GetMotorSpeed().has_value());
+        REQUIRE(dataStore.mMCUDataStore.GetMotorSpeedUpdateTs().has_value());
+        CHECK(dataStore.mMCUDataStore.GetMotorSpeed().value() == 300);
+        CHECK(dataStore.mMCUDataStore.GetMotorSpeedUpdateTs().value() == 10);
+
+        REQUIRE(!dataStore.mMCUDataStore.GetMessageReceiveTimeoutError());
+    }
+
+    SUBCASE("WHEN a RUN FAULT message with message id 0x0AB has been received THEN data is stored correctly")
+    {
+        const uint32_t messageId = 0x0AB;
+        header.StdId = 0x0A5;
+
+        SUBCASE("No error")
+        {
+            payload[5] = 0b00000000;
+            mcuInterface.MessageReceiveHandler(messageId, header, payload);
+
+            REQUIRE(!dataStore.mMCUDataStore.GetMotorSpeed().has_value());
+            REQUIRE(!dataStore.mMCUDataStore.GetMotorSpeedUpdateTs().has_value());
+            CHECK(!dataStore.mMCUDataStore.GetMessageReceiveTimeoutError());
+        }
+
+        SUBCASE("Has error")
+        {
+            payload[5] = 0b00001000;
+            mcuInterface.MessageReceiveHandler(messageId, header, payload);
+
+            REQUIRE(!dataStore.mMCUDataStore.GetMotorSpeed().has_value());
+            REQUIRE(!dataStore.mMCUDataStore.GetMotorSpeedUpdateTs().has_value());
+            CHECK(dataStore.mMCUDataStore.GetMessageReceiveTimeoutError());
+        }
+    }
+
+    SUBCASE("WHEN a message with unknown message id has been received THEN member variables in MCUDataStore gives empty value")
+    {
+        const uint32_t messageId = 0x0C0;
+        header.StdId = 0x0C0;
+
+        mcuInterface.MessageReceiveHandler(messageId, header, payload);
+        
+        CHECK(!dataStore.mMCUDataStore.GetMotorSpeed().has_value());
+        CHECK(!dataStore.mMCUDataStore.GetMotorSpeedUpdateTs().has_value());
+    }
+}
+
 TEST_CASE("Ready to drive")
 {
     dataLib::DataStore dataStore;

@@ -9,36 +9,15 @@ void MCUInterface::MessageReceiveHandler(const uint32_t messageID, const CAN_RxH
 	    case 0x0A5: { // Motor Speed
 	        const int16_t motorSpeed = static_cast<int16_t>(static_cast<uint16_t>(message[3]) << 8 | static_cast<uint16_t>(message[2]));
 	        mDataStore.mMCUDataStore.SetMotorSpeed(motorSpeed);
+			mDataStore.mMCUDataStore.SetMotorSpeedUpdateTs(HAL_GetTick());
 	        break;
 	    }
-	    case 0x0A6: { // DC Bus Current
-	        const int16_t dcBusCurrent = static_cast<int16_t>(static_cast<uint16_t>(message[7]) << 8 | static_cast<uint16_t>(message[6]));
-	        mDataStore.mMCUDataStore.SetDCBusCurrent(dcBusCurrent);
-	        break;
-	    }
-	    case 0x0A7: { // DC Bus Voltage
-	    	const int16_t dcBusVoltage = static_cast<int16_t>(static_cast<uint16_t>(message[1]) << 8 | static_cast<uint16_t>(message[0]));
-	        mDataStore.mMCUDataStore.SetDCBusVoltage(dcBusVoltage);
-	        break;
-	    }
-	    case 0x0AA: { // VSM State
-	        uint8_t vsmState = message[0];
-	        auto GetVSMStateDescription = [](const uint8_t vsmState){
-				switch(vsmState) {
-						case 0: return DataStoreLib::VSMState::StartUp; break;
-						case 1: return DataStoreLib::VSMState::PreChargeInit; break;
-						case 2: return DataStoreLib::VSMState::PreChargeActivate; break;
-						case 3: return DataStoreLib::VSMState::PreChangeComplete; break;
-						case 4: return DataStoreLib::VSMState::Idle; break;
-						case 5: return DataStoreLib::VSMState::Ready; break;
-						case 6: return DataStoreLib::VSMState::MotorRunning; break;
-						case 7: return DataStoreLib::VSMState::BlinkFaultCode; break;
-						case 14: return DataStoreLib::VSMState::ShutdownInProgress; break;
-						case 15: return DataStoreLib::VSMState::PowerRecycling; break;
-						default: return DataStoreLib::VSMState::Unknown; break;
-				}
-	        };
-	        mDataStore.mMCUDataStore.SetVSMState(GetVSMStateDescription(vsmState));
+	    case 0x0AB: { // Run Fault
+	        const uint8_t byte5 = message[5];
+	        const uint8_t commandMessageLostBit = (byte5 >> 3) & 1;
+			const bool commandMessageLost = commandMessageLostBit == 1;
+			mDataStore.mMCUDataStore.SetMessageReceiveTimeoutError(commandMessageLost);
+			break;
 	    }
 	    // ... Other cases ...
 	    default: {
@@ -47,7 +26,6 @@ void MCUInterface::MessageReceiveHandler(const uint32_t messageID, const CAN_RxH
 	        break;
 	    }
 	}
-	mDataStore.mMCUDataStore.SetUpdateTs(HAL_GetTick());
 }
 
 void MCUInterface::SendCommandMessageInErrorState()

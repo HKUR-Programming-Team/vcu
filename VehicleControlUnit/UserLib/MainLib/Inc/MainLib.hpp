@@ -14,6 +14,8 @@
 
 #include <stm32f1xx.h>
 
+#include <optional>
+
 namespace VehicleControlUnit::MainLib {
 
 class Main
