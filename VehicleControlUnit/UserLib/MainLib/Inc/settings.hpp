@@ -22,11 +22,11 @@ const uint32_t ADCDMABufferLength = 3;
 
 // Ready to drive sound
 struct ReadyToDriveParameters
-{
+{ 
 	uint32_t readyToDriveSoundDuration = 1500;
 	uint16_t readyToDriveTriggeringBrakeThreshold = 20;
-	UtilsLib::GPIOPort readyToDriveButtonPort = UtilsLib::GPIOPort::A;
-	UtilsLib::GPIOPinNum readyToDriveButtonPinNum = UtilsLib::GPIOPinNum::Pin0;
+	UtilsLib::GPIOPort readyToDriveButtonPort = UtilsLib::GPIOPort::C;
+	UtilsLib::GPIOPinNum readyToDriveButtonPinNum = UtilsLib::GPIOPinNum::Pin7;
 	UtilsLib::GPIOPort readyToDriveSoundPort = UtilsLib::GPIOPort::C;
 	UtilsLib::GPIOPinNum readyToDriveSoundPinNum = UtilsLib::GPIOPinNum::Pin1;
 };

@@ -73,7 +73,7 @@ void SensorInterface::ReadThrottleSignal()
 
 	mDataStore.mDrivingInputDataStore.SetThrottleError(false);
 	mDataStore.mDrivingInputDataStore.SetTorque(throttle0);
-	mLogger.LogCustom("Throttle Final: " + std::to_string(throttle0));
+	mLogger.LogSpam("Throttle Final: " + std::to_string(throttle0));
 
 	return;
 }
@@ -98,11 +98,13 @@ void SensorInterface::ReadBrakeSignal()
 	if (reading > mParameters.BrakeMaxPin)
 	{
 		mDataStore.mDrivingInputDataStore.SetBrake(mParameters.MaxBrake);
+		return;
 	}
 
 	if (reading < mParameters.BrakeMinPin)
 	{
 		mDataStore.mDrivingInputDataStore.SetBrake(0);
+		return;
 	}
 
 	const auto value = (reading - mParameters.BrakeMinPin) * mParameters.MaxBrake / (mParameters.BrakeMaxPin - mParameters.BrakeMinPin);
@@ -117,14 +119,16 @@ void SensorInterface::ReadRegenSignal()
 	if (reading > mParameters.RegenMaxPin)
 	{
 		mDataStore.mDrivingInputDataStore.SetRegen(mParameters.MaxRegen);
+		return;
 	}
 
 	if (reading < mParameters.RegenMinPin)
 	{
 		mDataStore.mDrivingInputDataStore.SetRegen(0);
+		return;
 	}
 
-	const auto value = (reading - mParameters.RegenMinPin) * mParameters.MaxRegen / (mParameters.RegenMaxPin - mParameters.RegenMinPin);
+	const auto value = static_cast<int16_t>((reading - mParameters.RegenMinPin) * mParameters.MaxRegen / (mParameters.RegenMaxPin - mParameters.RegenMinPin));
 	mDataStore.mDrivingInputDataStore.SetRegen(value);
 }
 

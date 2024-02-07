@@ -39,7 +39,6 @@ void Main::Loop()
 
 	// Ready to Drive
 	mReadyToDriveManager.Check();
-	mDataStore.mDrivingInputDataStore.SetGear(DataStoreLib::Gear::FORWARD);
 
 	// Sensor
 	mSensorInterface.ReadADC(); // Read throttle and other analog signals and store it to dataStore
@@ -48,6 +47,12 @@ void Main::Loop()
 	mMCUErrorManager.CheckImplausibility(); // update implausible status
 
 	mMCUInterface.SendCommandMessage(); // send packet to motor controller
+
+	// TEST
+	const auto brake = mDataStore.mDrivingInputDataStore.GetBrake().value_or(69420);
+	const auto regen = mDataStore.mDrivingInputDataStore.GetRegen();
+	const bool gear = mDataStore.mDrivingInputDataStore.GetGear() == DataStoreLib::Gear::FORWARD;
+	mLogger.LogCustom("brake: " + std::to_string(brake) + ".regen: " + std::to_string(regen) + ".gear: " + std::to_string(gear));
 }
 
 }
