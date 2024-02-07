@@ -4,6 +4,8 @@
 #include <UtilsLib/Inc/ErrorState.hpp>
 #include <MainLib/Inc/settings.hpp>
 
+#include <optional>
+
 #ifndef MOCK_TEST
 	#include <stm32f1xx.h>
 	#include <UtilsLib/Inc/ADCManager.hpp>
@@ -19,15 +21,11 @@ class SensorInterface
 public:
 
 	SensorInterface(UtilsLib::Logger& logger, DataStoreLib::DataStore& dataStore, UtilsLib::ADCManager& ADCManager,
-			const uint8_t throttleSignalADCIndex0,
-			const uint8_t throttleSignalADCIndex1,
 			const MainLib::Settings::SensorInterfaceParameters& parameters):
 		mParameters{parameters},
 		mLogger{logger},
 		mDataStore{dataStore},
-		mADCManager{ADCManager},
-		mThrottleSignalADCIndex0{throttleSignalADCIndex0},
-		mThrottleSignalADCIndex1{throttleSignalADCIndex1}
+		mADCManager{ADCManager}
 	{}
 
 	void ReadADC();
@@ -37,13 +35,12 @@ public:
 
 private:
 	void ReadThrottleSignal();
+	void ReadBrakeSignal();
+	void ReadRegenSignal();
 
 	UtilsLib::Logger& mLogger;
 	DataStoreLib::DataStore& mDataStore;
 	UtilsLib::ADCManager& mADCManager;
-
-	const uint8_t mThrottleSignalADCIndex0;
-	const uint8_t mThrottleSignalADCIndex1;
 };
 
 }

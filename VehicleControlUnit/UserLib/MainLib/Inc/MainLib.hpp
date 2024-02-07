@@ -29,7 +29,7 @@ public:
 				Settings::customLoggingEnabled},
 		mDataStore(),
 		mADCManager(mLogger, adcHandler, "ADC1", Settings::ADCDMABufferLength),
-		mSensorInterface(mLogger, mDataStore, mADCManager, Settings::throttleSignalADCIndex1, Settings::throttleSignalADCIndex2, Settings::sensorInterfaceParameters),
+		mSensorInterface(mLogger, mDataStore, mADCManager, Settings::sensorInterfaceParameters),
 		mCANManager(mLogger, canHandler, "CAN1", mBMSInterface, mMCUInterface, mSensorInterface),
 		mBMSInterface(mLogger, mDataStore),
 		mMCUInterface(mLogger, mDataStore, mCANManager, Settings::mcuInterfaceParameters),

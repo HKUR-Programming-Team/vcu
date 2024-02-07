@@ -22,8 +22,6 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
     dataLib::DataStore dataStore;
     utilsLib::Logger logger;
 
-    const uint8_t ThrottleSignalADCIndex0 = 0;
-    const uint8_t ThrottleSignalADCIndex1 = 1;
     settings::SensorInterfaceParameters sensorInterfaceParams;
     sensorInterfaceParams.ThrottleMinPin0 = 500;
     sensorInterfaceParams.ThrottleMaxPin0 = 1000;
@@ -32,20 +30,22 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
     sensorInterfaceParams.MaxTorque = 500;
     sensorInterfaceParams.ThrottleSignalOutOfRangeThreshold = 20;
     sensorInterfaceParams.ThrottleSignalDeviationThreshold = 50;
+    sensorInterfaceParams.ThrottleSignalADCIndex1 = 0;
+    sensorInterfaceParams.ThrottleSignalADCIndex2 = 1;
 
-    sensorLib::SensorInterface sensorInterface(logger, dataStore, adcManager, ThrottleSignalADCIndex0, ThrottleSignalADCIndex1, sensorInterfaceParams);
+    sensorLib::SensorInterface sensorInterface(logger, dataStore, adcManager, sensorInterfaceParams);
 
     SUBCASE("WHEN there exists a throttle sensor that gives value that is out of the threshold THEN error is set in datastore correctly")
     {
         SUBCASE("Pin 0 bottom out of range")
         {
-            adcManager.buffer[ThrottleSignalADCIndex0] = 475;
-            adcManager.buffer[ThrottleSignalADCIndex1] = 1500;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 475;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1500;
 
             uint16_t checkADC1 = 0;
             uint16_t checkADC2 = 0;
-            adcManager.GetBufferByIndex(ThrottleSignalADCIndex0, checkADC1);
-            adcManager.GetBufferByIndex(ThrottleSignalADCIndex1, checkADC2);
+            adcManager.GetBufferByIndex(sensorInterfaceParams.ThrottleSignalADCIndex1, checkADC1);
+            adcManager.GetBufferByIndex(sensorInterfaceParams.ThrottleSignalADCIndex2, checkADC2);
             REQUIRE(checkADC1 == 475);
             REQUIRE(checkADC2 == 1500);
 
@@ -56,8 +56,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
         SUBCASE("Pin 1 bottom out of range")
         {
-            adcManager.buffer[ThrottleSignalADCIndex0] = 500;
-            adcManager.buffer[ThrottleSignalADCIndex1] = 1475;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 500;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1475;
 
             sensorInterface.ReadADC();
             CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -66,8 +66,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
         SUBCASE("Pin 0 top out of range")
         {
-            adcManager.buffer[ThrottleSignalADCIndex0] = 1025;
-            adcManager.buffer[ThrottleSignalADCIndex1] = 2000;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 1025;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 2000;
 
             sensorInterface.ReadADC();
             CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -76,8 +76,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
         SUBCASE("Pin 1 top out of range")
         {
-            adcManager.buffer[ThrottleSignalADCIndex0] = 1000;
-            adcManager.buffer[ThrottleSignalADCIndex1] = 2025;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 1000;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 2025;
 
             sensorInterface.ReadADC();
             CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -86,8 +86,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
         SUBCASE("Both out of range")
         {
-            adcManager.buffer[ThrottleSignalADCIndex0] = 475;
-            adcManager.buffer[ThrottleSignalADCIndex1] = 1475;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 475;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1475;
 
             sensorInterface.ReadADC();
             CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -99,8 +99,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
     {
         SUBCASE("zero percent")
         {
-            adcManager.buffer[ThrottleSignalADCIndex0] = 485;
-            adcManager.buffer[ThrottleSignalADCIndex1] = 1485;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 485;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1485;
 
             sensorInterface.ReadADC();
             CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -109,8 +109,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
         SUBCASE("100 percent")
         {
-            adcManager.buffer[ThrottleSignalADCIndex0] = 1015;
-            adcManager.buffer[ThrottleSignalADCIndex1] = 2015;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 1015;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 2015;
 
             sensorInterface.ReadADC();
             CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -128,12 +128,12 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
         sensorInterfaceParamsSpecial.MaxTorque = 500;
         sensorInterfaceParamsSpecial.ThrottleSignalOutOfRangeThreshold = 20;
         sensorInterfaceParamsSpecial.ThrottleSignalDeviationThreshold = 50;
-        sensorLib::SensorInterface sensorInterfaceSpecial(logger, dataStore, adcManager, ThrottleSignalADCIndex0, ThrottleSignalADCIndex1, sensorInterfaceParams);
+        sensorLib::SensorInterface sensorInterfaceSpecial(logger, dataStore, adcManager, sensorInterfaceParams);
 
         SUBCASE("WHEN only pin 1 out of bottom range THEN error is set")
         {
-            adcManager.buffer[ThrottleSignalADCIndex0] = 0;
-            adcManager.buffer[ThrottleSignalADCIndex1] = 1475;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 0;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1475;
 
             sensorInterfaceSpecial.ReadADC();
             CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -145,8 +145,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
     {
         SUBCASE("50 percent")
         {
-            adcManager.buffer[ThrottleSignalADCIndex0] = 750;
-            adcManager.buffer[ThrottleSignalADCIndex1] = 1750;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 750;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1750;
 
             sensorInterface.ReadADC();
             CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -155,8 +155,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
         SUBCASE("25 percent")
         {
-            adcManager.buffer[ThrottleSignalADCIndex0] = 625;
-            adcManager.buffer[ThrottleSignalADCIndex1] = 1625;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 625;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1625;
 
             sensorInterface.ReadADC();
             CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -165,8 +165,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
         
         SUBCASE("75 percent")
         {
-            adcManager.buffer[ThrottleSignalADCIndex0] = 875;
-            adcManager.buffer[ThrottleSignalADCIndex1] = 1875;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 875;
+            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1875;
 
             sensorInterface.ReadADC();
             CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -176,8 +176,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
     SUBCASE("WHEN the throttle sensors has less than 10 percent deviation THEN the one with lower value is set as torque in datastore")
     {
-        adcManager.buffer[ThrottleSignalADCIndex0] = 740; // Torque = 240
-        adcManager.buffer[ThrottleSignalADCIndex1] = 1760; // Torque = 260
+        adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 740; // Torque = 240
+        adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1760; // Torque = 260
 
         sensorInterface.ReadADC();
         CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -186,13 +186,28 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
     SUBCASE("WHEN the throttle sensors has more than 10 percent deviation THEN error is set in datastore")
     {
-        adcManager.buffer[ThrottleSignalADCIndex0] = 700; // Torque = 200
-        adcManager.buffer[ThrottleSignalADCIndex1] = 1755; // Torque = 255
+        adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 700; // Torque = 200
+        adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1755; // Torque = 255
 
         sensorInterface.ReadADC();
         CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
         CHECK(dataStore.mDrivingInputDataStore.GetTorque() == 0); 
     }
+}
+
+TEST_CASE("SensorInterface ReadBrakeSignal")
+{
+  //TODO
+}
+
+TEST_CASE("SensorInterface ReadRegenSignal")
+{
+  //TODO
+}
+
+TEST_CASE("MCUErrorManager")
+{
+    //TODO
 }
 
 TEST_CASE("MCUInterface driving input")
@@ -586,6 +601,11 @@ TEST_CASE("MCUInterface driving input")
             CHECK(canManager.buffer[7] == 0);
         }
     }
+}
+
+TEST_CASE("MCUInterface TCS")
+{
+    //TODO
 }
 
 TEST_CASE("MCUInterface MessageReceiveHandler")

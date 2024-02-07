@@ -17,10 +17,8 @@ const bool customLoggingEnabled = true;
 // MCU
 const uint32_t implausibleThresholdInterval = 100;
 
-// ADC (Move these to ADC manager?)
+// ADC
 const uint32_t ADCDMABufferLength = 3;
-const uint8_t throttleSignalADCIndex1 = 0;
-const uint8_t throttleSignalADCIndex2 = 1;
 
 // Ready to drive sound
 struct ReadyToDriveParameters
@@ -46,6 +44,20 @@ struct SensorInterfaceParameters
 	uint16_t ThrottleSignalOutOfRangeThreshold = 20;
 	uint16_t ThrottleSignalDeviationThreshold = MaxTorque / 10; // Maximum 10% deviation allowed. FSUK2024 T11.8.9
 	uint16_t SignalDeadzone = 50;
+
+	uint8_t ThrottleSignalADCIndex1 = 0;
+    uint8_t ThrottleSignalADCIndex2 = 1;
+
+	uint8_t BrakeSignalADCIndex = 0;
+	uint16_t BrakeMinPin = 500;
+	uint16_t BrakeMaxPin = 3500;
+	uint16_t BrakeSignalOutOfRangeThreshold = 30;
+	uint16_t MaxBrake = 100;
+
+	uint8_t RegenSignalADCIndex = 0;
+	uint16_t RegenMinPin = 500;
+	uint16_t RegenMaxPin = 3500;
+	int16_t MaxRegen = 500;
 };
 const SensorInterfaceParameters sensorInterfaceParameters;
 

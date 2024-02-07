@@ -74,7 +74,7 @@ public:
 		mGear = gear;
 	}
 
-	std::optional<uint16_t> GetBrake() const 
+	std::optional<uint16_t> GetBrake() const
 	{
 		return mBrake;
 	}

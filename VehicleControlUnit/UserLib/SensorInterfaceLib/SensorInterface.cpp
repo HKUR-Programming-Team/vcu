@@ -5,6 +5,8 @@ namespace VehicleControlUnit::SensorInterfaceLib {
 void SensorInterface::ReadADC()
 {
 	ReadThrottleSignal();
+	ReadBrakeSignal();
+	ReadRegenSignal();
 }
 
 void SensorInterface::ReadThrottleSignal()
@@ -12,8 +14,8 @@ void SensorInterface::ReadThrottleSignal()
 	uint16_t reading0 = 0;
 	uint16_t reading1 = 0;
 
-	mADCManager.GetBufferByIndex(mThrottleSignalADCIndex0, reading0);
-	mADCManager.GetBufferByIndex(mThrottleSignalADCIndex1, reading1);
+	mADCManager.GetBufferByIndex(mParameters.ThrottleSignalADCIndex1, reading0);
+	mADCManager.GetBufferByIndex(mParameters.ThrottleSignalADCIndex2, reading1);
 
 	mLogger.LogCustom("Read signals: " + std::to_string(reading0) + ", " + std::to_string(reading1));
 
@@ -74,6 +76,56 @@ void SensorInterface::ReadThrottleSignal()
 	mLogger.LogCustom("Throttle Final: " + std::to_string(throttle0));
 
 	return;
+}
+
+void SensorInterface::ReadBrakeSignal()
+{
+	uint16_t reading = 0;
+	mADCManager.GetBufferByIndex(mParameters.BrakeSignalADCIndex, reading);
+
+	if (reading > mParameters.BrakeMaxPin + mParameters.BrakeSignalOutOfRangeThreshold)
+	{
+		mDataStore.mDrivingInputDataStore.SetBrake(std::nullopt);
+		return;
+	}
+
+	if (mParameters.BrakeMinPin > mParameters.BrakeSignalOutOfRangeThreshold && reading < mParameters.BrakeMinPin - mParameters.BrakeSignalOutOfRangeThreshold)
+	{
+		mDataStore.mDrivingInputDataStore.SetBrake(std::nullopt);
+		return;
+	}
+
+	if (reading > mParameters.BrakeMaxPin)
+	{
+		mDataStore.mDrivingInputDataStore.SetBrake(mParameters.MaxBrake);
+	}
+
+	if (reading < mParameters.BrakeMinPin)
+	{
+		mDataStore.mDrivingInputDataStore.SetBrake(0);
+	}
+
+	const auto value = (reading - mParameters.BrakeMinPin) * mParameters.MaxBrake / (mParameters.BrakeMaxPin - mParameters.BrakeMinPin);
+	mDataStore.mDrivingInputDataStore.SetBrake(value);
+}
+
+void SensorInterface::ReadRegenSignal()
+{
+	uint16_t reading = 0;
+	mADCManager.GetBufferByIndex(mParameters.RegenSignalADCIndex, reading);
+
+	if (reading > mParameters.RegenMaxPin)
+	{
+		mDataStore.mDrivingInputDataStore.SetRegen(mParameters.MaxRegen);
+	}
+
+	if (reading < mParameters.RegenMinPin)
+	{
+		mDataStore.mDrivingInputDataStore.SetRegen(0);
+	}
+
+	const auto value = (reading - mParameters.RegenMinPin) * mParameters.MaxRegen / (mParameters.RegenMaxPin - mParameters.RegenMinPin);
+	mDataStore.mDrivingInputDataStore.SetRegen(value);
 }
 
 UtilsLib::ErrorState SensorInterface::MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
