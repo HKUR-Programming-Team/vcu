@@ -46,7 +46,6 @@ void Logger::PrintLogMsg(const std::string & logType, const std::string & logMes
 	}
 
 	const auto currentTick = HAL_GetTick();
-	// TODO: add current tick time to the log message
 	printf("%lu [%s] %s\n", currentTick, logType.c_str(), logMessage.c_str());
 }
 

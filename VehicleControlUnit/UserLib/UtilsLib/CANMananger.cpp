@@ -144,7 +144,6 @@ void CANManager::MessageReceiveHandler()
 		return;
 	}
 
-	mLogger.LogInfo("TODO: Map the received CAN Message's ID to an action for CANMananger");
 	return;
 }
 

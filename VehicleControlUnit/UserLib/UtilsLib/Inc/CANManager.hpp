@@ -15,8 +15,6 @@ namespace VehicleControlUnit::MCUInterfaceLib {
 
 namespace VehicleControlUnit::UtilsLib {
 
-// TODO :: Write test cases for all these fuckers
-
 class CANManager
 {
 public:

@@ -4,7 +4,6 @@ namespace VehicleControlUnit::MCUInterfaceLib {
 
 void MCUInterface::MessageReceiveHandler(const uint32_t messageID, const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
 {
-	mLogger.LogInfo("TODO: unit test cases for MCUInterface messageReceiveHandler. two's complement");
 	switch(messageID) {
 	    case 0x0A5: { // Motor Speed
 	        const int16_t motorSpeed = static_cast<int16_t>(static_cast<uint16_t>(message[3]) << 8 | static_cast<uint16_t>(message[2]));
@@ -78,8 +77,6 @@ void MCUInterface::SendCommandMessage()
 	{
 		mCANManager.AbortAllSendRequests(); // Clear transmit box. Try again in the next loop.
 	}
-
-	mLogger.LogInfo("TODO: MCUInterface set error (implausible)");
 
 	return;
 }
