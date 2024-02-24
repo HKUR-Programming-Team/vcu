@@ -7,6 +7,7 @@
 #include <optional>
 #include <SensorInterfaceLib/Inc/SensorInterface.hpp>
 #include <MCUInterfaceLib/Inc/MCUInterface.hpp>
+#include <MCUInterfaceLib/Inc/MCUErrorManager.hpp>
 #include <ReadyToDriveLib/Inc/ReadyToDrive.hpp>
 #include <MainLib/Inc/settings.hpp>
 
@@ -197,17 +198,303 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
 TEST_CASE("SensorInterface ReadBrakeSignal")
 {
-  //TODO
+    utilsLib::ADCManager adcManager;
+    dataLib::DataStore dataStore;
+    utilsLib::Logger logger;
+
+    settings::SensorInterfaceParameters sensorInterfaceParams;
+    sensorInterfaceParams.BrakeMinPin = 500;
+    sensorInterfaceParams.BrakeMaxPin = 1000;
+    sensorInterfaceParams.BrakeSignalOutOfRangeThreshold = 20;
+    sensorInterfaceParams.MaxBrake = 500;
+    sensorInterfaceParams.BrakeSignalADCIndex = 0;
+
+    sensorLib::SensorInterface sensorInterface(logger, dataStore, adcManager, sensorInterfaceParams);
+
+    SUBCASE("WHEN there exists a brake sensor that gives value within range THEN value is set in datastore correctly")
+    {
+        adcManager.buffer[sensorInterfaceParams.BrakeSignalADCIndex] = 600;
+
+        uint16_t checkADC = 0;
+        adcManager.GetBufferByIndex(sensorInterfaceParams.BrakeSignalADCIndex, checkADC);
+        REQUIRE(checkADC == 600);
+
+        sensorInterface.ReadADC();
+        CHECK(dataStore.mDrivingInputDataStore.GetBrake().has_value());
+        CHECK(dataStore.mDrivingInputDataStore.GetBrake().value_or(69420) == 100);
+    }
+
+    SUBCASE("WHEN there exists a brake sensor that gives value out of threshold THEN value is set in datastore correctly")
+    {
+        SUBCASE("bottom threshold")
+        {
+            adcManager.buffer[sensorInterfaceParams.BrakeSignalADCIndex] = 470;
+
+            sensorInterface.ReadADC();
+            CHECK(!dataStore.mDrivingInputDataStore.GetBrake().has_value());
+        }
+
+        SUBCASE("bottom threshold")
+        {
+            adcManager.buffer[sensorInterfaceParams.BrakeSignalADCIndex] = 1025;
+
+            sensorInterface.ReadADC();
+            CHECK(!dataStore.mDrivingInputDataStore.GetBrake().has_value());
+        }
+    }
+
+    SUBCASE("WHEN there exists a brake sensor that gives value out of range but within threshold THEN value is set in datastore correctly")
+    {
+        SUBCASE("bottom threshold")
+        {
+            adcManager.buffer[sensorInterfaceParams.BrakeSignalADCIndex] = 485;
+
+            sensorInterface.ReadADC();
+            CHECK(dataStore.mDrivingInputDataStore.GetBrake().has_value());
+            CHECK(dataStore.mDrivingInputDataStore.GetBrake().value_or(69420) == 0);
+        }
+
+        SUBCASE("bottom threshold")
+        {
+            adcManager.buffer[sensorInterfaceParams.BrakeSignalADCIndex] = 1015;
+
+            sensorInterface.ReadADC();
+            CHECK(dataStore.mDrivingInputDataStore.GetBrake().has_value());
+            CHECK(dataStore.mDrivingInputDataStore.GetBrake().value_or(69420) == 500);
+        }
+    }
+
+    SUBCASE("GIVEN BrakeMinPin <= threshold WHEN there exists a brake sensor that gives value within range THEN value is set in datastore correctly")
+    {
+        settings::SensorInterfaceParameters sensorInterfaceParams;
+        sensorInterfaceParams.BrakeMinPin = 10;
+        sensorInterfaceParams.BrakeMaxPin = 510;
+        sensorInterfaceParams.BrakeSignalOutOfRangeThreshold = 20;
+        sensorInterfaceParams.MaxBrake = 500;
+        sensorInterfaceParams.BrakeSignalADCIndex = 0;
+
+        sensorLib::SensorInterface sensorInterface(logger, dataStore, adcManager, sensorInterfaceParams);
+        adcManager.buffer[sensorInterfaceParams.BrakeSignalADCIndex] = 15;
+
+        sensorInterface.ReadADC();
+        CHECK(dataStore.mDrivingInputDataStore.GetBrake().has_value());
+        CHECK(dataStore.mDrivingInputDataStore.GetBrake().value_or(69420) == 5);
+    }
 }
 
 TEST_CASE("SensorInterface ReadRegenSignal")
 {
-  //TODO
+    utilsLib::ADCManager adcManager;
+    dataLib::DataStore dataStore;
+    utilsLib::Logger logger;
+
+    settings::SensorInterfaceParameters sensorInterfaceParams;
+    sensorInterfaceParams.RegenMinPin = 500;
+    sensorInterfaceParams.RegenMaxPin = 1000;
+    sensorInterfaceParams.MaxRegen = 200;
+    sensorInterfaceParams.RegenSignalADCIndex = 0;
+
+    sensorLib::SensorInterface sensorInterface(logger, dataStore, adcManager, sensorInterfaceParams);
+
+    SUBCASE("WHEN sensor gives value within range THEN value is set in datastore correctly")
+    {
+        adcManager.buffer[sensorInterfaceParams.RegenSignalADCIndex] = 750;
+
+        uint16_t checkADC = 0;
+        adcManager.GetBufferByIndex(sensorInterfaceParams.RegenSignalADCIndex, checkADC);
+        REQUIRE(checkADC == 750);
+
+        sensorInterface.ReadADC();
+        CHECK(dataStore.mDrivingInputDataStore.GetRegen() == 100);
+    }
+
+    SUBCASE("WHEN sensor gives value below range THEN value is set in datastore correctly")
+    {
+        adcManager.buffer[sensorInterfaceParams.RegenSignalADCIndex] = 450;
+
+        sensorInterface.ReadADC();
+        CHECK(dataStore.mDrivingInputDataStore.GetRegen() == 0);
+    }
+    
+    SUBCASE("WHEN sensor gives value above range THEN value is set in datastore correctly")
+    {
+        adcManager.buffer[sensorInterfaceParams.RegenSignalADCIndex] = 1200;
+
+        sensorInterface.ReadADC();
+        CHECK(dataStore.mDrivingInputDataStore.GetRegen() == 200);
+    }
 }
 
 TEST_CASE("MCUErrorManager")
 {
-    //TODO
+    dataLib::DataStore dataStore;
+    utilsLib::Logger logger;
+    const uint32_t implausibleThresholdInterval = 1000;
+
+    mcuLib::MCUErrorManager mcuErrorManager(logger, dataStore, implausibleThresholdInterval);
+    MockCurrentTick = 15000;
+
+    SUBCASE("WHEN error is present for more than the threshold interval THEN persisted implausible status is set in data store correctly")
+    {
+        SUBCASE("Only ThrottleError is present")
+        {
+            dataStore.mDrivingInputDataStore.SetThrottleError(true);
+            dataStore.mMCUDataStore.SetMessageReceiveTimeoutError(false);
+
+            mcuErrorManager.CheckImplausibility();
+            CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+            MockCurrentTick = 15600;
+            mcuErrorManager.CheckImplausibility();
+            CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+            MockCurrentTick = 16100;
+            mcuErrorManager.CheckImplausibility();
+            CHECK(dataStore.GetPersistedImplausibleStatus());
+        }
+
+        SUBCASE("Only TimeoutError is present")
+        {
+            dataStore.mDrivingInputDataStore.SetThrottleError(false);
+            dataStore.mMCUDataStore.SetMessageReceiveTimeoutError(true);
+
+            mcuErrorManager.CheckImplausibility();
+            CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+            MockCurrentTick = 15600;
+            mcuErrorManager.CheckImplausibility();
+            CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+            MockCurrentTick = 16100;
+            mcuErrorManager.CheckImplausibility();
+            CHECK(dataStore.GetPersistedImplausibleStatus());
+        }
+
+        SUBCASE("Both ThrottleError and TimeoutError is present")
+        {
+            dataStore.mDrivingInputDataStore.SetThrottleError(true);
+            dataStore.mMCUDataStore.SetMessageReceiveTimeoutError(true);
+
+            mcuErrorManager.CheckImplausibility();
+            CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+            MockCurrentTick = 15600;
+            mcuErrorManager.CheckImplausibility();
+            CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+            MockCurrentTick = 16100;
+            mcuErrorManager.CheckImplausibility();
+            CHECK(dataStore.GetPersistedImplausibleStatus());
+        }
+
+        SUBCASE("Two errors present in different times, but errors exist continuously")
+        {
+            dataStore.mDrivingInputDataStore.SetThrottleError(true);
+            dataStore.mMCUDataStore.SetMessageReceiveTimeoutError(false);
+
+            mcuErrorManager.CheckImplausibility();
+            CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+            MockCurrentTick = 15600;
+            dataStore.mDrivingInputDataStore.SetThrottleError(true);
+            dataStore.mMCUDataStore.SetMessageReceiveTimeoutError(true);
+            mcuErrorManager.CheckImplausibility();
+            CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+            MockCurrentTick = 15750;
+            dataStore.mDrivingInputDataStore.SetThrottleError(false);
+            dataStore.mMCUDataStore.SetMessageReceiveTimeoutError(true);
+            mcuErrorManager.CheckImplausibility();
+            CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+            MockCurrentTick = 16001;
+            mcuErrorManager.CheckImplausibility();
+            CHECK(dataStore.GetPersistedImplausibleStatus());
+        }
+    }
+
+    SUBCASE("WHEN error is present for NOT more than the threshold interval THEN no persisted implausible status is set in data store correctly")
+    {
+        dataStore.mDrivingInputDataStore.SetThrottleError(true);
+        dataStore.mMCUDataStore.SetMessageReceiveTimeoutError(false);
+
+        mcuErrorManager.CheckImplausibility();
+        CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+        MockCurrentTick = 15600;
+        dataStore.mDrivingInputDataStore.SetThrottleError(false);
+        dataStore.mMCUDataStore.SetMessageReceiveTimeoutError(false);
+        mcuErrorManager.CheckImplausibility();
+        CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+        MockCurrentTick = 15750;
+        dataStore.mDrivingInputDataStore.SetThrottleError(false);
+        dataStore.mMCUDataStore.SetMessageReceiveTimeoutError(true);
+        mcuErrorManager.CheckImplausibility();
+        CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+        MockCurrentTick = 16001;
+        mcuErrorManager.CheckImplausibility();
+        CHECK(!dataStore.GetPersistedImplausibleStatus());
+    }
+
+    SUBCASE("WHEN error is present for NOT more than the threshold interval THEN persisted implausibility is reconsidered when error presents again")
+    {
+        dataStore.mDrivingInputDataStore.SetThrottleError(true);
+        dataStore.mMCUDataStore.SetMessageReceiveTimeoutError(false);
+
+        mcuErrorManager.CheckImplausibility();
+        CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+        MockCurrentTick = 15600;
+        dataStore.mDrivingInputDataStore.SetThrottleError(false);
+        dataStore.mMCUDataStore.SetMessageReceiveTimeoutError(false);
+        mcuErrorManager.CheckImplausibility();
+        CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+        // Error presents again. Start counting for 1000 miliseconds here (15750th tick)
+        MockCurrentTick = 15750;
+        dataStore.mDrivingInputDataStore.SetThrottleError(false);
+        dataStore.mMCUDataStore.SetMessageReceiveTimeoutError(true);
+        mcuErrorManager.CheckImplausibility();
+        CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+        MockCurrentTick = 16001;
+        mcuErrorManager.CheckImplausibility();
+        CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+        // Over 1000 miliseconds from 15750. Hence, persisted implausibility should be set here.
+        MockCurrentTick = 16751; 
+        mcuErrorManager.CheckImplausibility();
+        CHECK(dataStore.GetPersistedImplausibleStatus());
+    }
+
+    SUBCASE("WHEN persisted implausibility is set to true in datastore THEN it will not be reset to false unless ResetErrorState is called")
+    {
+        dataStore.mDrivingInputDataStore.SetThrottleError(true);
+        dataStore.mMCUDataStore.SetMessageReceiveTimeoutError(false);
+
+        mcuErrorManager.CheckImplausibility();
+        CHECK(!dataStore.GetPersistedImplausibleStatus());
+
+        MockCurrentTick = 16001;
+        mcuErrorManager.CheckImplausibility();
+        CHECK(dataStore.GetPersistedImplausibleStatus());
+
+        dataStore.mDrivingInputDataStore.SetThrottleError(false);
+        dataStore.mMCUDataStore.SetMessageReceiveTimeoutError(false);
+
+        MockCurrentTick = 16150;
+        mcuErrorManager.CheckImplausibility();
+        CHECK(dataStore.GetPersistedImplausibleStatus());
+
+        MockCurrentTick = 18150;
+        mcuErrorManager.CheckImplausibility();
+        CHECK(dataStore.GetPersistedImplausibleStatus());
+
+        mcuErrorManager.ResetErrorState();
+        CHECK(!dataStore.GetPersistedImplausibleStatus());
+    }
 }
 
 TEST_CASE("MCUInterface driving input")
