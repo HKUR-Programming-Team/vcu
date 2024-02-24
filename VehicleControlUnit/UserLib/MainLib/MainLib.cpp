@@ -11,7 +11,7 @@ void Main::Setup()
 	if (canError != UtilsLib::ErrorState::INIT_SUCCESS || adcError != UtilsLib::ErrorState::INIT_SUCCESS)
 	{
 		mSetupFailed = true;
-		mLogger.LogInfo("--VCU Setup Failed-- (TODO: Better error message");
+		mLogger.LogInfo("--VCU Setup Failed--");
 		return;
 	}
 
@@ -23,7 +23,7 @@ void Main::Loop()
 {
 	if (mSetupFailed)
 	{
-		mLogger.LogInfo("TODO: what has to be done if in error");
+		DisplayFatalError();
 		mMCUInterface.SendCommandMessageInErrorState();
 		return;
 	}
@@ -48,11 +48,7 @@ void Main::Loop()
 
 	mMCUInterface.SendCommandMessage(); // send packet to motor controller
 
-	// TEST
-	const auto brake = mDataStore.mDrivingInputDataStore.GetBrake().value_or(69420);
-	const auto regen = mDataStore.mDrivingInputDataStore.GetRegen();
-	const bool gear = mDataStore.mDrivingInputDataStore.GetGear() == DataStoreLib::Gear::FORWARD;
-	mLogger.LogCustom("brake: " + std::to_string(brake) + ".regen: " + std::to_string(regen) + ".gear: " + std::to_string(gear));
+	mDashboardInterface.DisplayDashboard();
 }
 
 }

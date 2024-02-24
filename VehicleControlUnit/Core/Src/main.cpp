@@ -51,7 +51,29 @@ CAN_HandleTypeDef hcan;
 UART_HandleTypeDef huart2;
 
 /* USER CODE BEGIN PV */
-VehicleControlUnit::MainLib::Main VCU(hcan, hadc1);
+auto DisplayFatalError = []()
+{
+	uint32_t lastChangeOfLight = HAL_GetTick();
+	bool light = true;
+	while (1)
+	{
+	  // flash the error light
+	  if (light)
+	  {
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_SET);
+	  }
+	  else
+	  {
+		  HAL_GPIO_WritePin(GPIOA, GPIO_PIN_9, GPIO_PIN_RESET);
+	  }
+	  if (HAL_GetTick() - lastChangeOfLight > 1000)
+	  {
+		  light = !light;
+		  lastChangeOfLight = HAL_GetTick();
+	  }
+	}
+};
+VehicleControlUnit::MainLib::Main VCU(hcan, hadc1, DisplayFatalError);
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -390,9 +412,7 @@ void Error_Handler(void)
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
-  while (1)
-  {
-  }
+  DisplayFatalError();
   /* USER CODE END Error_Handler_Debug */
 }
 

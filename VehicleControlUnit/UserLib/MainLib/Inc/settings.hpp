@@ -10,9 +10,9 @@ namespace VehicleControlUnit::MainLib::Settings {
 
 // Logger
 const bool spamLoggingEnabled = false;
-const bool infoLoggingEnabled = false;
-const bool errorLoggingEnabled = false;
-const bool customLoggingEnabled = true;
+const bool infoLoggingEnabled = true;
+const bool errorLoggingEnabled = true;
+const bool customLoggingEnabled = false;
 
 // MCU
 const uint32_t implausibleThresholdInterval = 100;
@@ -74,6 +74,19 @@ struct MCUInterfaceParameters
 	double TCSHaltSlipRatioThreshold = 0.5;
 };
 const MCUInterfaceParameters mcuInterfaceParameters;
+
+struct DashboardInterfaceParameters
+{
+	UtilsLib::GPIOPort ImplausibleErrorLightPort = UtilsLib::GPIOPort::B;
+	UtilsLib::GPIOPinNum ImplausibleErrorLightPinNum = UtilsLib::GPIOPinNum::Pin14;
+	UtilsLib::GPIOPort ThrottleSignalErrorLightPort = UtilsLib::GPIOPort::B;
+	UtilsLib::GPIOPinNum ThrottleSignalErrorLightPinNum = UtilsLib::GPIOPinNum::Pin13;
+	UtilsLib::GPIOPort BrakeSignalErrorLightPort = UtilsLib::GPIOPort::B;
+	UtilsLib::GPIOPinNum BrakeSignalErrorLightPinNum = UtilsLib::GPIOPinNum::Pin12;
+	UtilsLib::GPIOPort MCUTimeoutErrorLightPort = UtilsLib::GPIOPort::B;
+	UtilsLib::GPIOPinNum MCUTimeoutErrorLightPinNum = UtilsLib::GPIOPinNum::Pin11;
+};
+const DashboardInterfaceParameters dashboardInterfaceParameters;
 
 } // namespace VehicleControlUnit::MainLib::Settings
 

@@ -25,7 +25,7 @@ void SensorInterface::ReadThrottleSignal()
 	if (pin0OutOfBottomRange || pin0OutOfTopRange)
 	{
 		mDataStore.mDrivingInputDataStore.SetThrottleError(true);
-		mLogger.LogError("Throttle Pin 0 giving impossible value. min = " + std::to_string(mParameters.ThrottleMinPin0) + ", max = " + std::to_string(mParameters.ThrottleMaxPin0) + ", reading = " + std::to_string(reading0));
+		mLogger.LogSpam("Throttle Pin 0 giving impossible value. min = " + std::to_string(mParameters.ThrottleMinPin0) + ", max = " + std::to_string(mParameters.ThrottleMaxPin0) + ", reading = " + std::to_string(reading0));
 		return;
 	}
 
@@ -34,7 +34,7 @@ void SensorInterface::ReadThrottleSignal()
 	if (pin1OutOfBottomRange || pin1OutOfTopRange)
 	{
 		mDataStore.mDrivingInputDataStore.SetThrottleError(true);
-		mLogger.LogError("Throttle Pin 1 giving impossible value. min = " + std::to_string(mParameters.ThrottleMinPin1) + ", max = " + std::to_string(mParameters.ThrottleMaxPin1) + ", reading = " + std::to_string(reading1));
+		mLogger.LogSpam("Throttle Pin 1 giving impossible value. min = " + std::to_string(mParameters.ThrottleMinPin1) + ", max = " + std::to_string(mParameters.ThrottleMaxPin1) + ", reading = " + std::to_string(reading1));
 		return;
 	}
 
@@ -59,13 +59,13 @@ void SensorInterface::ReadThrottleSignal()
 	if (throttle0 > throttle1 && throttle0 - throttle1 > mParameters.ThrottleSignalDeviationThreshold)
 	{
 		mDataStore.mDrivingInputDataStore.SetThrottleError(true);
-		mLogger.LogError("Throttle signal deviation more than 10%");
+		mLogger.LogSpam("Throttle signal deviation more than 10%");
 		return;
 	}
 	if (throttle1 > throttle0 && throttle1 - throttle0 > mParameters.ThrottleSignalDeviationThreshold)
 	{
 		mDataStore.mDrivingInputDataStore.SetThrottleError(true);
-		mLogger.LogError("Throttle signal deviation more than 10%");
+		mLogger.LogSpam("Throttle signal deviation more than 10%");
 		return;
 	}
 

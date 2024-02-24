@@ -2,6 +2,7 @@
 
 #include <BMSInterfaceLib/Inc/BMSInterface.hpp>
 #include <DataStoreLib/Inc/DataStore.hpp>
+#include <DashboardInterfaceLib/Inc/DashboardInterface.hpp>
 #include <UtilsLib/Inc/ADCManager.hpp>
 #include <UtilsLib/Inc/Logger.hpp>
 #include <UtilsLib/Inc/GPIOManager.hpp>
@@ -15,6 +16,7 @@
 #include <stm32f1xx.h>
 
 #include <optional>
+#include <functional>
 
 namespace VehicleControlUnit::MainLib {
 
@@ -22,7 +24,7 @@ class Main
 {
 
 public:
-	Main(CAN_HandleTypeDef& canHandler, ADC_HandleTypeDef& adcHandler) :
+	Main(CAN_HandleTypeDef& canHandler, ADC_HandleTypeDef& adcHandler, std::function<void()> displayFatalError) :
 		mLogger{Settings::spamLoggingEnabled,
 				Settings::infoLoggingEnabled,
 				Settings::errorLoggingEnabled,
@@ -35,7 +37,9 @@ public:
 		mMCUInterface(mLogger, mDataStore, mCANManager, Settings::mcuInterfaceParameters),
 		mMCUErrorManager(mLogger, mDataStore, Settings::implausibleThresholdInterval),
 		mReadyToDriveManager(mLogger, mDataStore, Settings::readyToDriveParameters),
-		mSetupFailed{false}
+		mDashboardInterface(mLogger, mDataStore, Settings::dashboardInterfaceParameters),
+		mSetupFailed{false},
+		DisplayFatalError{displayFatalError}
 	{}
 
 	void Setup();
@@ -52,8 +56,10 @@ private:
 	MCUInterfaceLib::MCUInterface mMCUInterface;
 	MCUInterfaceLib::MCUErrorManager mMCUErrorManager;
 	ReadyToDriveLib::ReadyToDrive mReadyToDriveManager;
+	DashboardInterfaceLib::DashboardInterface mDashboardInterface;
 
 	bool mSetupFailed;
+	std::function<void()> DisplayFatalError;
 };
 
 } // namespace VehicleControlUnit::MainLib
