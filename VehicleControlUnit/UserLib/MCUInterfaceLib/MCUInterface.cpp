@@ -101,7 +101,7 @@ void MCUInterface::SetCommandMessageInNonErrorState()
 
 	SetCommandMessage(torqueCommand, inverter, inverterDischarge, speedMode, torqueLimit);
 
-	mLogger.LogCustom("Before TCS:" + std::to_string(mTransmitBuffer[0]) + ", " + std::to_string(mTransmitBuffer[1])
+	mLogger.LogSpam("Before TCS:" + std::to_string(mTransmitBuffer[0]) + ", " + std::to_string(mTransmitBuffer[1])
 				+ ", " + std::to_string(mTransmitBuffer[2]) + ", " + std::to_string(mTransmitBuffer[3])
 				+ ", " + std::to_string(mTransmitBuffer[4]) + ", " + std::to_string(mTransmitBuffer[5])
 				+ ", " + std::to_string(mTransmitBuffer[6]) + ", " + std::to_string(mTransmitBuffer[7]));

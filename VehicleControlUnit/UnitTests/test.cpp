@@ -892,7 +892,70 @@ TEST_CASE("MCUInterface driving input")
 
 TEST_CASE("MCUInterface TCS")
 {
-    //TODO
+    utilsLib::CANManager canManager;
+    dataLib::DataStore dataStore;
+    utilsLib::Logger logger;
+    settings::MCUInterfaceParameters mcuInterfaceParams;
+    mcuInterfaceParams.InverterEnableTorqueThreshold = 10;
+    mcuInterfaceParams.RegenEnableTorqueThreshold = 5;
+    mcuInterfaceParams.CommandMessageTransmitInterval = 3;
+    mcuInterfaceParams.TCSTriggeringSlipRatioThreshold = 20;
+    mcuInterfaceParams.TCSHaltSlipRatioThreshold = 12;
+    mcuInterfaceParams.WheelRadius = 1;
+
+    mcuLib::MCUInterface mcuInterface(logger, dataStore, canManager, mcuInterfaceParams);
+    MockCurrentTick = 4;
+
+    dataStore.SetPersistedImplausibleStatus(false);
+    dataStore.mDrivingInputDataStore.SetTCSEnabled(true);
+
+    SUBCASE("Originally tcs not triggered, WHEN slipRatio > TCSTriggeringSlipRatioThreshold, tcs is triggered, THEN WHEN slipRatio >= TCSHaltSlipRatioThreshold, torque in command message is restricted")
+    {
+        dataStore.mDrivingInputDataStore.SetTorque(300);
+        dataStore.mDrivingInputDataStore.SetRegen(0);
+        dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+        dataStore.mVehicleSensorDataStore.SetAngularWheelSpeedRearLeft(44.0f);
+        dataStore.mVehicleSensorDataStore.SetAngularWheelSpeedRearRight(44.0f);
+        dataStore.mVehicleSensorDataStore.SetLinearVelocity(2.0f);
+
+        // maxWheelSpeed = leftWheelSpeed > rightWheelSpeed ? leftWheelSpeed : rightWheelSpeed;
+        // slipRatio = (mParameters.WheelRadius * maxWheelSpeed - linearSpeed)/linearSpeed;
+        
+        mcuInterface.SendCommandMessage();
+
+        // Check the header
+        CHECK(canManager.mMessageId == 0x0C0);
+        CHECK(canManager.mMessageLength == 8);
+
+        // Check the payload
+        CHECK(canManager.buffer[0] == 44);
+        CHECK(canManager.buffer[1] == 1);
+        CHECK(canManager.buffer[2] == 0);
+        CHECK(canManager.buffer[3] == 0);
+        CHECK(canManager.buffer[4] == 0b00000001);
+        CHECK(canManager.buffer[5] == 0b00000001);
+        CHECK(canManager.buffer[6] == 0);
+        CHECK(canManager.buffer[7] == 0);
+
+        dataStore.mDrivingInputDataStore.SetTorque(350);
+
+        MockCurrentTick = 7;
+        mcuInterface.SendCommandMessage();
+
+        // Check the header
+        CHECK(canManager.mMessageId == 0x0C0);
+        CHECK(canManager.mMessageLength == 8);
+
+        // Check the payload
+        CHECK(canManager.buffer[0] == 44);
+        CHECK(canManager.buffer[1] == 1);
+        CHECK(canManager.buffer[2] == 0);
+        CHECK(canManager.buffer[3] == 0);
+        CHECK(canManager.buffer[4] == 0b00000001);
+        CHECK(canManager.buffer[5] == 0b00000001);
+        CHECK(canManager.buffer[6] == 0);
+        CHECK(canManager.buffer[7] == 0);
+    }
 }
 
 TEST_CASE("MCUInterface MessageReceiveHandler")

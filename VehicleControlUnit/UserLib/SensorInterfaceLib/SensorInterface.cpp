@@ -17,7 +17,7 @@ void SensorInterface::ReadThrottleSignal()
 	mADCManager.GetBufferByIndex(mParameters.ThrottleSignalADCIndex1, reading0);
 	mADCManager.GetBufferByIndex(mParameters.ThrottleSignalADCIndex2, reading1);
 
-	mLogger.LogCustom("Read signals: " + std::to_string(reading0) + ", " + std::to_string(reading1));
+	mLogger.LogCustom("Throttle: " + std::to_string(reading0) + ", " + std::to_string(reading1));
 
 	// Check if the raw value deviates from max/min value of the throttle too much. FSUK2024 T11.9.2(c)
 	const bool pin0OutOfBottomRange = mParameters.ThrottleMinPin0 > mParameters.ThrottleSignalOutOfRangeThreshold && reading0 < mParameters.ThrottleMinPin0 - mParameters.ThrottleSignalOutOfRangeThreshold;
@@ -83,6 +83,8 @@ void SensorInterface::ReadBrakeSignal()
 	uint16_t reading = 0;
 	mADCManager.GetBufferByIndex(mParameters.BrakeSignalADCIndex, reading);
 
+	mLogger.LogCustom("Brake: " + std::to_string(reading));
+
 	if (reading > mParameters.BrakeMaxPin + mParameters.BrakeSignalOutOfRangeThreshold)
 	{
 		mDataStore.mDrivingInputDataStore.SetBrake(std::nullopt);
@@ -115,6 +117,8 @@ void SensorInterface::ReadRegenSignal()
 {
 	uint16_t reading = 0;
 	mADCManager.GetBufferByIndex(mParameters.RegenSignalADCIndex, reading);
+
+	mLogger.LogCustom("Regen: " + std::to_string(reading));
 
 	if (reading > mParameters.RegenMaxPin)
 	{

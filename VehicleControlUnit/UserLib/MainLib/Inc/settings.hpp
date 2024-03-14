@@ -18,7 +18,7 @@ const bool customLoggingEnabled = false;
 const uint32_t implausibleThresholdInterval = 100;
 
 // ADC
-const uint32_t ADCDMABufferLength = 3;
+const uint32_t ADCDMABufferLength = 5;
 
 // Ready to drive sound
 struct ReadyToDriveParameters
@@ -77,8 +77,8 @@ const MCUInterfaceParameters mcuInterfaceParameters;
 
 struct DashboardInterfaceParameters
 {
-	UtilsLib::GPIOPort ImplausibleErrorLightPort = UtilsLib::GPIOPort::B;
-	UtilsLib::GPIOPinNum ImplausibleErrorLightPinNum = UtilsLib::GPIOPinNum::Pin14;
+	UtilsLib::GPIOPort ImplausibleErrorLightPort = UtilsLib::GPIOPort::A;
+	UtilsLib::GPIOPinNum ImplausibleErrorLightPinNum = UtilsLib::GPIOPinNum::Pin9;
 	UtilsLib::GPIOPort ThrottleSignalErrorLightPort = UtilsLib::GPIOPort::B;
 	UtilsLib::GPIOPinNum ThrottleSignalErrorLightPinNum = UtilsLib::GPIOPinNum::Pin13;
 	UtilsLib::GPIOPort BrakeSignalErrorLightPort = UtilsLib::GPIOPort::B;
