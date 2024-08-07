@@ -87,6 +87,11 @@ UtilsLib::ErrorState CANManager::SendMessage(const uint8_t message[8])
 		return ErrorState::CAN_MSG_TRANSMIT_MAILBOX_FULL;
 	}
 
+	mLogger.LogSpam("[CAN Tx] ID: " + std::to_string(mTransmitHeader.StdId) + ", Data: " + std::to_string(message[0]) + ", " + std::to_string(message[1])
+			+ ", " + std::to_string(message[2]) + ", " + std::to_string(message[3])
+			+ ", " + std::to_string(message[4]) + ", " + std::to_string(message[5])
+			+ ", " + std::to_string(message[6]) + ", " + std::to_string(message[7]));
+
 	return UtilsLib::ErrorState::CAN_MSG_TRANSMIT_SUCCESS;
 }
 
@@ -131,7 +136,7 @@ void CANManager::MessageReceiveHandler()
 		mLogger.LogInfo("CAN Message with unknown IDE is received. canPortName: " + mCanPortName);
 		return;
 	}
-	mLogger.LogCustom("CANMsg:" + std::to_string(messageID) + ", " + std::to_string(mReceiveBuffer[0]) + ", " + std::to_string(mReceiveBuffer[1])
+	mLogger.LogCustom("CANMsg ID:" + std::to_string(messageID) + ", Data: " + std::to_string(mReceiveBuffer[0]) + ", " + std::to_string(mReceiveBuffer[1])
 			+ ", " + std::to_string(mReceiveBuffer[2]) + ", " + std::to_string(mReceiveBuffer[3])
 			+ ", " + std::to_string(mReceiveBuffer[4]) + ", " + std::to_string(mReceiveBuffer[5])
 			+ ", " + std::to_string(mReceiveBuffer[6]) + ", " + std::to_string(mReceiveBuffer[7]));

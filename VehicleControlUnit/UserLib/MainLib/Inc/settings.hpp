@@ -10,21 +10,21 @@ namespace VehicleControlUnit::MainLib::Settings {
 
 // Logger
 const bool spamLoggingEnabled = false;
-const bool infoLoggingEnabled = true;
+const bool infoLoggingEnabled = false;
 const bool errorLoggingEnabled = true;
-const bool customLoggingEnabled = false;
+const bool customLoggingEnabled = true;
 
 // MCU
 const uint32_t implausibleThresholdInterval = 100;
 
 // ADC
-const uint32_t ADCDMABufferLength = 5;
+const uint32_t ADCDMABufferLength = 3;
 
 // Ready to drive sound
 struct ReadyToDriveParameters
 { 
 	uint32_t readyToDriveSoundDuration = 1500;
-	uint16_t readyToDriveTriggeringBrakeThreshold = 20;
+	uint16_t readyToDriveTriggeringBrakeThreshold = 10;
 	UtilsLib::GPIOPort readyToDriveButtonPort = UtilsLib::GPIOPort::C;
 	UtilsLib::GPIOPinNum readyToDriveButtonPinNum = UtilsLib::GPIOPinNum::Pin7;
 	UtilsLib::GPIOPort readyToDriveSoundPort = UtilsLib::GPIOPort::C;
@@ -35,26 +35,26 @@ const ReadyToDriveParameters readyToDriveParameters;
 // Sensor Interface
 struct SensorInterfaceParameters
 {
-    uint16_t ThrottleMinPin0 = 500;
-	uint16_t ThrottleMaxPin0 = 3500;
-	uint16_t ThrottleMinPin1 = 500;
-	uint16_t ThrottleMaxPin1 = 3500;
-	int16_t MaxTorque = 1660;
+    uint16_t ThrottleMinPin0 = 350;
+	uint16_t ThrottleMaxPin0 = 3700;
+	uint16_t ThrottleMinPin1 = 350;
+	uint16_t ThrottleMaxPin1 = 3700;
+	int16_t MaxTorque = 1660/5;
 
-	uint16_t ThrottleSignalOutOfRangeThreshold = 20;
-	uint16_t ThrottleSignalDeviationThreshold = MaxTorque / 10; // Maximum 10% deviation allowed. FSUK2024 T11.8.9
+	uint16_t ThrottleSignalOutOfRangeThreshold = 100;
+	uint16_t ThrottleSignalDeviationThreshold = MaxTorque / 1; // Maximum 10% deviation allowed. FSUK2024 T11.8.9
 	uint16_t SignalDeadzone = 50;
 
 	uint8_t ThrottleSignalADCIndex1 = 0;
     uint8_t ThrottleSignalADCIndex2 = 1;
 
-	uint8_t BrakeSignalADCIndex = 0;
+	uint8_t BrakeSignalADCIndex = 2;
 	uint16_t BrakeMinPin = 500;
 	uint16_t BrakeMaxPin = 3500;
-	uint16_t BrakeSignalOutOfRangeThreshold = 30;
+	uint16_t BrakeSignalOutOfRangeThreshold = 100;
 	uint16_t MaxBrake = 100;
 
-	uint8_t RegenSignalADCIndex = 0;
+	uint8_t RegenSignalADCIndex = 2;
 	uint16_t RegenMinPin = 500;
 	uint16_t RegenMaxPin = 3500;
 	int16_t MaxRegen = 500;
