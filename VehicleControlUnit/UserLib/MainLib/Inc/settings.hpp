@@ -10,7 +10,7 @@ namespace VehicleControlUnit::MainLib::Settings {
 
 // Logger
 const bool spamLoggingEnabled = false;
-const bool infoLoggingEnabled = false;
+const bool infoLoggingEnabled = true;
 const bool errorLoggingEnabled = true;
 const bool customLoggingEnabled = true;
 
@@ -35,28 +35,28 @@ const ReadyToDriveParameters readyToDriveParameters;
 // Sensor Interface
 struct SensorInterfaceParameters
 {
-    uint16_t ThrottleMinPin0 = 350;
-	uint16_t ThrottleMaxPin0 = 3700;
-	uint16_t ThrottleMinPin1 = 350;
+    uint16_t ThrottleMinPin0 = 580;
+	uint16_t ThrottleMaxPin0 = 3225;
+	uint16_t ThrottleMinPin1 = 1250;
 	uint16_t ThrottleMaxPin1 = 3700;
-	int16_t MaxTorque = 1660/5;
+	int16_t MaxTorque = 1660;
 
-	uint16_t ThrottleSignalOutOfRangeThreshold = 100;
-	uint16_t ThrottleSignalDeviationThreshold = MaxTorque / 1; // Maximum 10% deviation allowed. FSUK2024 T11.8.9
-	uint16_t SignalDeadzone = 50;
+	uint16_t ThrottleSignalOutOfRangeThreshold = 50;
+	uint16_t ThrottleSignalDeviationThreshold = MaxTorque / 10; // Maximum 10% deviation allowed. FSUK2024 T11.8.9
+	uint16_t SignalDeadzone = 20;
 
 	uint8_t ThrottleSignalADCIndex1 = 0;
     uint8_t ThrottleSignalADCIndex2 = 1;
 
 	uint8_t BrakeSignalADCIndex = 2;
-	uint16_t BrakeMinPin = 500;
-	uint16_t BrakeMaxPin = 3500;
+	uint16_t BrakeMinPin = 300;
+	uint16_t BrakeMaxPin = 1500;
 	uint16_t BrakeSignalOutOfRangeThreshold = 100;
 	uint16_t MaxBrake = 100;
 
 	uint8_t RegenSignalADCIndex = 2;
-	uint16_t RegenMinPin = 500;
-	uint16_t RegenMaxPin = 3500;
+	uint16_t RegenMinPin = 400;
+	uint16_t RegenMaxPin = 1600;
 	int16_t MaxRegen = 500;
 };
 const SensorInterfaceParameters sensorInterfaceParameters;

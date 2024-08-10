@@ -73,7 +73,7 @@ void SensorInterface::ReadThrottleSignal()
 
 	mDataStore.mDrivingInputDataStore.SetThrottleError(false);
 	mDataStore.mDrivingInputDataStore.SetTorque(throttle0);
-	mLogger.LogSpam("Throttle Final: " + std::to_string(throttle0));
+	mLogger.LogCustom("Throttle Final: " + std::to_string(throttle0));
 
 	return;
 }
@@ -110,6 +110,7 @@ void SensorInterface::ReadBrakeSignal()
 	}
 
 	const auto value = (reading - mParameters.BrakeMinPin) * mParameters.MaxBrake / (mParameters.BrakeMaxPin - mParameters.BrakeMinPin);
+	mLogger.LogCustom("Brake Final: " + std::to_string(value));
 	mDataStore.mDrivingInputDataStore.SetBrake(value);
 }
 
