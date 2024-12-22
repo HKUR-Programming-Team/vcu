@@ -37,8 +37,7 @@ struct ReadyToDriveConfig
 	UtilsLib::GPIOPinNum readyToDriveSoundPinNum = UtilsLib::GPIOPinNum::Pin1;
 };
 
-// Sensor Interface
-struct SensorInterfaceConfig
+struct SensorInterfaceThrottleConfig
 {
     uint16_t ThrottleMinPin0 = 500;
 	uint16_t ThrottleMaxPin0 = 3500;
@@ -52,13 +51,19 @@ struct SensorInterfaceConfig
 
 	uint8_t ThrottleSignalADCIndex1 = 0;
     uint8_t ThrottleSignalADCIndex2 = 1;
+};
 
+struct SensorInterfaceBrakeConfig
+{
 	uint8_t BrakeSignalADCIndex = 0;
 	uint16_t BrakeMinPin = 500;
 	uint16_t BrakeMaxPin = 3500;
 	uint16_t BrakeSignalOutOfRangeThreshold = 30;
 	uint16_t MaxBrake = 100;
+};
 
+struct SensorInterfaceRegenConfig
+{
 	uint8_t RegenSignalADCIndex = 0;
 	uint16_t RegenMinPin = 500;
 	uint16_t RegenMaxPin = 3500;
@@ -96,14 +101,18 @@ Config(LoggerConfig loggerConfig,
     ADCConfig adcConfig,
     ErrorConfig errorConfig,
     ReadyToDriveConfig readyToDriveConfig,
-    SensorInterfaceConfig sensorInterfaceConfig,
+    SensorInterfaceThrottleConfig sensorInterfaceThrottleConfig,
+	SensorInterfaceBrakeConfig sensorInterfaceBrakeConfig,
+	SensorInterfaceRegenConfig sensorInterfaceRegenConfig,
     MCUInterfaceConfig mcuInterfaceConfig,
     DashboardInterfaceConfig dashboardInterfaceConfig):
         mLoggerConfig(loggerConfig),
         mAdcConfig(adcConfig),
         mErrorConfig(errorConfig),
         mReadyToDriveConfig(readyToDriveConfig),
-        mSensorInterfaceConfig(sensorInterfaceConfig),
+        mSensorInterfaceThrottleConfig(sensorInterfaceThrottleConfig),
+		mSensorInterfaceBrakeConfig(sensorInterfaceBrakeConfig),
+		mSensorInterfaceRegenConfig(sensorInterfaceRegenConfig),
         mMcuInterfaceConfig(mcuInterfaceConfig),
         mDashboardInterfaceConfig(dashboardInterfaceConfig)
 {}
@@ -116,7 +125,9 @@ LoggerConfig mLoggerConfig;
 ADCConfig mAdcConfig;
 ErrorConfig mErrorConfig;
 ReadyToDriveConfig mReadyToDriveConfig;
-SensorInterfaceConfig mSensorInterfaceConfig;
+SensorInterfaceThrottleConfig mSensorInterfaceThrottleConfig;
+SensorInterfaceBrakeConfig mSensorInterfaceBrakeConfig;
+SensorInterfaceRegenConfig mSensorInterfaceRegenConfig;
 MCUInterfaceConfig mMcuInterfaceConfig;
 DashboardInterfaceConfig mDashboardInterfaceConfig;
 };

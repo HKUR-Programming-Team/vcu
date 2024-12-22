@@ -11,6 +11,7 @@
 #include <ReadyToDriveLib/Inc/ReadyToDrive.hpp>
 #include <MainLib/Inc/settings.hpp>
 #include <MainLib/Inc/ConfigValueParser.hpp>
+#include <MainLib/Inc/ConfigGroupParser.hpp>
 #include <MainLib/Inc/json.hpp>
 
 namespace sensorLib = VehicleControlUnit::SensorInterfaceLib;
@@ -1478,6 +1479,358 @@ TEST_CASE("Config Value Parser")
             const auto parsedValue = config::ConfigValueParser::GetGPIOPinNum(parsedTestJson, "haha");
             CHECK(parsedValue.has_value());
             CHECK_EQ(parsedValue.value(), utilsLib::GPIOPinNum::Pin8);
+        }
+    }
+}
+
+TEST_CASE("Config Group Parser")
+{
+    SUBCASE("LoggerConfig")
+    {
+        SUBCASE("WHEN everything is right THEN correct LoggerConfig is returned")
+        {
+            std::string testJson = R"({
+                "spamLoggingEnabled": false,
+                "infoLoggingEnabled": true,
+                "errorLoggingEnabled": false,
+                "customLoggingEnabled": true
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto loggerParametersOpt = config::ConfigGroupParser::ParseLoggerParameteres(parsedTestJson);
+            CHECK(loggerParametersOpt.has_value());
+            const auto loggerParameters = loggerParametersOpt.value();
+
+            CHECK_EQ(loggerParameters.spamLoggingEnabled, false);
+            CHECK_EQ(loggerParameters.infoLoggingEnabled, true);
+            CHECK_EQ(loggerParameters.errorLoggingEnabled, false);
+            CHECK_EQ(loggerParameters.customLoggingEnabled, true);
+        }
+
+        SUBCASE("WHEN a field is invalid is right THEN nullopt is returned")
+        {
+            std::string testJson = R"({
+                "spamLoggingEnabled": false,
+                "infoLoggingEnabled": true,
+                "errorLoggingEnabled": false,
+                "customLoggingEnabled": 1
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto loggerParametersOpt = config::ConfigGroupParser::ParseLoggerParameteres(parsedTestJson);
+            CHECK_FALSE(loggerParametersOpt.has_value());
+        }
+
+        SUBCASE("WHEN a field is missing THEN nullopt is returned")
+        {
+            std::string testJson = R"({
+                "spamLoggingEnabled": false,
+                "infoLoggingEnabled": true,
+                "errorLoggingEnabled": false
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto loggerParametersOpt = config::ConfigGroupParser::ParseLoggerParameteres(parsedTestJson);
+            CHECK_FALSE(loggerParametersOpt.has_value());
+        }
+    }
+
+    SUBCASE("ErrorConfig")
+    {
+        SUBCASE("WHEN everything is right THEN correct ErrorConfig is returned")
+        {
+            std::string testJson = R"({
+                "implausibleThresholdInterval": 100
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto errorConfigOpt = config::ConfigGroupParser::ParseErrorConfig(parsedTestJson);
+            CHECK(errorConfigOpt.has_value());
+            const auto errorConfig = errorConfigOpt.value();
+
+            CHECK_EQ(errorConfig.implausibleThresholdInterval, 100);
+        }
+
+        SUBCASE("WHEN a field is invalid is right THEN nullopt is returned")
+        {
+            std::string testJson = R"({
+                "implausibleThresholdInterval": -5,
+                "infoLoggingEnabled": true,
+                "errorLoggingEnabled": false,
+                "customLoggingEnabled": 1
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto loggerParametersOpt = config::ConfigGroupParser::ParseErrorConfig(parsedTestJson);
+            CHECK_FALSE(loggerParametersOpt.has_value());
+        }
+
+        SUBCASE("WHEN a field is missing THEN nullopt is returned")
+        {
+            std::string testJson = R"({
+                "spamLoggingEnabled": false
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto loggerParametersOpt = config::ConfigGroupParser::ParseErrorConfig(parsedTestJson);
+            CHECK_FALSE(loggerParametersOpt.has_value());
+        }
+    }
+
+    SUBCASE("ReadyToDriveConfig")
+    {
+        SUBCASE("WHEN everything is right THEN correct ReadyToDriveConfig is returned")
+        {
+            std::string testJson = R"({
+                "readyToDriveSoundDuration": 1000,
+                "readyToDriveTriggeringBrakeThreshold": 40,
+                "readyToDriveButtonPort": "A",
+                "readyToDriveButtonPinNum": 5,
+                "readyToDriveSoundPort": "D",
+                "readyToDriveSoundPinNum": 2
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto readToDriveOpt = config::ConfigGroupParser::ParseReadyToDriveConfig(parsedTestJson);
+            CHECK(readToDriveOpt.has_value());
+            const auto readyToDrive = readToDriveOpt.value();
+
+            CHECK_EQ(readyToDrive.readyToDriveSoundDuration, 1000);
+            CHECK_EQ(readyToDrive.readyToDriveTriggeringBrakeThreshold, 40);
+            CHECK_EQ(readyToDrive.readyToDriveButtonPort, utilsLib::GPIOPort::A);
+            CHECK_EQ(readyToDrive.readyToDriveButtonPinNum, utilsLib::GPIOPinNum::Pin5);
+            CHECK_EQ(readyToDrive.readyToDriveSoundPort, utilsLib::GPIOPort::D);
+            CHECK_EQ(readyToDrive.readyToDriveSoundPinNum, utilsLib::GPIOPinNum::Pin2);
+        }
+
+        SUBCASE("WHEN a field is invalid is right THEN nullopt is returned")
+        {
+            std::string testJson = R"({
+                "readyToDriveSoundDuration": -1000,
+                "readyToDriveTriggeringBrakeThreshold": 40,
+                "readyToDriveButtonPort": "A",
+                "readyToDriveButtonPinNum": 5,
+                "readyToDriveSoundPort": "G",
+                "readyToDriveSoundPinNum": 2
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto loggerParametersOpt = config::ConfigGroupParser::ParseReadyToDriveConfig(parsedTestJson);
+            CHECK_FALSE(loggerParametersOpt.has_value());
+        }
+
+        SUBCASE("WHEN a field is missing THEN nullopt is returned")
+        {
+            std::string testJson = R"({
+                "readyToDriveSoundDuration": 1000,
+                "readyToDriveTriggeringBrakeThreshold": 40,
+                "readyToDriveButtonPort": "A",
+                "readyToDriveSoundPort": "D",
+                "readyToDriveSoundPinNum": 2
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto loggerParametersOpt = config::ConfigGroupParser::ParseReadyToDriveConfig(parsedTestJson);
+            CHECK_FALSE(loggerParametersOpt.has_value());
+        }
+    }
+
+    SUBCASE("SensorInterfaceThrottleConfig")
+    {
+        SUBCASE("WHEN everything is right THEN correct ReadyToDriveConfig is returned")
+        {
+            std::string testJson = R"({
+                "ThrottleMinPin0": 600,
+                "ThrottleMaxPin0": 2000,
+                "ThrottleMinPin1": 700,
+                "ThrottleMaxPin1": 3000,
+                "MaxTorque": 1500,
+                "ThrottleSignalOutOfRangeThreshold": 25,
+                "ThrottleSignalDeviationThreshold": 25,
+                "SignalDeadzone": 10
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto sensorInterfaceOpt = config::ConfigGroupParser::ParseSensorInterfaceThrottleConfig(parsedTestJson);
+            CHECK(sensorInterfaceOpt.has_value());
+            const auto sensorInterface = sensorInterfaceOpt.value();
+
+            CHECK_EQ(sensorInterface.ThrottleMinPin0, 600);
+            CHECK_EQ(sensorInterface.ThrottleMaxPin0, 2000);
+            CHECK_EQ(sensorInterface.ThrottleMinPin1, 700);
+            CHECK_EQ(sensorInterface.ThrottleMaxPin1, 3000);
+            CHECK_EQ(sensorInterface.MaxTorque, 1500);
+            CHECK_EQ(sensorInterface.ThrottleSignalOutOfRangeThreshold, 25);
+            CHECK_EQ(sensorInterface.ThrottleSignalDeviationThreshold, 25);
+            CHECK_EQ(sensorInterface.SignalDeadzone, 10);
+        }
+
+        SUBCASE("WHEN a field is invalid is right THEN nullopt is returned")
+        {
+            std::string testJson = R"({
+                "ThrottleMinPin0": 600,
+                "ThrottleMaxPin0": 2000,
+                "ThrottleMinPin1": 700,
+                "ThrottleMaxPin1": 3000,
+                "MaxTorque": 1500,
+                "ThrottleSignalOutOfRangeThreshold": 25,
+                "ThrottleSignalDeviationThreshold": 25,
+                "SignalDeadzone": "fuck"
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto loggerParametersOpt = config::ConfigGroupParser::ParseSensorInterfaceThrottleConfig(parsedTestJson);
+            CHECK_FALSE(loggerParametersOpt.has_value());
+        }
+
+        SUBCASE("WHEN a field is missing THEN nullopt is returned")
+        {
+            std::string testJson = R"({
+                "ThrottleMinPin0": 600,
+                "ThrottleMaxPin0": 2000,
+                "ThrottleMinPin1": 700,
+                "ThrottleMaxPin1": 3000,
+                "ThrottleSignalOutOfRangeThreshold": 25,
+                "ThrottleSignalDeviationThreshold": 25
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto loggerParametersOpt = config::ConfigGroupParser::ParseSensorInterfaceThrottleConfig(parsedTestJson);
+            CHECK_FALSE(loggerParametersOpt.has_value());
+        }
+    }
+
+        SUBCASE("SensorInterfaceBrakeConfig")
+    {
+        SUBCASE("WHEN everything is right THEN correct ReadyToDriveConfig is returned")
+        {
+            std::string testJson = R"({
+                "MaxBrake": 500,
+                "BrakeMinPin": 10,
+                "BrakeMaxPin": 200,
+                "BrakeSignalOutOfRangeThreshold": 11
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto sensorInterfaceOpt = config::ConfigGroupParser::ParseSensorInterfaceBrakeConfig(parsedTestJson);
+            CHECK(sensorInterfaceOpt.has_value());
+            const auto sensorInterface = sensorInterfaceOpt.value();
+
+            CHECK_EQ(sensorInterface.MaxBrake, 500);
+            CHECK_EQ(sensorInterface.BrakeMinPin, 10);
+            CHECK_EQ(sensorInterface.BrakeMaxPin, 200);
+            CHECK_EQ(sensorInterface.BrakeSignalOutOfRangeThreshold, 11);
+        }
+
+        SUBCASE("WHEN a field is invalid is right THEN nullopt is returned")
+        {
+            std::string testJson = R"({
+                "MaxBrake": 500,
+                "BrakeMinPin": -10,
+                "BrakeMaxPin": 200,
+                "BrakeSignalOutOfRangeThreshold": 11
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto loggerParametersOpt = config::ConfigGroupParser::ParseSensorInterfaceBrakeConfig(parsedTestJson);
+            CHECK_FALSE(loggerParametersOpt.has_value());
+        }
+
+        SUBCASE("WHEN a field is missing THEN nullopt is returned")
+        {
+            std::string testJson = R"({
+                "MaxBrake": 500,
+                "BrakeSignalOutOfRangeThreshold": 11
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto loggerParametersOpt = config::ConfigGroupParser::ParseSensorInterfaceBrakeConfig(parsedTestJson);
+            CHECK_FALSE(loggerParametersOpt.has_value());
+        }
+    }
+
+    SUBCASE("SensorInterfaceRegenConfig")
+    {
+        SUBCASE("WHEN everything is right THEN correct ReadyToDriveConfig is returned")
+        {
+            std::string testJson = R"({
+                "RegenMinPin": 20,
+                "RegenMaxPin": 220,
+                "MaxRegen": 50,
+                "haha": false
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto sensorInterfaceOpt = config::ConfigGroupParser::ParseSensorInterfaceRegenConfig(parsedTestJson);
+            CHECK(sensorInterfaceOpt.has_value());
+            const auto sensorInterface = sensorInterfaceOpt.value();
+
+            CHECK_EQ(sensorInterface.RegenMinPin, 20);
+            CHECK_EQ(sensorInterface.RegenMaxPin, 220);
+            CHECK_EQ(sensorInterface.MaxRegen, 50);
+        }
+
+        SUBCASE("WHEN a field is invalid is right THEN nullopt is returned")
+        {
+            std::string testJson = R"({
+                "RegenMinPin": 20,
+                "RegenMaxPin": "C",
+                "MaxRegen": 50,
+                "haha": false
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto loggerParametersOpt = config::ConfigGroupParser::ParseSensorInterfaceRegenConfig(parsedTestJson);
+            CHECK_FALSE(loggerParametersOpt.has_value());
+        }
+
+        SUBCASE("WHEN a field is missing THEN nullopt is returned")
+        {
+            std::string testJson = R"({
+                "RegenMinPin": 20,
+                "RegenMaxPin": 220,
+                "haha": false
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto loggerParametersOpt = config::ConfigGroupParser::ParseSensorInterfaceRegenConfig(parsedTestJson);
+            CHECK_FALSE(loggerParametersOpt.has_value());
         }
     }
 }

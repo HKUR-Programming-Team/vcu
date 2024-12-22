@@ -1,9 +1,14 @@
 #pragma once
 
 #include <MainLib/Inc/Config.hpp>
+#include <MainLib/Inc/ConfigGroupParser.hpp>
 #include <MainLib/Inc/json.hpp>
 
-#include <optional>
+#ifndef MOCK_TEST
+	#include <stm32f1xx.h>
+#else
+	#include <MockLibraries.hpp>
+#endif
 
 using json = nlohmann::json;
 
@@ -13,28 +18,14 @@ class ConfigLoader{
 public:
 Config GetConfig()
 {
+	printf("Config Load started.\n");
     return Config();
 }
 
 private:
 std::optional<std::string> LoadConfigFromMemory();
 
-std::optional<Config> ParseConfig(const json ConfigJson);
-std::optional<LoggerConfig> ParseLoggerParameteres();
-std::optional<ADCConfig> ParsedcConfig();
-std::optional<ErrorConfig> ParseErrorConfig();
-std::optional<ReadyToDriveConfig> ParseReadyToDriveConfig();
-std::optional<SensorInterfaceConfig> ParseSensorInterfaceConfig();
-std::optional<MCUInterfaceConfig> ParseMcuInterfaceConfig();
-std::optional<DashboardInterfaceConfig> ParseDashboardInterfaceConfig();
-
-LoggerConfig mLoggerConfig;
-ADCConfig mAdcConfig;
-ErrorConfig mErrorConfig;
-ReadyToDriveConfig mReadyToDriveConfig;
-SensorInterfaceConfig mSensorInterfaceConfig;
-MCUInterfaceConfig mMcuInterfaceConfig;
-DashboardInterfaceConfig mDashboardInterfaceConfig;
+std::optional<Config> ParseConfig(const json config);
 };
 
 }
