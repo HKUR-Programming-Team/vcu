@@ -10,6 +10,8 @@
 #include <MCUInterfaceLib/Inc/MCUErrorManager.hpp>
 #include <ReadyToDriveLib/Inc/ReadyToDrive.hpp>
 #include <MainLib/Inc/settings.hpp>
+#include <MainLib/Inc/ConfigValueParser.hpp>
+#include <MainLib/Inc/json.hpp>
 
 namespace sensorLib = VehicleControlUnit::SensorInterfaceLib;
 namespace mcuLib = VehicleControlUnit::MCUInterfaceLib;
@@ -17,6 +19,8 @@ namespace r2dLib = VehicleControlUnit::ReadyToDriveLib;
 namespace utilsLib = VehicleControlUnit::UtilsLib;
 namespace dataLib = VehicleControlUnit::DataStoreLib;
 namespace settings = VehicleControlUnit::MainLib::Settings;
+namespace config = VehicleControlUnit::MainLib::Config;
+using json = nlohmann::json;
 
 TEST_CASE("SensorInterface ReadThrottleSignal") {
     utilsLib::ADCManager adcManager;
@@ -1138,4 +1142,342 @@ TEST_CASE("Ready to drive")
         }
     }
 
+}
+
+TEST_CASE("Config Value Parser")
+{
+    SUBCASE("GetBool") 
+    {
+        SUBCASE("WHEN key does not exist THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": true, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetBool(parsedTestJson, "not_funny").has_value());
+        }
+
+        SUBCASE("WHEN value is not a boolean THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": 1, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetBool(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is boolean THEN optional bool is returned")
+        {
+            std::string testJson = "{\"haha\": true, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto parsedValue = config::ConfigValueParser::GetBool(parsedTestJson, "haha");
+            CHECK(parsedValue.has_value());
+            CHECK_EQ(parsedValue.value(), true);
+        }
+    }
+
+    SUBCASE("GETU32")
+    {
+        SUBCASE("WHEN key does not exist THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": 32, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetU32(parsedTestJson, "not_funny").has_value());
+        }
+
+        SUBCASE("WHEN value is not an integer THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": 1.0, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetU32(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is negative THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": -10, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetU32(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is out of range THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": 4294967400, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetU32(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is valid THEN optional<u32> is returned")
+        {
+            std::string testJson = "{\"haha\": 132, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto parsedValue = config::ConfigValueParser::GetU32(parsedTestJson, "haha");
+            CHECK(parsedValue.has_value());
+            CHECK_EQ(parsedValue.value(), 132);
+        }
+    }
+
+    SUBCASE("GETU16")
+    {
+        SUBCASE("WHEN key does not exist THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": 32, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetU16(parsedTestJson, "not_funny").has_value());
+        }
+
+        SUBCASE("WHEN value is not an integer THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": 1.0, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetU16(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is negative THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": -10, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetU16(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is out of range THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": 65536, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetU16(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is valid THEN optional<u16> is returned")
+        {
+            std::string testJson = "{\"haha\": 132, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto parsedValue = config::ConfigValueParser::GetU16(parsedTestJson, "haha");
+            CHECK(parsedValue.has_value());
+            CHECK_EQ(parsedValue.value(), 132);
+        }
+    }
+
+    SUBCASE("GETU8")
+    {
+        SUBCASE("WHEN key does not exist THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": 32, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetU8(parsedTestJson, "not_funny").has_value());
+        }
+
+        SUBCASE("WHEN value is not an integer THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": 1.0, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetU8(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is negative THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": -10, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetU8(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is out of range THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": 256, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetU8(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is valid THEN optional<u8> is returned")
+        {
+            std::string testJson = "{\"haha\": 132, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto parsedValue = config::ConfigValueParser::GetU8(parsedTestJson, "haha");
+            CHECK(parsedValue.has_value());
+            CHECK_EQ(parsedValue.value(), 132);
+        }
+    }
+
+    SUBCASE("GETI16")
+    {
+        SUBCASE("WHEN key does not exist THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": 32, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetI16(parsedTestJson, "not_funny").has_value());
+        }
+
+        SUBCASE("WHEN value is not an integer THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": 1.0, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetI16(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is positive out of range THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": 32768, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetI16(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is negative out of range THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": -32769, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetI16(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is valid THEN optional<i16> is returned")
+        {
+            std::string testJson = "{\"haha\": 132, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto parsedValue = config::ConfigValueParser::GetI16(parsedTestJson, "haha");
+            CHECK(parsedValue.has_value());
+            CHECK_EQ(parsedValue.value(), 132);
+        }
+    }
+
+    SUBCASE("GETGPIOPort")
+    {
+        SUBCASE("WHEN key does not exist THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": \"C\", \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetGPIOPort(parsedTestJson, "not_funny").has_value());
+        }
+
+        SUBCASE("WHEN value is multiple characters THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": \"AB\", \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetGPIOPort(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is out of range THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": \"F\", \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetGPIOPort(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is valid THEN optional<GPIOPort> is returned")
+        {
+            std::string testJson = "{\"haha\": \"B\", \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto parsedValue = config::ConfigValueParser::GetGPIOPort(parsedTestJson, "haha");
+            CHECK(parsedValue.has_value());
+            CHECK_EQ(parsedValue.value(), utilsLib::GPIOPort::B);
+        }
+    }
+
+    SUBCASE("GETGPIOPinNum")
+    {
+        SUBCASE("WHEN key does not exist THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": 13, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetGPIOPinNum(parsedTestJson, "not_funny").has_value());
+        }
+
+        SUBCASE("WHEN value is out of range THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": 20, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetGPIOPinNum(parsedTestJson, "haha").has_value());
+        }
+
+        SUBCASE("WHEN value is valid THEN optional<GPIOPinNum> is returned")
+        {
+            std::string testJson = "{\"haha\": 8, \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto parsedValue = config::ConfigValueParser::GetGPIOPinNum(parsedTestJson, "haha");
+            CHECK(parsedValue.has_value());
+            CHECK_EQ(parsedValue.value(), utilsLib::GPIOPinNum::Pin8);
+        }
+    }
 }
