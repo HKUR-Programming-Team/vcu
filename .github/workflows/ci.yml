@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Configure CMake
+      run: |
+          cd VehicleControlUnit/UnitTests
+          mkdir build
+          cd build
+          cmake ..
+    - name: build
+      run: |
+          cmake --build. 
+    - name: Run unit tests
+      run: |
+          .\Debug\unit-tests.exe
