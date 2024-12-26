@@ -2,7 +2,7 @@
 
 #include <DataStoreLib/Inc/DataStore.hpp>
 #include <UtilsLib/Inc/ErrorState.hpp>
-#include <MainLib/Inc/settings.hpp>
+#include <MainLib/Inc/Config.hpp>
 
 #include <optional>
 
@@ -21,8 +21,10 @@ class SensorInterface
 public:
 
 	SensorInterface(UtilsLib::Logger& logger, DataStoreLib::DataStore& dataStore, UtilsLib::ADCManager& ADCManager,
-			const MainLib::Settings::SensorInterfaceParameters& parameters):
-		mParameters{parameters},
+			const MainLib::Config::Config& config):
+		mThrottleConfig{config.mSensorInterfaceThrottleConfig},
+		mBrakeConfig{config.mSensorInterfaceBrakeConfig},
+		mRegenConfig{config.mSensorInterfaceRegenConfig},
 		mLogger{logger},
 		mDataStore{dataStore},
 		mADCManager{ADCManager}
@@ -31,7 +33,9 @@ public:
 	void ReadADC();
 	UtilsLib::ErrorState MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8]);
 
-	const MainLib::Settings::SensorInterfaceParameters mParameters;
+	const MainLib::Config::SensorInterfaceThrottleConfig mThrottleConfig;
+	const MainLib::Config::SensorInterfaceBrakeConfig mBrakeConfig;
+	const MainLib::Config::SensorInterfaceRegenConfig mRegenConfig;
 
 private:
 	void ReadThrottleSignal();

@@ -8,8 +8,7 @@ set(CMAKE_CXX_FLAGS "-O1")
 
 file(GLOB SOURCES
     ../UserLib/SensorInterfaceLib/*.cpp
-    ../UserLib/MainLib/ConfigValueParser.cpp
-    ../UserLib/MainLib/ConfigGroupParser.cpp
+    ../UserLib/MainLib/Config*.cpp
     ../UserLib/MainLib/json.hpp
     ../UserLib/MCUInterfaceLib/*.cpp
     ../UserLib/DataStoreLib/*.cpp

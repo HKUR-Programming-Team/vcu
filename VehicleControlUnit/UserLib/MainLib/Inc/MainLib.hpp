@@ -11,7 +11,7 @@
 #include <MCUInterfaceLib/Inc/MCUInterface.hpp>
 #include <ReadyToDriveLib/Inc/ReadyToDrive.hpp>
 #include <SensorInterfaceLib/Inc/SensorInterface.hpp>
-#include <MainLib/Inc/settings.hpp>
+#include <MainLib/Inc/Config.hpp>
 
 #include <stm32f1xx.h>
 
@@ -24,20 +24,24 @@ class Main
 {
 
 public:
-	Main(CAN_HandleTypeDef& canHandler, ADC_HandleTypeDef& adcHandler, std::function<void()> displayFatalError) :
-		mLogger{Settings::spamLoggingEnabled,
-				Settings::infoLoggingEnabled,
-				Settings::errorLoggingEnabled,
-				Settings::customLoggingEnabled},
+	Main(const MainLib::Config::Config& config, CAN_HandleTypeDef& canHandler, ADC_HandleTypeDef& adcHandler, std::function<void()> displayFatalError) :
+		mConfig{config},
+		mLogger{mConfig.mLoggerConfig.spamLoggingEnabled,
+				mConfig.mLoggerConfig.infoLoggingEnabled,
+				mConfig.mLoggerConfig.errorLoggingEnabled,
+				mConfig.mLoggerConfig.customLoggingEnabled},
 		mDataStore(),
-		mADCManager(mLogger, adcHandler, "ADC1", Settings::ADCDMABufferLength),
-		mSensorInterface(mLogger, mDataStore, mADCManager, Settings::sensorInterfaceParameters),
+		mADCManager(mLogger, 
+				adcHandler, 
+				"ADC1", 
+				config.mAdcConfig.ADCDMABufferLength),
+		mSensorInterface(mLogger, mDataStore, mADCManager, mConfig),
 		mCANManager(mLogger, canHandler, "CAN1", mBMSInterface, mMCUInterface, mSensorInterface),
 		mBMSInterface(mLogger, mDataStore),
-		mMCUInterface(mLogger, mDataStore, mCANManager, Settings::mcuInterfaceParameters),
-		mMCUErrorManager(mLogger, mDataStore, Settings::implausibleThresholdInterval),
-		mReadyToDriveManager(mLogger, mDataStore, Settings::readyToDriveParameters),
-		mDashboardInterface(mLogger, mDataStore, Settings::dashboardInterfaceParameters),
+		mMCUInterface(mLogger, mDataStore, mCANManager, mConfig),
+		mMCUErrorManager(mLogger, mDataStore, mConfig.mErrorConfig.implausibleThresholdInterval),
+		mReadyToDriveManager(mLogger, mDataStore, mConfig),
+		mDashboardInterface(mLogger, mDataStore, mConfig),
 		mSetupFailed{false},
 		DisplayFatalError{displayFatalError}
 	{}
@@ -46,6 +50,7 @@ public:
 	void Loop();
 
 private:
+	const Config::Config mConfig;
 	UtilsLib::Logger mLogger;
 	DataStoreLib::DataStore mDataStore;
 

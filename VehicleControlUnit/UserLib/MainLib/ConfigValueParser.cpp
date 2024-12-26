@@ -18,7 +18,7 @@ std::optional<bool> ConfigValueParser::GetBool(const json& config, const std::st
 	}
 
 	const auto unpackedValue = value.template get<bool>();
-	printf("%s %s successfully loaded as bool with value %d\n", logHeader.c_str(), key.c_str(), unpackedValue);
+	printf("%s %s: %d\n", logHeader.c_str(), key.c_str(), unpackedValue);
 	return unpackedValue;
 }
 
@@ -38,7 +38,7 @@ std::optional<long long> ConfigValueParser::GetInteger(const json& config, const
 	}
 
 	const auto unpackedValue = value.template get<long long>();
-	printf("%s %s successfully loaded as long long with value %lld", logHeader.c_str(), key.c_str(), unpackedValue);
+	printf("%s %s: %d\n", logHeader.c_str(), key.c_str(), (int)unpackedValue);
 	return unpackedValue;
 }
 
@@ -58,7 +58,7 @@ std::optional<unsigned long long> ConfigValueParser::GetUnsignedInteger(const js
 	}
 
 	const auto unpackedValue = value.template get<unsigned long long>();
-	printf("%s %s successfully loaded as unsigned long long with value %llu\n", logHeader.c_str(), key.c_str(), unpackedValue);
+	printf("%s %s: %d\n", logHeader.c_str(), key.c_str(), (int)unpackedValue);
 	return unpackedValue;
 }
 
@@ -73,7 +73,7 @@ std::optional<uint32_t> ConfigValueParser::GetU32(const json& config, const std:
 	const auto value = valueOpt.value();
 	if (value > UINT32_MAX)
 	{
-		printf("%s %s is not a uint32_t with value %llu\n", logHeader.c_str(), key.c_str(), value);
+		printf("%s %s is not a uint32_t with value %d\n", logHeader.c_str(), key.c_str(), (int)value);
 		return std::nullopt;
 	}
 
@@ -91,7 +91,7 @@ std::optional<uint16_t> ConfigValueParser::GetU16(const json& config, const std:
 	const auto value = valueOpt.value();
 	if (value > UINT16_MAX)
 	{
-		printf("%s %s is not a uint16_t with value %llu\n", logHeader.c_str(), key.c_str(), value);
+		printf("%s %s is not a uint16_t with value %d\n", logHeader.c_str(), key.c_str(), (int)value);
 		return std::nullopt;
 	}
 
@@ -109,7 +109,7 @@ std::optional<uint8_t> ConfigValueParser::GetU8(const json& config, const std::s
 	const auto value = valueOpt.value();
 	if (value > UINT8_MAX)
 	{
-		printf("%s %s is not a uint8_t with value %llu\n", logHeader.c_str(), key.c_str(), value);
+		printf("%s %s is not a uint8_t with value %d\n", logHeader.c_str(), key.c_str(), (int)value);
 		return std::nullopt;
 	}
 
@@ -150,7 +150,7 @@ std::optional<std::string> ConfigValueParser::GetString(const json& config, cons
 	}
 
 	const auto unpackedValue = value.template get<std::string>();
-	printf("%s %s successfully loaded as unsigned long with value %s\n", logHeader.c_str(), key.c_str(), unpackedValue.c_str());
+	printf("%s %s: %s\n", logHeader.c_str(), key.c_str(), unpackedValue.c_str());
 	return unpackedValue;
 }
 
@@ -211,7 +211,7 @@ std::optional<UtilsLib::GPIOPinNum> ConfigValueParser::GetGPIOPinNum(const json&
 	const auto value = valueOpt.value();
 	if (value < 0 || value > 15)
 	{
-		printf("%s %s is not a GPIOPinNum with value %llu\n", logHeader.c_str(), key.c_str(), value);
+		printf("%s %s is not a GPIOPinNum with value %d\n", logHeader.c_str(), key.c_str(), (int)value);
 		return std::nullopt;
 	}
 
@@ -233,7 +233,7 @@ std::optional<UtilsLib::GPIOPinNum> ConfigValueParser::GetGPIOPinNum(const json&
 		case 14: return UtilsLib::GPIOPinNum::Pin14;
 		case 15: return UtilsLib::GPIOPinNum::Pin15;
 		default: {
-			printf("%s Unreachable code in GPIOPort. %llu\n", logHeader.c_str(), value);
+			printf("%s Unreachable code in GPIOPort. %d\n", logHeader.c_str(), (int)value);
 			return std::nullopt;
 		}
 	}

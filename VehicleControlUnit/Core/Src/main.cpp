@@ -23,6 +23,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <MainLib/Inc/MainLib.hpp>
+#include <MainLib/Inc/Config.hpp>
+#include <MainLib/Inc/ConfigLoader.hpp>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -83,7 +85,7 @@ auto DisplayFatalError = []()
 	  }
 	}
 };
-VehicleControlUnit::MainLib::Main VCU(hcan, hadc1, DisplayFatalError);
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -135,6 +137,12 @@ int main(void)
   MX_CAN_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
+  const std::string SUPPORTED_CONFIG_VERSION{"1.0.0"};
+  const char* CONFIG_START_ADDRESS = (char*)0x801f000;
+  const char* CONFIG_END_ADDRESS = (char*)0x8020000;
+  const VehicleControlUnit::MainLib::Config::ConfigLoader configLoader{CONFIG_START_ADDRESS, CONFIG_END_ADDRESS, SUPPORTED_CONFIG_VERSION};
+
+  VehicleControlUnit::MainLib::Main VCU(configLoader.GetConfig(), hcan, hadc1, DisplayFatalError);
   VCU.Setup();
   /* USER CODE END 2 */
 

@@ -9,7 +9,8 @@
 #include <MCUInterfaceLib/Inc/MCUInterface.hpp>
 #include <MCUInterfaceLib/Inc/MCUErrorManager.hpp>
 #include <ReadyToDriveLib/Inc/ReadyToDrive.hpp>
-#include <MainLib/Inc/settings.hpp>
+#include <MainLib/Inc/Config.hpp>
+#include <MainLib/Inc/ConfigParser.hpp>
 #include <MainLib/Inc/ConfigValueParser.hpp>
 #include <MainLib/Inc/ConfigGroupParser.hpp>
 #include <MainLib/Inc/json.hpp>
@@ -19,7 +20,6 @@ namespace mcuLib = VehicleControlUnit::MCUInterfaceLib;
 namespace r2dLib = VehicleControlUnit::ReadyToDriveLib;
 namespace utilsLib = VehicleControlUnit::UtilsLib;
 namespace dataLib = VehicleControlUnit::DataStoreLib;
-namespace settings = VehicleControlUnit::MainLib::Settings;
 namespace config = VehicleControlUnit::MainLib::Config;
 using json = nlohmann::json;
 
@@ -28,30 +28,33 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
     dataLib::DataStore dataStore;
     utilsLib::Logger logger;
 
-    settings::SensorInterfaceParameters sensorInterfaceParams;
-    sensorInterfaceParams.ThrottleMinPin0 = 500;
-    sensorInterfaceParams.ThrottleMaxPin0 = 1000;
-    sensorInterfaceParams.ThrottleMinPin1 = 1500;
-    sensorInterfaceParams.ThrottleMaxPin1 = 2000;
-    sensorInterfaceParams.MaxTorque = 500;
-    sensorInterfaceParams.ThrottleSignalOutOfRangeThreshold = 20;
-    sensorInterfaceParams.ThrottleSignalDeviationThreshold = 50;
-    sensorInterfaceParams.ThrottleSignalADCIndex1 = 0;
-    sensorInterfaceParams.ThrottleSignalADCIndex2 = 1;
+    config::SensorInterfaceThrottleConfig throttleConfig;
+    throttleConfig.ThrottleMinPin0 = 500;
+    throttleConfig.ThrottleMaxPin0 = 1000;
+    throttleConfig.ThrottleMinPin1 = 1500;
+    throttleConfig.ThrottleMaxPin1 = 2000;
+    throttleConfig.MaxTorque = 500;
+    throttleConfig.ThrottleSignalOutOfRangeThreshold = 20;
+    throttleConfig.ThrottleSignalDeviationThreshold = 50;
+    throttleConfig.ThrottleSignalADCIndex1 = 0;
+    throttleConfig.ThrottleSignalADCIndex2 = 1;
 
-    sensorLib::SensorInterface sensorInterface(logger, dataStore, adcManager, sensorInterfaceParams);
+    config::Config config;
+    config.mSensorInterfaceThrottleConfig = throttleConfig;
+
+    sensorLib::SensorInterface sensorInterface(logger, dataStore, adcManager, config);
 
     SUBCASE("WHEN there exists a throttle sensor that gives value that is out of the threshold THEN error is set in datastore correctly")
     {
         SUBCASE("Pin 0 bottom out of range")
         {
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 475;
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1500;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex1] = 475;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex2] = 1500;
 
             uint16_t checkADC1 = 0;
             uint16_t checkADC2 = 0;
-            adcManager.GetBufferByIndex(sensorInterfaceParams.ThrottleSignalADCIndex1, checkADC1);
-            adcManager.GetBufferByIndex(sensorInterfaceParams.ThrottleSignalADCIndex2, checkADC2);
+            adcManager.GetBufferByIndex(throttleConfig.ThrottleSignalADCIndex1, checkADC1);
+            adcManager.GetBufferByIndex(throttleConfig.ThrottleSignalADCIndex2, checkADC2);
             REQUIRE(checkADC1 == 475);
             REQUIRE(checkADC2 == 1500);
 
@@ -62,8 +65,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
         SUBCASE("Pin 1 bottom out of range")
         {
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 500;
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1475;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex1] = 500;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex2] = 1475;
 
             sensorInterface.ReadADC();
             CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -72,8 +75,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
         SUBCASE("Pin 0 top out of range")
         {
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 1025;
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 2000;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex1] = 1025;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex2] = 2000;
 
             sensorInterface.ReadADC();
             CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -82,8 +85,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
         SUBCASE("Pin 1 top out of range")
         {
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 1000;
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 2025;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex1] = 1000;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex2] = 2025;
 
             sensorInterface.ReadADC();
             CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -92,8 +95,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
         SUBCASE("Both out of range")
         {
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 475;
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1475;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex1] = 475;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex2] = 1475;
 
             sensorInterface.ReadADC();
             CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -105,8 +108,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
     {
         SUBCASE("zero percent")
         {
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 485;
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1485;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex1] = 485;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex2] = 1485;
 
             sensorInterface.ReadADC();
             CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -115,31 +118,36 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
         SUBCASE("100 percent")
         {
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 1015;
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 2015;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex1] = 1015;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex2] = 2015;
 
             sensorInterface.ReadADC();
             CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
-            CHECK(dataStore.mDrivingInputDataStore.GetTorque() == sensorInterfaceParams.MaxTorque);
+            CHECK(dataStore.mDrivingInputDataStore.GetTorque() == throttleConfig.MaxTorque);
         }
     }
 
     SUBCASE("WHEN the out of range threshold is higher than ThrottleMin THEN data is stored to datastore correctly")
     {
-        settings::SensorInterfaceParameters sensorInterfaceParamsSpecial;
-        sensorInterfaceParamsSpecial.ThrottleMinPin0 = 10;
-        sensorInterfaceParamsSpecial.ThrottleMaxPin0 = 510;
-        sensorInterfaceParamsSpecial.ThrottleMinPin1 = 1500;
-        sensorInterfaceParamsSpecial.ThrottleMaxPin1 = 2000;
-        sensorInterfaceParamsSpecial.MaxTorque = 500;
-        sensorInterfaceParamsSpecial.ThrottleSignalOutOfRangeThreshold = 20;
-        sensorInterfaceParamsSpecial.ThrottleSignalDeviationThreshold = 50;
-        sensorLib::SensorInterface sensorInterfaceSpecial(logger, dataStore, adcManager, sensorInterfaceParams);
+
+        config::SensorInterfaceThrottleConfig throttleConfig;
+        throttleConfig.ThrottleMinPin0 = 10;
+        throttleConfig.ThrottleMaxPin0 = 510;
+        throttleConfig.ThrottleMinPin1 = 1500;
+        throttleConfig.ThrottleMaxPin1 = 2000;
+        throttleConfig.MaxTorque = 500;
+        throttleConfig.ThrottleSignalOutOfRangeThreshold = 20;
+        throttleConfig.ThrottleSignalDeviationThreshold = 50;
+
+        config::Config config;
+        config.mSensorInterfaceThrottleConfig = throttleConfig;
+
+        sensorLib::SensorInterface sensorInterfaceSpecial(logger, dataStore, adcManager, config);
 
         SUBCASE("WHEN only pin 1 out of bottom range THEN error is set")
         {
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 0;
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1475;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex1] = 0;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex2] = 1475;
 
             sensorInterfaceSpecial.ReadADC();
             CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -151,18 +159,18 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
     {
         SUBCASE("50 percent")
         {
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 750;
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1750;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex1] = 750;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex2] = 1750;
 
             sensorInterface.ReadADC();
             CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
-            CHECK(dataStore.mDrivingInputDataStore.GetTorque() == sensorInterfaceParams.MaxTorque/2);
+            CHECK(dataStore.mDrivingInputDataStore.GetTorque() == throttleConfig.MaxTorque/2);
         }
 
         SUBCASE("25 percent")
         {
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 625;
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1625;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex1] = 625;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex2] = 1625;
 
             sensorInterface.ReadADC();
             CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -171,8 +179,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
         
         SUBCASE("75 percent")
         {
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 875;
-            adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1875;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex1] = 875;
+            adcManager.buffer[throttleConfig.ThrottleSignalADCIndex2] = 1875;
 
             sensorInterface.ReadADC();
             CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -182,8 +190,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
     SUBCASE("WHEN the throttle sensors has less than 10 percent deviation THEN the one with lower value is set as torque in datastore")
     {
-        adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 740; // Torque = 240
-        adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1760; // Torque = 260
+        adcManager.buffer[throttleConfig.ThrottleSignalADCIndex1] = 740; // Torque = 240
+        adcManager.buffer[throttleConfig.ThrottleSignalADCIndex2] = 1760; // Torque = 260
 
         sensorInterface.ReadADC();
         CHECK(!dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -192,8 +200,8 @@ TEST_CASE("SensorInterface ReadThrottleSignal") {
 
     SUBCASE("WHEN the throttle sensors has more than 10 percent deviation THEN error is set in datastore")
     {
-        adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex1] = 700; // Torque = 200
-        adcManager.buffer[sensorInterfaceParams.ThrottleSignalADCIndex2] = 1755; // Torque = 255
+        adcManager.buffer[throttleConfig.ThrottleSignalADCIndex1] = 700; // Torque = 200
+        adcManager.buffer[throttleConfig.ThrottleSignalADCIndex2] = 1755; // Torque = 255
 
         sensorInterface.ReadADC();
         CHECK(dataStore.mDrivingInputDataStore.GetThrottleError());
@@ -207,21 +215,24 @@ TEST_CASE("SensorInterface ReadBrakeSignal")
     dataLib::DataStore dataStore;
     utilsLib::Logger logger;
 
-    settings::SensorInterfaceParameters sensorInterfaceParams;
-    sensorInterfaceParams.BrakeMinPin = 500;
-    sensorInterfaceParams.BrakeMaxPin = 1000;
-    sensorInterfaceParams.BrakeSignalOutOfRangeThreshold = 20;
-    sensorInterfaceParams.MaxBrake = 500;
-    sensorInterfaceParams.BrakeSignalADCIndex = 0;
+    config::SensorInterfaceBrakeConfig brakeConfig;
+    brakeConfig.BrakeMinPin = 500;
+    brakeConfig.BrakeMaxPin = 1000;
+    brakeConfig.BrakeSignalOutOfRangeThreshold = 20;
+    brakeConfig.MaxBrake = 500;
+    brakeConfig.BrakeSignalADCIndex = 0;
 
-    sensorLib::SensorInterface sensorInterface(logger, dataStore, adcManager, sensorInterfaceParams);
+    config::Config config;
+    config.mSensorInterfaceBrakeConfig = brakeConfig;
+
+    sensorLib::SensorInterface sensorInterface(logger, dataStore, adcManager, config);
 
     SUBCASE("WHEN there exists a brake sensor that gives value within range THEN value is set in datastore correctly")
     {
-        adcManager.buffer[sensorInterfaceParams.BrakeSignalADCIndex] = 600;
+        adcManager.buffer[brakeConfig.BrakeSignalADCIndex] = 600;
 
         uint16_t checkADC = 0;
-        adcManager.GetBufferByIndex(sensorInterfaceParams.BrakeSignalADCIndex, checkADC);
+        adcManager.GetBufferByIndex(brakeConfig.BrakeSignalADCIndex, checkADC);
         REQUIRE(checkADC == 600);
 
         sensorInterface.ReadADC();
@@ -233,7 +244,7 @@ TEST_CASE("SensorInterface ReadBrakeSignal")
     {
         SUBCASE("bottom threshold")
         {
-            adcManager.buffer[sensorInterfaceParams.BrakeSignalADCIndex] = 470;
+            adcManager.buffer[brakeConfig.BrakeSignalADCIndex] = 470;
 
             sensorInterface.ReadADC();
             CHECK(!dataStore.mDrivingInputDataStore.GetBrake().has_value());
@@ -241,7 +252,7 @@ TEST_CASE("SensorInterface ReadBrakeSignal")
 
         SUBCASE("bottom threshold")
         {
-            adcManager.buffer[sensorInterfaceParams.BrakeSignalADCIndex] = 1025;
+            adcManager.buffer[brakeConfig.BrakeSignalADCIndex] = 1025;
 
             sensorInterface.ReadADC();
             CHECK(!dataStore.mDrivingInputDataStore.GetBrake().has_value());
@@ -252,7 +263,7 @@ TEST_CASE("SensorInterface ReadBrakeSignal")
     {
         SUBCASE("bottom threshold")
         {
-            adcManager.buffer[sensorInterfaceParams.BrakeSignalADCIndex] = 485;
+            adcManager.buffer[brakeConfig.BrakeSignalADCIndex] = 485;
 
             sensorInterface.ReadADC();
             CHECK(dataStore.mDrivingInputDataStore.GetBrake().has_value());
@@ -261,7 +272,7 @@ TEST_CASE("SensorInterface ReadBrakeSignal")
 
         SUBCASE("bottom threshold")
         {
-            adcManager.buffer[sensorInterfaceParams.BrakeSignalADCIndex] = 1015;
+            adcManager.buffer[brakeConfig.BrakeSignalADCIndex] = 1015;
 
             sensorInterface.ReadADC();
             CHECK(dataStore.mDrivingInputDataStore.GetBrake().has_value());
@@ -271,15 +282,18 @@ TEST_CASE("SensorInterface ReadBrakeSignal")
 
     SUBCASE("GIVEN BrakeMinPin <= threshold WHEN there exists a brake sensor that gives value within range THEN value is set in datastore correctly")
     {
-        settings::SensorInterfaceParameters sensorInterfaceParams;
-        sensorInterfaceParams.BrakeMinPin = 10;
-        sensorInterfaceParams.BrakeMaxPin = 510;
-        sensorInterfaceParams.BrakeSignalOutOfRangeThreshold = 20;
-        sensorInterfaceParams.MaxBrake = 500;
-        sensorInterfaceParams.BrakeSignalADCIndex = 0;
+        config::SensorInterfaceBrakeConfig brakeConfig;
+        brakeConfig.BrakeMinPin = 10;
+        brakeConfig.BrakeMaxPin = 510;
+        brakeConfig.BrakeSignalOutOfRangeThreshold = 20;
+        brakeConfig.MaxBrake = 500;
+        brakeConfig.BrakeSignalADCIndex = 0;
 
-        sensorLib::SensorInterface sensorInterface(logger, dataStore, adcManager, sensorInterfaceParams);
-        adcManager.buffer[sensorInterfaceParams.BrakeSignalADCIndex] = 15;
+        config::Config config;
+        config.mSensorInterfaceBrakeConfig = brakeConfig;
+
+        sensorLib::SensorInterface sensorInterface(logger, dataStore, adcManager, config);
+        adcManager.buffer[brakeConfig.BrakeSignalADCIndex] = 15;
 
         sensorInterface.ReadADC();
         CHECK(dataStore.mDrivingInputDataStore.GetBrake().has_value());
@@ -293,20 +307,23 @@ TEST_CASE("SensorInterface ReadRegenSignal")
     dataLib::DataStore dataStore;
     utilsLib::Logger logger;
 
-    settings::SensorInterfaceParameters sensorInterfaceParams;
-    sensorInterfaceParams.RegenMinPin = 500;
-    sensorInterfaceParams.RegenMaxPin = 1000;
-    sensorInterfaceParams.MaxRegen = 200;
-    sensorInterfaceParams.RegenSignalADCIndex = 0;
+    config::SensorInterfaceRegenConfig regenConfig;
+    regenConfig.RegenMinPin = 500;
+    regenConfig.RegenMaxPin = 1000;
+    regenConfig.MaxRegen = 200;
+    regenConfig.RegenSignalADCIndex = 0;
 
-    sensorLib::SensorInterface sensorInterface(logger, dataStore, adcManager, sensorInterfaceParams);
+    config::Config config;
+    config.mSensorInterfaceRegenConfig = regenConfig;
+
+    sensorLib::SensorInterface sensorInterface(logger, dataStore, adcManager, config);
 
     SUBCASE("WHEN sensor gives value within range THEN value is set in datastore correctly")
     {
-        adcManager.buffer[sensorInterfaceParams.RegenSignalADCIndex] = 750;
+        adcManager.buffer[regenConfig.RegenSignalADCIndex] = 750;
 
         uint16_t checkADC = 0;
-        adcManager.GetBufferByIndex(sensorInterfaceParams.RegenSignalADCIndex, checkADC);
+        adcManager.GetBufferByIndex(regenConfig.RegenSignalADCIndex, checkADC);
         REQUIRE(checkADC == 750);
 
         sensorInterface.ReadADC();
@@ -315,7 +332,7 @@ TEST_CASE("SensorInterface ReadRegenSignal")
 
     SUBCASE("WHEN sensor gives value below range THEN value is set in datastore correctly")
     {
-        adcManager.buffer[sensorInterfaceParams.RegenSignalADCIndex] = 450;
+        adcManager.buffer[regenConfig.RegenSignalADCIndex] = 450;
 
         sensorInterface.ReadADC();
         CHECK(dataStore.mDrivingInputDataStore.GetRegen() == 0);
@@ -323,7 +340,7 @@ TEST_CASE("SensorInterface ReadRegenSignal")
     
     SUBCASE("WHEN sensor gives value above range THEN value is set in datastore correctly")
     {
-        adcManager.buffer[sensorInterfaceParams.RegenSignalADCIndex] = 1200;
+        adcManager.buffer[regenConfig.RegenSignalADCIndex] = 1200;
 
         sensorInterface.ReadADC();
         CHECK(dataStore.mDrivingInputDataStore.GetRegen() == 200);
@@ -507,12 +524,15 @@ TEST_CASE("MCUInterface driving input")
     utilsLib::CANManager canManager;
     dataLib::DataStore dataStore;
     utilsLib::Logger logger;
-    settings::MCUInterfaceParameters mcuInterfaceParams;
+    config::MCUInterfaceConfig mcuInterfaceParams;
     mcuInterfaceParams.InverterEnableTorqueThreshold = 10;
     mcuInterfaceParams.RegenEnableTorqueThreshold = 5;
     mcuInterfaceParams.CommandMessageTransmitInterval = 5;
 
-    mcuLib::MCUInterface mcuInterface(logger, dataStore, canManager, mcuInterfaceParams);
+    config::Config config;
+    config.mMcuInterfaceConfig = mcuInterfaceParams;
+
+    mcuLib::MCUInterface mcuInterface(logger, dataStore, canManager, config);
     MockCurrentTick = 6;
 
     SUBCASE("WHEN persisted implausibility is set in data store THEN error command message is sent via CAN Manager")
@@ -895,82 +915,84 @@ TEST_CASE("MCUInterface driving input")
     }
 }
 
-TEST_CASE("MCUInterface TCS")
-{
-    utilsLib::CANManager canManager;
-    dataLib::DataStore dataStore;
-    utilsLib::Logger logger;
-    settings::MCUInterfaceParameters mcuInterfaceParams;
-    mcuInterfaceParams.InverterEnableTorqueThreshold = 10;
-    mcuInterfaceParams.RegenEnableTorqueThreshold = 5;
-    mcuInterfaceParams.CommandMessageTransmitInterval = 3;
-    mcuInterfaceParams.TCSTriggeringSlipRatioThreshold = 20;
-    mcuInterfaceParams.TCSHaltSlipRatioThreshold = 12;
-    mcuInterfaceParams.WheelRadius = 1;
+/// TCS IS DISABLED
+// TEST_CASE("MCUInterface TCS")
+// {
+//     utilsLib::CANManager canManager;
+//     dataLib::DataStore dataStore;
+//     utilsLib::Logger logger;
+//     settings::MCUInterfaceParameters mcuInterfaceParams;
+//     mcuInterfaceParams.InverterEnableTorqueThreshold = 10;
+//     mcuInterfaceParams.RegenEnableTorqueThreshold = 5;
+//     mcuInterfaceParams.CommandMessageTransmitInterval = 3;
+//     mcuInterfaceParams.TCSTriggeringSlipRatioThreshold = 20;
+//     mcuInterfaceParams.TCSHaltSlipRatioThreshold = 12;
+//     mcuInterfaceParams.WheelRadius = 1;
 
-    mcuLib::MCUInterface mcuInterface(logger, dataStore, canManager, mcuInterfaceParams);
-    MockCurrentTick = 4;
+//     mcuLib::MCUInterface mcuInterface(logger, dataStore, canManager, mcuInterfaceParams);
+//     MockCurrentTick = 4;
 
-    dataStore.SetPersistedImplausibleStatus(false);
-    dataStore.mDrivingInputDataStore.SetTCSEnabled(true);
+//     dataStore.SetPersistedImplausibleStatus(false);
+//     dataStore.mDrivingInputDataStore.SetTCSEnabled(true);
 
-    SUBCASE("Originally tcs not triggered, WHEN slipRatio > TCSTriggeringSlipRatioThreshold, tcs is triggered, THEN WHEN slipRatio >= TCSHaltSlipRatioThreshold, torque in command message is restricted")
-    {
-        dataStore.mDrivingInputDataStore.SetTorque(300);
-        dataStore.mDrivingInputDataStore.SetRegen(0);
-        dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
-        dataStore.mVehicleSensorDataStore.SetAngularWheelSpeedRearLeft(44.0f);
-        dataStore.mVehicleSensorDataStore.SetAngularWheelSpeedRearRight(44.0f);
-        dataStore.mVehicleSensorDataStore.SetLinearVelocity(2.0f);
+//     SUBCASE("Originally tcs not triggered, WHEN slipRatio > TCSTriggeringSlipRatioThreshold, tcs is triggered, THEN WHEN slipRatio >= TCSHaltSlipRatioThreshold, torque in command message is restricted")
+//     {
+//         dataStore.mDrivingInputDataStore.SetTorque(300);
+//         dataStore.mDrivingInputDataStore.SetRegen(0);
+//         dataStore.mDrivingInputDataStore.SetGear(dataLib::Gear::FORWARD);
+//         dataStore.mVehicleSensorDataStore.SetAngularWheelSpeedRearLeft(44.0f);
+//         dataStore.mVehicleSensorDataStore.SetAngularWheelSpeedRearRight(44.0f);
+//         dataStore.mVehicleSensorDataStore.SetLinearVelocity(2.0f);
 
-        // maxWheelSpeed = leftWheelSpeed > rightWheelSpeed ? leftWheelSpeed : rightWheelSpeed;
-        // slipRatio = (mParameters.WheelRadius * maxWheelSpeed - linearSpeed)/linearSpeed;
+//         // maxWheelSpeed = leftWheelSpeed > rightWheelSpeed ? leftWheelSpeed : rightWheelSpeed;
+//         // slipRatio = (mParameters.WheelRadius * maxWheelSpeed - linearSpeed)/linearSpeed;
         
-        mcuInterface.SendCommandMessage();
+//         mcuInterface.SendCommandMessage();
 
-        // Check the header
-        CHECK(canManager.mMessageId == 0x0C0);
-        CHECK(canManager.mMessageLength == 8);
+//         // Check the header
+//         CHECK(canManager.mMessageId == 0x0C0);
+//         CHECK(canManager.mMessageLength == 8);
 
-        // Check the payload
-        CHECK(canManager.buffer[0] == 44);
-        CHECK(canManager.buffer[1] == 1);
-        CHECK(canManager.buffer[2] == 0);
-        CHECK(canManager.buffer[3] == 0);
-        CHECK(canManager.buffer[4] == 0b00000001);
-        CHECK(canManager.buffer[5] == 0b00000001);
-        CHECK(canManager.buffer[6] == 0);
-        CHECK(canManager.buffer[7] == 0);
+//         // Check the payload
+//         CHECK(canManager.buffer[0] == 44);
+//         CHECK(canManager.buffer[1] == 1);
+//         CHECK(canManager.buffer[2] == 0);
+//         CHECK(canManager.buffer[3] == 0);
+//         CHECK(canManager.buffer[4] == 0b00000001);
+//         CHECK(canManager.buffer[5] == 0b00000001);
+//         CHECK(canManager.buffer[6] == 0);
+//         CHECK(canManager.buffer[7] == 0);
 
-        dataStore.mDrivingInputDataStore.SetTorque(350);
+//         dataStore.mDrivingInputDataStore.SetTorque(350);
 
-        MockCurrentTick = 7;
-        mcuInterface.SendCommandMessage();
+//         MockCurrentTick = 7;
+//         mcuInterface.SendCommandMessage();
 
-        // Check the header
-        CHECK(canManager.mMessageId == 0x0C0);
-        CHECK(canManager.mMessageLength == 8);
+//         // Check the header
+//         CHECK(canManager.mMessageId == 0x0C0);
+//         CHECK(canManager.mMessageLength == 8);
 
-        // Check the payload
-        CHECK(canManager.buffer[0] == 44);
-        CHECK(canManager.buffer[1] == 1);
-        CHECK(canManager.buffer[2] == 0);
-        CHECK(canManager.buffer[3] == 0);
-        CHECK(canManager.buffer[4] == 0b00000001);
-        CHECK(canManager.buffer[5] == 0b00000001);
-        CHECK(canManager.buffer[6] == 0);
-        CHECK(canManager.buffer[7] == 0);
-    }
-}
+//         // Check the payload
+//         CHECK(canManager.buffer[0] == 44);
+//         CHECK(canManager.buffer[1] == 1);
+//         CHECK(canManager.buffer[2] == 0);
+//         CHECK(canManager.buffer[3] == 0);
+//         CHECK(canManager.buffer[4] == 0b00000001);
+//         CHECK(canManager.buffer[5] == 0b00000001);
+//         CHECK(canManager.buffer[6] == 0);
+//         CHECK(canManager.buffer[7] == 0);
+//     }
+// }
 
 TEST_CASE("MCUInterface MessageReceiveHandler")
 {
     utilsLib::CANManager canManager;
     dataLib::DataStore dataStore;
     utilsLib::Logger logger;
-    settings::MCUInterfaceParameters mcuInterfaceParams;
 
-    mcuLib::MCUInterface mcuInterface(logger, dataStore, canManager, mcuInterfaceParams);
+    config::Config config;
+
+    mcuLib::MCUInterface mcuInterface(logger, dataStore, canManager, config);
     uint8_t payload[8] = {0,0,0,0,0,0,0,0};
     CAN_RxHeaderTypeDef header;
     MockCurrentTick = 10;
@@ -1042,7 +1064,7 @@ TEST_CASE("Ready to drive")
 {
     dataLib::DataStore dataStore;
     utilsLib::Logger logger;
-    settings::ReadyToDriveParameters r2dparams;
+    config::ReadyToDriveConfig r2dparams;
 
     r2dparams.readyToDriveSoundDuration = 1000;
 	r2dparams.readyToDriveTriggeringBrakeThreshold = 100;
@@ -1051,7 +1073,10 @@ TEST_CASE("Ready to drive")
 	r2dparams.readyToDriveSoundPort = utilsLib::GPIOPort::B;
 	r2dparams.readyToDriveSoundPinNum = utilsLib::GPIOPinNum::Pin1;
 
-    r2dLib::ReadyToDrive r2d(logger, dataStore, r2dparams);
+    config::Config config;
+    config.mReadyToDriveConfig = r2dparams;
+
+    r2dLib::ReadyToDrive r2d(logger, dataStore, config);
 
     SUBCASE("WHEN it is initially not in ready to drive mode and Gear is set to neutral in data store")
     {
@@ -1402,6 +1427,31 @@ TEST_CASE("Config Value Parser")
         }
     }
 
+    SUBCASE("GetString")
+    {
+        SUBCASE("WHEN key does not exist THEN nullopt is returned")
+        {
+            std::string testJson = "{\"haha\": \"Crap\", \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            CHECK_FALSE(config::ConfigValueParser::GetString(parsedTestJson, "not_funny").has_value());
+        }
+
+        SUBCASE("WHEN value is valid THEN optional<string> is returned")
+        {
+            std::string testJson = "{\"haha\": \"nuts\", \"funny\": false}";
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto parsedValue = config::ConfigValueParser::GetString(parsedTestJson, "haha");
+            CHECK(parsedValue.has_value());
+            CHECK_EQ(parsedValue.value(), std::string("nuts"));
+        }
+    }
+
     SUBCASE("GETGPIOPort")
     {
         SUBCASE("WHEN key does not exist THEN nullopt is returned")
@@ -1724,7 +1774,7 @@ TEST_CASE("Config Group Parser")
         }
     }
 
-        SUBCASE("SensorInterfaceBrakeConfig")
+    SUBCASE("SensorInterfaceBrakeConfig")
     {
         SUBCASE("WHEN everything is right THEN correct ReadyToDriveConfig is returned")
         {
@@ -1832,5 +1882,165 @@ TEST_CASE("Config Group Parser")
             const auto loggerParametersOpt = config::ConfigGroupParser::ParseSensorInterfaceRegenConfig(parsedTestJson);
             CHECK_FALSE(loggerParametersOpt.has_value());
         }
+    }
+}
+
+TEST_CASE("Config Parser")
+{
+    SUBCASE("WHEN everything is right THEN correct Config is returned")
+    {
+            std::string testJson = R"({
+                "version": "1.0.0", 
+                "spamLoggingEnabled": true, 
+                "infoLoggingEnabled": true, 
+                "errorLoggingEnabled": false, 
+                "customLoggingEnabled": true, 
+                "implausibleThresholdInterval": 69, 
+                "readyToDriveSoundDuration": 1500, 
+                "readyToDriveTriggeringBrakeThreshold": 12, 
+                "readyToDriveButtonPort": "C", 
+                "readyToDriveButtonPinNum": 7, 
+                "readyToDriveSoundPort": "C", 
+                "readyToDriveSoundPinNum": 1, 
+                "ThrottleMinPin0": 610, 
+                "ThrottleMaxPin0": 3725, 
+                "ThrottleMinPin1": 1350, 
+                "ThrottleMaxPin1": 3900, 
+                "MaxTorque": 1510, 
+                "ThrottleSignalOutOfRangeThreshold": 45, 
+                "ThrottleSignalDeviationThreshold": 31,
+                "SignalDeadzone": 18, 
+                "BrakeMinPin": 350, 
+                "BrakeMaxPin": 1550, 
+                "BrakeSignalOutOfRangeThreshold": 200, 
+                "MaxBrake": 120,
+                "RegenMinPin": 500, 
+                "RegenMaxPin": 1700, 
+                "MaxRegen": 600
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto configParser = config::ConfigParser("1.0.0");
+            const auto parsedOpt = configParser.Parse(parsedTestJson);
+            CHECK(parsedOpt.has_value());
+            const auto parsed = parsedOpt.value();
+
+            // Logger
+            CHECK_EQ(parsed.mLoggerConfig.spamLoggingEnabled, true);
+            CHECK_EQ(parsed.mLoggerConfig.infoLoggingEnabled, true);
+            CHECK_EQ(parsed.mLoggerConfig.errorLoggingEnabled, false);
+            CHECK_EQ(parsed.mLoggerConfig.customLoggingEnabled, true);
+
+            // Error
+            CHECK_EQ(parsed.mErrorConfig.implausibleThresholdInterval, 69);
+
+            // Ready To Drive
+            CHECK_EQ(parsed.mReadyToDriveConfig.readyToDriveSoundDuration, 1500);
+            CHECK_EQ(parsed.mReadyToDriveConfig.readyToDriveTriggeringBrakeThreshold, 12);
+            CHECK_EQ(parsed.mReadyToDriveConfig.readyToDriveButtonPort, utilsLib::GPIOPort::C);
+            CHECK_EQ(parsed.mReadyToDriveConfig.readyToDriveButtonPinNum, utilsLib::GPIOPinNum::Pin7);
+            CHECK_EQ(parsed.mReadyToDriveConfig.readyToDriveSoundPort, utilsLib::GPIOPort::C);
+            CHECK_EQ(parsed.mReadyToDriveConfig.readyToDriveSoundPinNum, utilsLib::GPIOPinNum::Pin1);
+
+            // Sensor Interface Throttle
+            CHECK_EQ(parsed.mSensorInterfaceThrottleConfig.ThrottleMinPin0, 610);
+            CHECK_EQ(parsed.mSensorInterfaceThrottleConfig.ThrottleMaxPin0, 3725);
+            CHECK_EQ(parsed.mSensorInterfaceThrottleConfig.ThrottleMinPin1, 1350);
+            CHECK_EQ(parsed.mSensorInterfaceThrottleConfig.ThrottleMaxPin1, 3900);
+            CHECK_EQ(parsed.mSensorInterfaceThrottleConfig.MaxTorque, 1510);
+            CHECK_EQ(parsed.mSensorInterfaceThrottleConfig.ThrottleSignalOutOfRangeThreshold, 45);
+            CHECK_EQ(parsed.mSensorInterfaceThrottleConfig.ThrottleSignalDeviationThreshold, 31);
+            CHECK_EQ(parsed.mSensorInterfaceThrottleConfig.SignalDeadzone, 18);
+
+            // Sensor Interface Brake
+            CHECK_EQ(parsed.mSensorInterfaceBrakeConfig.MaxBrake, 120);
+            CHECK_EQ(parsed.mSensorInterfaceBrakeConfig.BrakeMinPin, 350);
+            CHECK_EQ(parsed.mSensorInterfaceBrakeConfig.BrakeMaxPin, 1550);
+            CHECK_EQ(parsed.mSensorInterfaceBrakeConfig.BrakeSignalOutOfRangeThreshold, 200);
+
+            // Sensor Interface Regen
+            CHECK_EQ(parsed.mSensorInterfaceRegenConfig.RegenMinPin, 500);
+            CHECK_EQ(parsed.mSensorInterfaceRegenConfig.RegenMaxPin, 1700);
+            CHECK_EQ(parsed.mSensorInterfaceRegenConfig.MaxRegen, 600);
+    }
+
+    SUBCASE("WHEN config version is not supported THEN nullopt is returned")
+    {
+            std::string testJson = R"({
+                "version": "0.9.0", 
+                "spamLoggingEnabled": true, 
+                "infoLoggingEnabled": true, 
+                "errorLoggingEnabled": false, 
+                "customLoggingEnabled": true, 
+                "implausibleThresholdInterval": 69, 
+                "readyToDriveSoundDuration": 1500, 
+                "readyToDriveTriggeringBrakeThreshold": 12, 
+                "readyToDriveButtonPort": "C", 
+                "readyToDriveButtonPinNum": 7, 
+                "readyToDriveSoundPort": "C", 
+                "readyToDriveSoundPinNum": 1, 
+                "ThrottleMinPin0": 610, 
+                "ThrottleMaxPin0": 3725, 
+                "ThrottleMinPin1": 1350, 
+                "ThrottleMaxPin1": 3900, 
+                "MaxTorque": 1510, 
+                "ThrottleSignalOutOfRangeThreshold": 45, 
+                "ThrottleSignalDeviationThreshold": 31,
+                "SignalDeadzone": 18, 
+                "BrakeMinPin": 350, 
+                "BrakeMaxPin": 1550, 
+                "BrakeSignalOutOfRangeThreshold": 200, 
+                "MaxBrake": 120,
+                "RegenMinPin": 500, 
+                "RegenMaxPin": 1700, 
+                "MaxRegen": 600
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto configParser = config::ConfigParser("1.0.0");
+            const auto parsedOpt = configParser.Parse(parsedTestJson);
+            CHECK_FALSE(parsedOpt.has_value());
+    }
+
+    SUBCASE("WHEN some fields are missing THEN nullopt is returned")
+    {
+            std::string testJson = R"({
+                "version": "0.9.0", 
+                "spamLoggingEnabled": true, 
+                "infoLoggingEnabled": true, 
+                "errorLoggingEnabled": false, 
+                "customLoggingEnabled": true, 
+                "implausibleThresholdInterval": 69, 
+                "readyToDriveSoundDuration": 1500, 
+                "readyToDriveTriggeringBrakeThreshold": 12, 
+                "readyToDriveButtonPort": "C", 
+                "readyToDriveButtonPinNum": 7, 
+                "readyToDriveSoundPort": "C", 
+                "readyToDriveSoundPinNum": 1, 
+                "ThrottleMinPin0": 610, 
+                "ThrottleMaxPin0": 3725, 
+                "ThrottleMinPin1": 1350, 
+                "ThrottleMaxPin1": 3900, 
+                "MaxTorque": 1510, 
+                "ThrottleSignalOutOfRangeThreshold": 45, 
+                "ThrottleSignalDeviationThreshold": 31,
+                "SignalDeadzone": 18, 
+                "BrakeSignalOutOfRangeThreshold": 200, 
+                "MaxBrake": 120,
+                "RegenMinPin": 500, 
+                "RegenMaxPin": 1700, 
+                "MaxRegen": 600
+            })";
+
+            const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
+            REQUIRE_FALSE(parsedTestJson.is_discarded());
+
+            const auto configParser = config::ConfigParser("1.0.0");
+            const auto parsedOpt = configParser.Parse(parsedTestJson);
+            CHECK_FALSE(parsedOpt.has_value());
     }
 }

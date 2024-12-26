@@ -26,11 +26,11 @@ static std::optional<uint8_t> GetU8(const json& config, const std::string& key);
 static std::optional<int16_t> GetI16(const json& config, const std::string& key);
 static std::optional<UtilsLib::GPIOPort> GetGPIOPort(const json& config, const std::string& key);
 static std::optional<UtilsLib::GPIOPinNum> GetGPIOPinNum(const json& config, const std::string& key);
+static std::optional<std::string> GetString(const json& config, const std::string& key);
 
 private:
 static std::optional<long long> GetInteger(const json& config, const std::string& key);
 static std::optional<unsigned long long> GetUnsignedInteger(const json& config, const std::string& key);
-static std::optional<std::string> GetString(const json& config, const std::string& key);
 static std::optional<char> GetChar(const json& config, const std::string& key);
 
 // Logger class in UtilsLib is not used as the Logger is not initialized at this point.

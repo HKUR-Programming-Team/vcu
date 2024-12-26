@@ -6,18 +6,18 @@
 
 #include <stm32f1xx.h>
 
-
 namespace VehicleControlUnit::UtilsLib {
 
 class Logger
 {
 public:
 	// Set whether each type of logs are enabled
-	Logger(const bool enableSpamLog, const bool enableInfoLog, const bool enableErrorLog, const bool enableCustomLog):
-		spamLoggingEnabled(enableSpamLog),
-		infoLoggingEnabled(enableInfoLog),
-		errorLoggingEnabled(enableErrorLog),
-		customLoggingEnabled(enableCustomLog)
+	Logger(const bool spamLoggingEnabled, const bool infoLoggingEnabled,
+			const bool errorLoggingEnabled, const bool customLoggingEnabled):
+		spamLoggingEnabled(spamLoggingEnabled),
+		infoLoggingEnabled(infoLoggingEnabled),
+		errorLoggingEnabled(errorLoggingEnabled),
+		customLoggingEnabled(customLoggingEnabled)
 	{}
 
 	// Interfaces for logging

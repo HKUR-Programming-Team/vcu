@@ -2,48 +2,50 @@
 
 namespace VehicleControlUnit::MainLib::Config {
 
-std::optional<Config> ConfigLoader::ParseConfig(const json configJson)
+Config ConfigLoader::GetConfig() const
 {
-	if (!configJson.is_object()) {
-		printf("[Config Loader]: configJson is not an object.\n");
-		return std::nullopt;
-	}
+    const auto configStringOpt = LoadConfigStringFromFlash();
+    if (!configStringOpt.has_value())
+    {
+        printf("[Config Loader] using default config.\n");
+        return Config();
+    }
 
-	// Check for success of each parse
-	const auto logger = ConfigGroupParser::ParseLoggerParameteres(configJson);
-	const auto error = ConfigGroupParser::ParseErrorConfig(configJson);
-	const auto readyToDrive = ConfigGroupParser::ParseReadyToDriveConfig(configJson);
-	const auto sensorInterfaceThrottle = ConfigGroupParser::ParseSensorInterfaceThrottleConfig(configJson);
-	const auto sensorInterfaceBrake = ConfigGroupParser::ParseSensorInterfaceBrakeConfig(configJson);
-	const auto sensorInterfaceRegen = ConfigGroupParser::ParseSensorInterfaceRegenConfig(configJson);
+    const auto configString = configStringOpt.value();
 
-	if (!logger.has_value()
-			|| !error.has_value()
-			|| !readyToDrive.has_value()
-			|| !sensorInterfaceThrottle.has_value()
-			|| !sensorInterfaceBrake.has_value()
-			|| !sensorInterfaceRegen.has_value())
-	{
-		return std::nullopt;
-	}
+    const auto configJson = json::parse(configString, nullptr, false); // Disable exception
+    if (configJson.is_discarded())
+    {
+        printf("[Config Loader] failed to load config. using default config.\n");
+        return Config();
+    }
 
-	printf("[Config Loader]: config parse is successful.\n");
+    const auto configOpt = mConfigParser.Parse(configJson);
+    if (!configOpt.has_value())
+    {
+        printf("[Config Loader] using default config.\n");
+        return Config();
+    }
 
-	// The following uses default values
-	const ADCConfig adcConfig;
-	const MCUInterfaceConfig mcuConfig;
-	const DashboardInterfaceConfig dashboardConfig;
+    return configOpt.value();
+}
 
-	// If all parses succeed, return the config.
-	return Config(logger.value(),
-			adcConfig,
-			error.value(),
-			readyToDrive.value(),
-			sensorInterfaceThrottle.value(),
-			sensorInterfaceBrake.value(),
-			sensorInterfaceRegen.value(),
-			mcuConfig,
-			dashboardConfig);
+std::optional<std::string> ConfigLoader::LoadConfigStringFromFlash() const
+{
+    printf("[Config Loader] Starting finding the config string. If this does not end, you are likely running into memory problems...\n");
+
+    const size_t maxLengthOfString = (mConfigEndAddress - mConfigStartAddress) * sizeof(char);
+
+    const void* addressOfTerminatingCharacter = memchr(mConfigStartAddress, '\0', maxLengthOfString); // Search for the terminating character
+    if (addressOfTerminatingCharacter == NULL)
+    {
+        printf("[Config Loader] Config String not found. Could not find the terminating character.\n");
+        return std::nullopt;
+    }
+
+    printf("[Config Loader] Config String found.\n -- Start of string --\n%s\n -- End of string --\n", mConfigStartAddress);
+    const std::string configString(mConfigStartAddress);
+    return configString;
 }
 
 }
