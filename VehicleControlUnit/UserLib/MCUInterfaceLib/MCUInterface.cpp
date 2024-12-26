@@ -51,7 +51,7 @@ void MCUInterface::SendCommandMessage()
 
 	SetCommandMessageInNonErrorState();
 
-	mLogger.LogInfo("TODO: Button to toggle TCS");
+	// mLogger.LogInfo("TODO: Button to toggle TCS");
 	if (mDataStore.mDrivingInputDataStore.GetTCSEnabled())
 	{
 		CheckTractionControlTriggered();
