@@ -45,7 +45,14 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 MEMORY
 {
   RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 20K
-  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 128K
+  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 124K
+  /*
+      The "CONFIG" block is space set aside for the application to store
+      config in the MCU's flash.
+      This block is marked as read-only (r) because flash can not
+      be written in the same way as normal memory.
+   */
+  CONFIG    (r)    : ORIGIN = 0x801F000,   LENGTH = 4K
 }
 
 /* Sections */
