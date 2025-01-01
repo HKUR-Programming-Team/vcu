@@ -40,8 +40,7 @@ std::optional<Config> ConfigParser::Parse(const json& configJson) const
 	{
 		return std::nullopt;
 	}
-
-	printf("[Config Loader]: config parse is successful.\n");
+	printf("[Config Loader]: config parse is successful.\n\n");
 
 	// The following uses default values
 	const ADCConfig adcConfig;

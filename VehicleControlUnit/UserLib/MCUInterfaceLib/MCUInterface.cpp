@@ -101,7 +101,7 @@ void MCUInterface::SetCommandMessageInNonErrorState()
 
 	SetCommandMessage(torqueCommand, inverter, inverterDischarge, speedMode, torqueLimit);
 
-	mLogger.LogSpam("Before TCS:" + std::to_string(mTransmitBuffer[0]) + ", " + std::to_string(mTransmitBuffer[1])
+	mLogger.LogCustom("Before TCS:" + std::to_string(mTransmitBuffer[0]) + ", " + std::to_string(mTransmitBuffer[1])
 				+ ", " + std::to_string(mTransmitBuffer[2]) + ", " + std::to_string(mTransmitBuffer[3])
 				+ ", " + std::to_string(mTransmitBuffer[4]) + ", " + std::to_string(mTransmitBuffer[5])
 				+ ", " + std::to_string(mTransmitBuffer[6]) + ", " + std::to_string(mTransmitBuffer[7]));
@@ -188,7 +188,7 @@ void MCUInterface::ModifyCommandMessageByTractionControl()
 	const int16_t torqueFromPedalSensor = GetCommandMessageTorque();
 	const int16_t minTorque = mTCSTriggeredStartTorque < torqueFromPedalSensor ? mTCSTriggeredStartTorque : torqueFromPedalSensor;
 	SetCommandMessageTorque(minTorque);
-	mLogger.LogCustom("After TCS:" + std::to_string(mTransmitBuffer[0]) + ", " + std::to_string(mTransmitBuffer[1]) + ", torque: " );
+	mLogger.LogSpam("After TCS:" + std::to_string(mTransmitBuffer[0]) + ", " + std::to_string(mTransmitBuffer[1]) + ", torque: " );
 }
 
 }

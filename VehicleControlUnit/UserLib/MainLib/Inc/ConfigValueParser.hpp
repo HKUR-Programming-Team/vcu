@@ -15,7 +15,8 @@
 using json = nlohmann::json;
 
 namespace VehicleControlUnit::MainLib::Config {
-
+	
+// Logger class in UtilsLib is not used as the Logger is not initialized at this point.
 class ConfigValueParser{
 
 public:
@@ -32,9 +33,6 @@ private:
 static std::optional<long long> GetInteger(const json& config, const std::string& key);
 static std::optional<unsigned long long> GetUnsignedInteger(const json& config, const std::string& key);
 static std::optional<char> GetChar(const json& config, const std::string& key);
-
-// Logger class in UtilsLib is not used as the Logger is not initialized at this point.
-static const inline std::string logHeader{"[ConfigValueParser]"};
 };
 
 }

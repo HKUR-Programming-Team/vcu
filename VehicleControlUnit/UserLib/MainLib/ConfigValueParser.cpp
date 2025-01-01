@@ -6,19 +6,19 @@ std::optional<bool> ConfigValueParser::GetBool(const json& config, const std::st
 {
 	if (!config.contains(key))
 	{
-		printf("%s %s does not exist\n", logHeader.c_str(), key.c_str());
+		printf("%s does not exist\n", key.c_str());
 		return std::nullopt;
 	}
 
 	const auto& value = config[key];
 	if (!value.is_boolean())
 	{
-		printf("%s %s is not a boolean\n", logHeader.c_str(), key.c_str());
+		printf("%s is not a boolean\n", key.c_str());
 		return std::nullopt;
 	}
 
 	const auto unpackedValue = value.template get<bool>();
-	printf("%s %s: %d\n", logHeader.c_str(), key.c_str(), unpackedValue);
+	printf("%s: %d\n", key.c_str(), unpackedValue);
 	return unpackedValue;
 }
 
@@ -26,19 +26,19 @@ std::optional<long long> ConfigValueParser::GetInteger(const json& config, const
 {
 	if (!config.contains(key))
 	{
-		printf("%s %s does not exist\n", logHeader.c_str(), key.c_str());
+		printf("%s does not exist\n", key.c_str());
 		return std::nullopt;
 	}
 
 	const auto& value = config[key];
 	if (!value.is_number_integer())
 	{
-		printf("%s %s is not an integer\n", logHeader.c_str(), key.c_str());
+		printf("%s is not an integer\n", key.c_str());
 		return std::nullopt;
 	}
 
 	const auto unpackedValue = value.template get<long long>();
-	printf("%s %s: %d\n", logHeader.c_str(), key.c_str(), (int)unpackedValue);
+	printf("%s: %d\n", key.c_str(), (int)unpackedValue);
 	return unpackedValue;
 }
 
@@ -46,19 +46,19 @@ std::optional<unsigned long long> ConfigValueParser::GetUnsignedInteger(const js
 {
 	if (!config.contains(key))
 	{
-		printf("%s %s does not exist\n", logHeader.c_str(), key.c_str());
+		printf("%s does not exist\n", key.c_str());
 		return std::nullopt;
 	}
 
 	const auto& value = config[key];
 	if (!value.is_number_unsigned())
 	{
-		printf("%s %s is not an integer\n", logHeader.c_str(), key.c_str());
+		printf("%s is not an integer\n", key.c_str());
 		return std::nullopt;
 	}
 
 	const auto unpackedValue = value.template get<unsigned long long>();
-	printf("%s %s: %d\n", logHeader.c_str(), key.c_str(), (int)unpackedValue);
+	printf("%s: %d\n", key.c_str(), (int)unpackedValue);
 	return unpackedValue;
 }
 
@@ -73,7 +73,7 @@ std::optional<uint32_t> ConfigValueParser::GetU32(const json& config, const std:
 	const auto value = valueOpt.value();
 	if (value > UINT32_MAX)
 	{
-		printf("%s %s is not a uint32_t with value %d\n", logHeader.c_str(), key.c_str(), (int)value);
+		printf("%s is not a uint32_t with value %d\n", key.c_str(), (int)value);
 		return std::nullopt;
 	}
 
@@ -91,7 +91,7 @@ std::optional<uint16_t> ConfigValueParser::GetU16(const json& config, const std:
 	const auto value = valueOpt.value();
 	if (value > UINT16_MAX)
 	{
-		printf("%s %s is not a uint16_t with value %d\n", logHeader.c_str(), key.c_str(), (int)value);
+		printf("%s is not a uint16_t with value %d\n", key.c_str(), (int)value);
 		return std::nullopt;
 	}
 
@@ -109,7 +109,7 @@ std::optional<uint8_t> ConfigValueParser::GetU8(const json& config, const std::s
 	const auto value = valueOpt.value();
 	if (value > UINT8_MAX)
 	{
-		printf("%s %s is not a uint8_t with value %d\n", logHeader.c_str(), key.c_str(), (int)value);
+		printf("%s is not a uint8_t with value %d\n", key.c_str(), (int)value);
 		return std::nullopt;
 	}
 
@@ -127,7 +127,7 @@ std::optional<int16_t> ConfigValueParser::GetI16(const json& config, const std::
 	const auto value = valueOpt.value();
 	if (value > INT16_MAX || value < INT16_MIN)
 	{
-		printf("%s %s is not a int16_t with value %lld\n", logHeader.c_str(), key.c_str(), value);
+		printf("%s is not a int16_t with value %d\n", key.c_str(), (int)value);
 		return std::nullopt;
 	}
 
@@ -138,19 +138,19 @@ std::optional<std::string> ConfigValueParser::GetString(const json& config, cons
 {
 	if (!config.contains(key))
 	{
-		printf("%s %s does not exist\n", logHeader.c_str(), key.c_str());
+		printf("%s does not exist\n", key.c_str());
 		return std::nullopt;
 	}
 
 	const auto& value = config[key];
 	if (!value.is_string())
 	{
-		printf("%s %s is not a string\n", logHeader.c_str(), key.c_str());
+		printf("%s is not a string\n", key.c_str());
 		return std::nullopt;
 	}
 
 	const auto unpackedValue = value.template get<std::string>();
-	printf("%s %s: %s\n", logHeader.c_str(), key.c_str(), unpackedValue.c_str());
+	printf("%s: %s\n", key.c_str(), unpackedValue.c_str());
 	return unpackedValue;
 }
 
@@ -165,7 +165,7 @@ std::optional<char> ConfigValueParser::GetChar(const json& config, const std::st
 	const auto value = valueOpt.value();
 	if (value.size() != 1)
 	{
-		printf("%s %s is not a character with value %s\n", logHeader.c_str(), key.c_str(), value.c_str());
+		printf("%s is not a character with value %s\n", key.c_str(), value.c_str());
 		return std::nullopt;
 	}
 
@@ -183,7 +183,7 @@ std::optional<UtilsLib::GPIOPort> ConfigValueParser::GetGPIOPort(const json& con
 	const auto value = valueOpt.value();
 	if (value < 'A' || value > 'E')
 	{
-		printf("%s %s is not a GPIOPort with value %c\n", logHeader.c_str(), key.c_str(), value);
+		printf("%s is not a GPIOPort with value %c\n", key.c_str(), value);
 		return std::nullopt;
 	}
 
@@ -194,7 +194,7 @@ std::optional<UtilsLib::GPIOPort> ConfigValueParser::GetGPIOPort(const json& con
 		case 'D': return UtilsLib::GPIOPort::D;
 		case 'E': return UtilsLib::GPIOPort::E;
 		default: {
-			printf("%s Unreachable code in GPIOPort. %c\n", logHeader.c_str(), value);
+			printf("Unreachable code in GPIOPort. %c\n", value);
 			return std::nullopt;
 		}
 	}
@@ -211,7 +211,7 @@ std::optional<UtilsLib::GPIOPinNum> ConfigValueParser::GetGPIOPinNum(const json&
 	const auto value = valueOpt.value();
 	if (value < 0 || value > 15)
 	{
-		printf("%s %s is not a GPIOPinNum with value %d\n", logHeader.c_str(), key.c_str(), (int)value);
+		printf("%s is not a GPIOPinNum with value %d\n", key.c_str(), (int)value);
 		return std::nullopt;
 	}
 
@@ -233,7 +233,7 @@ std::optional<UtilsLib::GPIOPinNum> ConfigValueParser::GetGPIOPinNum(const json&
 		case 14: return UtilsLib::GPIOPinNum::Pin14;
 		case 15: return UtilsLib::GPIOPinNum::Pin15;
 		default: {
-			printf("%s Unreachable code in GPIOPort. %d\n", logHeader.c_str(), (int)value);
+			printf("Unreachable code in GPIOPort. %d\n", (int)value);
 			return std::nullopt;
 		}
 	}
