@@ -8,6 +8,9 @@ void ReadyToDrive::Check()
 	CheckReadyToDriveMode(currentlyReadyToDriveButtonIsHigh);
 	ControlReadyToDriveSound();
 	mReadyToDriveButtonPreviousStateIsHigh = currentlyReadyToDriveButtonIsHigh;
+//	mLogger.LogCustom("R2D Button input: " + std::to_string(currentlyReadyToDriveButtonIsHigh));
+	mLogger.LogCustom("R2D mode (on/off): " + std::to_string(mReadyToDriveMode));
+
 }
 
 void ReadyToDrive::CheckReadyToDriveMode(const bool currentlyReadyToDriveButtonIsHigh)
