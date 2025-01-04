@@ -70,13 +70,13 @@ void CANManager::SetTransmitHeader(
 			". transmitGlobalTime: " + std::to_string(transmitGlobalTime) + "}");
 }
 
-UtilsLib::ErrorState CANManager::SendMessage(const uint8_t message[8])
+std::pair<UtilsLib::ErrorState, std::optional<uint32_t>> CANManager::SendMessage(const uint8_t message[8])
 {
 	const auto numberOfFreeMailBoxes = HAL_CAN_GetTxMailboxesFreeLevel(&mCanHandler);
 	if (numberOfFreeMailBoxes == 0)
 	{
 		mLogger.LogSpam("CANManager: no free transmit mailbox");
-		return ErrorState::CAN_MSG_TRANSMIT_MAILBOX_FULL;
+		return std::make_pair(ErrorState::CAN_MSG_TRANSMIT_MAILBOX_FULL, std::nullopt);
 	}
 
 	const auto returnStatus = HAL_CAN_AddTxMessage(&mCanHandler, &mTransmitHeader, message, &mLastMailboxUsed);
@@ -84,7 +84,7 @@ UtilsLib::ErrorState CANManager::SendMessage(const uint8_t message[8])
 	if (returnStatus != HAL_OK)
 	{
 		mLogger.LogSpam("CANManager: no free transmit mailbox");
-		return ErrorState::CAN_MSG_TRANSMIT_MAILBOX_FULL;
+		return std::make_pair(ErrorState::CAN_MSG_TRANSMIT_MAILBOX_FULL, std::nullopt);
 	}
 
 	mLogger.LogSpam("[CAN Tx] ID: " + std::to_string(mTransmitHeader.StdId) + ", Data: " + std::to_string(message[0]) + ", " + std::to_string(message[1])
@@ -92,7 +92,7 @@ UtilsLib::ErrorState CANManager::SendMessage(const uint8_t message[8])
 			+ ", " + std::to_string(message[4]) + ", " + std::to_string(message[5])
 			+ ", " + std::to_string(message[6]) + ", " + std::to_string(message[7]));
 
-	return UtilsLib::ErrorState::CAN_MSG_TRANSMIT_SUCCESS;
+	return std::make_pair(UtilsLib::ErrorState::CAN_MSG_TRANSMIT_SUCCESS, mLastMailboxUsed);
 }
 
 void CANManager::AbortAllSendRequests()

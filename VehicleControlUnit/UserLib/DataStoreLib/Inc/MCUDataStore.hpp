@@ -15,6 +15,7 @@ public:
 	MCUDataStore():
 			mMotorSpeed{std::nullopt},
             mMotorSpeedUpdateTs{std::nullopt},
+			mCommandMessageFrequency{std::nullopt},
             mMessageReceiveTimeoutError{false}
 	{}
 
@@ -26,6 +27,11 @@ public:
     void SetMotorSpeedUpdateTs(const std::optional<uint32_t> ts)
     {
         mMotorSpeedUpdateTs = ts;
+    }
+
+    void SetCommandMessageFrequency(const std::optional<uint32_t> freq)
+    {
+    	mCommandMessageFrequency = freq;
     }
 
     void SetMessageReceiveTimeoutError(const bool error)
@@ -44,6 +50,11 @@ public:
         return mMotorSpeedUpdateTs;
     }
 
+    std::optional<uint32_t> GetCommandMessageFrequency() const
+    {
+    	return mCommandMessageFrequency;
+    }
+
     bool GetMessageReceiveTimeoutError() const 
     {
         return mMessageReceiveTimeoutError;
@@ -52,6 +63,7 @@ public:
 private:
     std::optional<int16_t> mMotorSpeed;
     std::optional<uint32_t> mMotorSpeedUpdateTs;
+    std::optional<uint32_t> mCommandMessageFrequency;
     bool mMessageReceiveTimeoutError;
 };
 

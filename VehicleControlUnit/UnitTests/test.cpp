@@ -5,6 +5,7 @@
 #include <doctest.h>
 #include <string>
 #include <optional>
+#include <utility>
 #include <SensorInterfaceLib/Inc/SensorInterface.hpp>
 #include <MCUInterfaceLib/Inc/MCUInterface.hpp>
 #include <MCUInterfaceLib/Inc/MCUErrorManager.hpp>
@@ -506,6 +507,7 @@ TEST_CASE("MCUInterface driving input")
     mcuInterfaceParams.InverterEnableTorqueThreshold = 10;
     mcuInterfaceParams.RegenEnableTorqueThreshold = 5;
     mcuInterfaceParams.CommandMessageTransmitInterval = 5;
+    mcuInterfaceParams.commandFrequencyUpdateInterval = 1000; 
 
     mcuLib::MCUInterface mcuInterface(logger, dataStore, canManager, mcuInterfaceParams);
     MockCurrentTick = 6;
@@ -886,6 +888,117 @@ TEST_CASE("MCUInterface driving input")
             CHECK(canManager.buffer[5] == 0b00000001);
             CHECK(canManager.buffer[6] == 0);
             CHECK(canManager.buffer[7] == 0);
+        }
+    }
+
+    SUBCASE("Command Delay Guarantee and Frequency Monitoring")
+    {
+        
+        SUBCASE("WHEN commandFrequencyUpdateInterval has passed since last frequency update THEN data store is updated correctly")
+        {
+            // Before
+            CHECK_FALSE(dataStore.mMCUDataStore.GetCommandMessageFrequency().has_value());
+
+            MockCurrentTick = 1002;
+            mcuInterface.StoreCommandMessageFrequency();
+
+            CHECK(dataStore.mMCUDataStore.GetCommandMessageFrequency().has_value());
+            CHECK_EQ(dataStore.mMCUDataStore.GetCommandMessageFrequency().value_or(69420), 0);
+        }
+
+        SUBCASE("WHEN only one message is sent but two complete callbacks are received THEN only one message is counted")
+        {
+            MockCurrentTick = 1002;
+            mcuInterface.SendCommandMessage(); //Mailbox with index 1 is used.
+
+            mcuInterface.CANMailboxCompletedCallbackHandler(1);
+            mcuInterface.CANMailboxCompletedCallbackHandler(1);
+            mcuInterface.StoreCommandMessageFrequency();
+            CHECK(dataStore.mMCUDataStore.GetCommandMessageFrequency().has_value());
+            CHECK_EQ(dataStore.mMCUDataStore.GetCommandMessageFrequency().value_or(69420), 1); // one message in the last 1000 ms => frequency is 1
+        }
+
+        SUBCASE("WHEN commandFrequencyUpdateInterval has not passed since last frequency update THEN data store is not updated")
+        {
+            MockCurrentTick = 1002;
+            mcuInterface.SendCommandMessage(); //Mailbox with index 1 is used.
+            mcuInterface.CANMailboxCompletedCallbackHandler(1);
+
+            MockCurrentTick = 1007;
+            mcuInterface.SendCommandMessage();
+            mcuInterface.CANMailboxCompletedCallbackHandler(1);
+
+            mcuInterface.StoreCommandMessageFrequency();
+            CHECK(dataStore.mMCUDataStore.GetCommandMessageFrequency().has_value());
+            CHECK_EQ(dataStore.mMCUDataStore.GetCommandMessageFrequency().value_or(69420), 2);
+
+            MockCurrentTick = 1012;
+            mcuInterface.SendCommandMessage();
+            mcuInterface.CANMailboxCompletedCallbackHandler(1);
+            CHECK(dataStore.mMCUDataStore.GetCommandMessageFrequency().has_value());
+            CHECK_EQ(dataStore.mMCUDataStore.GetCommandMessageFrequency().value_or(69420), 2);
+        }
+
+        SUBCASE("WHEN commandFrequencyUpdateInterval has passed since last frequency update THEN the count is reset")
+        {
+            MockCurrentTick = 1002;
+            mcuInterface.SendCommandMessage(); //Mailbox with index 1 is used.
+            mcuInterface.CANMailboxCompletedCallbackHandler(1);
+
+            MockCurrentTick = 1007;
+            mcuInterface.SendCommandMessage();
+            mcuInterface.CANMailboxCompletedCallbackHandler(1);
+
+            mcuInterface.StoreCommandMessageFrequency();
+            CHECK(dataStore.mMCUDataStore.GetCommandMessageFrequency().has_value());
+            CHECK_EQ(dataStore.mMCUDataStore.GetCommandMessageFrequency().value_or(69420), 2);
+
+            MockCurrentTick = 2008;
+            mcuInterface.StoreCommandMessageFrequency(); // reset
+            CHECK(dataStore.mMCUDataStore.GetCommandMessageFrequency().has_value());
+            CHECK_EQ(dataStore.mMCUDataStore.GetCommandMessageFrequency().value_or(69420), 0);
+        }
+
+        SUBCASE("WHEN transmit message complete callback is invoked on another mailbox THEN the count is not updated")
+        {
+            MockCurrentTick = 1002;
+            mcuInterface.SendCommandMessage(); //Mailbox with index 1 is used.
+            mcuInterface.CANMailboxCompletedCallbackHandler(1);
+
+            MockCurrentTick = 1007;
+            mcuInterface.SendCommandMessage();
+            mcuInterface.CANMailboxCompletedCallbackHandler(1);
+
+            MockCurrentTick = 1012;
+            mcuInterface.SendCommandMessage(); //Mailbox with index 1 is used.
+            mcuInterface.CANMailboxCompletedCallbackHandler(2); // callback for index 2.
+
+            mcuInterface.StoreCommandMessageFrequency();
+            CHECK(dataStore.mMCUDataStore.GetCommandMessageFrequency().has_value());
+            CHECK_EQ(dataStore.mMCUDataStore.GetCommandMessageFrequency().value_or(69420), 2);
+        }
+
+        SUBCASE("WHEN the transmit complete callback is not invoked before command transmit interval since last transmit THEN abort is called")
+        {
+            REQUIRE_EQ(canManager.mAbortCount, 0);
+            MockCurrentTick = 6;
+            mcuInterface.SendCommandMessage(); // First send function will always abort everything
+
+            MockCurrentTick = 11;
+            mcuInterface.SendCommandMessage(); // Abort.
+            CHECK_EQ(canManager.mAbortCount, 2);
+        }
+
+        SUBCASE("WHEN the transmit complete callback is invoked before command transmit interval since last transmit THEN abort is NOT called")
+        {
+            REQUIRE_EQ(canManager.mAbortCount, 0);
+            MockCurrentTick = 6;
+            mcuInterface.SendCommandMessage(); // First send function will always abort everything
+            mcuInterface.CANMailboxCompletedCallbackHandler(1);
+
+            MockCurrentTick = 6;
+            mcuInterface.SendCommandMessage(); // Should NOT abort as the ACK has been received.
+            CHECK_EQ(canManager.mAbortCount, 1);
         }
     }
 }

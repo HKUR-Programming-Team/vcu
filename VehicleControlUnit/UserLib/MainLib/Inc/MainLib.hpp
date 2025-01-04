@@ -44,6 +44,7 @@ public:
 
 	void Setup();
 	void Loop();
+	void MailboxCompletedCallbackInvoked(const uint8_t mailboxNumber);
 
 private:
 	UtilsLib::Logger mLogger;

@@ -8,6 +8,9 @@
 
 #include <stm32f1xx.h>
 
+#include <optional>
+#include <utility>
+
 // Forward declaration to make circular dependency between CANManager and MCUInterface work
 namespace VehicleControlUnit::MCUInterfaceLib {
 	class MCUInterface;
@@ -41,7 +44,7 @@ public:
 			const bool isRemoteTransmissionRequest = false,
 			const bool transmitGlobalTime = false);
 
-	UtilsLib::ErrorState SendMessage(const uint8_t message[8]);
+	std::pair<UtilsLib::ErrorState, std::optional<uint32_t>> SendMessage(const uint8_t message[8]);
 	void AbortAllSendRequests();
 	void CheckReceiveFIFO();
 

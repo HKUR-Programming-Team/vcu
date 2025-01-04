@@ -74,6 +74,24 @@ auto DisplayFatalError = []()
 	}
 };
 VehicleControlUnit::MainLib::Main VCU(hcan, hadc1, DisplayFatalError);
+
+void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef* hcan)
+{
+	// printf("it happened 0\n");
+	VCU.MailboxCompletedCallbackInvoked(CAN_TX_MAILBOX0);
+}
+
+void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef* hcan)
+{
+	printf("it happened 1\n");
+	VCU.MailboxCompletedCallbackInvoked(CAN_TX_MAILBOX1);
+}
+
+void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef* hcan)
+{
+	printf("it happened 2\n");
+	VCU.MailboxCompletedCallbackInvoked(CAN_TX_MAILBOX2);
+}
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -126,6 +144,10 @@ int main(void)
   MX_CAN_Init();
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
+  if (HAL_OK != HAL_CAN_ActivateNotification(&hcan, CAN_IT_TX_MAILBOX_EMPTY))
+  {
+	  printf("Failed to turn on notification.\n");
+  }
   VCU.Setup();
   /* USER CODE END 2 */
 
@@ -136,7 +158,7 @@ int main(void)
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
-	HAL_Delay(5);
+	// HAL_Delay(5);
 	VCU.Loop();
   }
   /* USER CODE END 3 */
@@ -229,7 +251,7 @@ static void MX_ADC1_Init(void)
     Error_Handler();
   }
 
-  /** Configure Regular Channel0
+  /** Configure Regular Channel
   */
   sConfig.Channel = ADC_CHANNEL_1;
   sConfig.Rank = ADC_REGULAR_RANK_2;

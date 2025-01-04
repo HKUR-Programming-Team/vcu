@@ -13,6 +13,9 @@
 #include <UtilsLib/Inc/ErrorState.hpp>
 #include <MainLib/Inc/settings.hpp>
 
+#include <optional>
+#include <utility>
+
 // Forward declaration to make circular dependency between CANManager and MCUInterface work
 namespace VehicleControlUnit::UtilsLib {
 	class CANManager;
@@ -31,6 +34,9 @@ public:
 		mDataStore{dataStore},
 		mCANManager{CANManager},
 		mLastCommandMessageSendTs{0},
+		mMailboxUsed{std::nullopt},
+		mCommandCount{0},
+		mLastFrequencyStoreTs{0},
 		mParameters{mcuinterfaceParameters},
 		mTCSTriggered{false},
 		mTCSTriggeredStartTorque{MainLib::Settings::sensorInterfaceParameters.MaxTorque}
@@ -41,6 +47,9 @@ public:
 	void SendCommandMessageInErrorState();
 	void SendCommandMessage();
 
+	void StoreCommandMessageFrequency();
+
+	void CANMailboxCompletedCallbackHandler(const uint8_t mailboxNumber);
 private:
 	UtilsLib::Logger& mLogger;
 	DataStoreLib::DataStore& mDataStore;
@@ -48,6 +57,10 @@ private:
 
 	uint8_t mTransmitBuffer[8];
 	uint32_t mLastCommandMessageSendTs;
+
+	std::optional<uint32_t> mMailboxUsed;
+	uint32_t mCommandCount;
+	uint32_t mLastFrequencyStoreTs;
 
 	const MainLib::Settings::MCUInterfaceParameters mParameters;
 

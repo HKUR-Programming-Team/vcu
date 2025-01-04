@@ -42,16 +42,28 @@ void MCUInterface::SendCommandMessage()
 		return;
 	}
 
+	auto GetQuotient = [&](const uint32_t dividend, const uint32_t divisor) -> uint32_t
+	{
+		return dividend / divisor;
+	};
+
 	// Check if the engine should be stopped
 	if (mDataStore.GetPersistedImplausibleStatus())
 	{
 		SendCommandMessageInErrorState();
+		mLastCommandMessageSendTs = GetQuotient(HAL_GetTick(), mParameters.CommandMessageTransmitInterval) * mParameters.CommandMessageTransmitInterval;
 		return;
 	}
 
+	// Nuke the CAN transmit mailboxes
+	mCANManager.AbortAllSendRequests();
+
+	// Un-mark the ownership of the mailbox
+	mMailboxUsed = std::nullopt;
+
 	SetCommandMessageInNonErrorState();
 
-	mLogger.LogInfo("TODO: Button to toggle TCS");
+	// mLogger.LogInfo("TODO: Button to toggle TCS");
 	if (mDataStore.mDrivingInputDataStore.GetTCSEnabled())
 	{
 		CheckTractionControlTriggered();
@@ -62,16 +74,13 @@ void MCUInterface::SendCommandMessage()
 		}
 	}
 	mCANManager.SetTransmitHeader(mParameters.CommandMessageHeaderId, mParameters.CommandMessageLength);
-	const auto error = mCANManager.SendMessage(mTransmitBuffer);
+	const auto sendMessageReturnPair = mCANManager.SendMessage(mTransmitBuffer);
+	const auto error = std::get<0>(sendMessageReturnPair);
 
 	if (error == UtilsLib::ErrorState::CAN_MSG_TRANSMIT_SUCCESS)
 	{
-		auto GetQuotient = [&](const uint32_t dividend, const uint32_t divisor) -> uint32_t
-		{
-			return dividend / divisor;
-		};
-
 		mLastCommandMessageSendTs = GetQuotient(HAL_GetTick(), mParameters.CommandMessageTransmitInterval) * mParameters.CommandMessageTransmitInterval;
+		mMailboxUsed = std::get<1>(sendMessageReturnPair);
 	}
 	else
 	{
@@ -189,6 +198,30 @@ void MCUInterface::ModifyCommandMessageByTractionControl()
 	const int16_t minTorque = mTCSTriggeredStartTorque < torqueFromPedalSensor ? mTCSTriggeredStartTorque : torqueFromPedalSensor;
 	SetCommandMessageTorque(minTorque);
 	mLogger.LogCustom("After TCS:" + std::to_string(mTransmitBuffer[0]) + ", " + std::to_string(mTransmitBuffer[1]) + ", torque: " );
+}
+
+void MCUInterface::CANMailboxCompletedCallbackHandler(const uint8_t mailboxNumber)
+{
+	if(mailboxNumber == mMailboxUsed.value_or(200)) // Set default to impossible mailbox value
+	{
+		mMailboxUsed = std::nullopt;
+		mCommandCount += 1;
+	}
+}
+
+void MCUInterface::StoreCommandMessageFrequency()
+{
+	const auto currentTs = HAL_GetTick();
+	if (currentTs < mLastFrequencyStoreTs + mParameters.commandFrequencyUpdateInterval)
+	{
+		return;
+	} 
+
+	const auto frequency = mCommandCount * 1000 / mParameters.commandFrequencyUpdateInterval;
+	mLogger.LogInfo("Command message frequency: " + std::to_string(frequency));
+	mDataStore.mMCUDataStore.SetCommandMessageFrequency(frequency);
+	mLastFrequencyStoreTs = currentTs;
+	mCommandCount = 0;
 }
 
 }

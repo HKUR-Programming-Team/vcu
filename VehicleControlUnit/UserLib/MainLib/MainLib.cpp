@@ -47,8 +47,14 @@ void Main::Loop()
 	mMCUErrorManager.CheckImplausibility(); // update implausible status
 
 	mMCUInterface.SendCommandMessage(); // send packet to motor controller
+	mMCUInterface.StoreCommandMessageFrequency();
 
 	mDashboardInterface.DisplayDashboard();
+}
+
+void Main::MailboxCompletedCallbackInvoked(const uint8_t mailboxNumber)
+{
+	mMCUInterface.CANMailboxCompletedCallbackHandler(mailboxNumber);
 }
 
 }

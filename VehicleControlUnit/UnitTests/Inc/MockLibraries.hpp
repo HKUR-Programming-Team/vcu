@@ -3,6 +3,7 @@
 #include <UtilsLib/Inc/ErrorState.hpp>
 #include <stdint.h>
 #include <string>
+#include <optional>
 
 struct CAN_RxHeaderTypeDef
 {
@@ -27,13 +28,13 @@ public:
         return;
     }
 
-	ErrorState SendMessage(const uint8_t message[8])
+	std::pair<ErrorState, std::optional<uint32_t>> SendMessage(const uint8_t message[8])
     {
         for (int i = 0; i < 8; ++i)
         {
             buffer[i] = message[i];
         }
-        return ErrorState::CAN_MSG_TRANSMIT_SUCCESS;
+        return std::make_pair(ErrorState::CAN_MSG_TRANSMIT_SUCCESS, 1);
     }
 
 	void CheckReceiveFIFO()
@@ -43,9 +44,10 @@ public:
 
 	void AbortAllSendRequests()
 	{
-		volatile int x = 0;
+		mAbortCount++;
 	}
 
+    uint8_t mAbortCount = 0;
     uint32_t mMessageId = 0;
     uint32_t mMessageLength = 0;
     uint8_t buffer[8] = {0,0,0,0,0,0,0,0};

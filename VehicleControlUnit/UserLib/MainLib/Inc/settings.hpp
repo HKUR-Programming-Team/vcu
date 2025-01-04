@@ -12,7 +12,7 @@ namespace VehicleControlUnit::MainLib::Settings {
 const bool spamLoggingEnabled = false;
 const bool infoLoggingEnabled = true;
 const bool errorLoggingEnabled = true;
-const bool customLoggingEnabled = true;
+const bool customLoggingEnabled = false;
 
 // MCU
 const uint32_t implausibleThresholdInterval = 100;
@@ -35,10 +35,10 @@ const ReadyToDriveParameters readyToDriveParameters;
 // Sensor Interface
 struct SensorInterfaceParameters
 {
-    uint16_t ThrottleMinPin0 = 580;
-	uint16_t ThrottleMaxPin0 = 3225;
-	uint16_t ThrottleMinPin1 = 1250;
-	uint16_t ThrottleMaxPin1 = 3700;
+    uint16_t ThrottleMinPin0 = 1000;
+	uint16_t ThrottleMaxPin0 = 3000;
+	uint16_t ThrottleMinPin1 = 1000;
+	uint16_t ThrottleMaxPin1 = 3000;
 	int16_t MaxTorque = 1660;
 
 	uint16_t ThrottleSignalOutOfRangeThreshold = 50;
@@ -72,6 +72,8 @@ struct MCUInterfaceParameters
 	double MinimumTCSTriggeringLinearSpeed = 1.0;
 	double TCSTriggeringSlipRatioThreshold = 1;
 	double TCSHaltSlipRatioThreshold = 0.5;
+
+	uint32_t commandFrequencyUpdateInterval = 500;
 };
 const MCUInterfaceParameters mcuInterfaceParameters;
 
