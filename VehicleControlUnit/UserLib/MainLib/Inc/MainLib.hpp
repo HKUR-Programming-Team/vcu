@@ -37,7 +37,7 @@ public:
 		mMCUInterface(mLogger, mDataStore, mCANManager, Settings::mcuInterfaceParameters),
 		mMCUErrorManager(mLogger, mDataStore, Settings::implausibleThresholdInterval),
 		mReadyToDriveManager(mLogger, mDataStore, Settings::readyToDriveParameters),
-		mDashboardInterface(mLogger, mDataStore, Settings::dashboardInterfaceParameters),
+		mDashboardInterface(mLogger, mDataStore, mCANManager ,Settings::dashboardInterfaceParameters),
 		mSetupFailed{false},
 		DisplayFatalError{displayFatalError}
 	{}

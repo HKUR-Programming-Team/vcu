@@ -28,20 +28,13 @@ void Main::Loop()
 		return;
 	}
 
-	// TEST CODE BEGIN
-//	uint8_t test[8] = {0,0,44,1,0, 0b00001000,0,0};
-//	mCANManager.SetTransmitHeader(0x0A5, 8, false);
-//	mCANManager.SendMessage(test);
-	// TEST CODE END
-
-	mLogger.LogSpam("--VCU Loop Starts--");
+	// Check CAN controller's receive buffer
 	mCANManager.CheckReceiveFIFO();
-
-	// Ready to Drive
-	mReadyToDriveManager.Check();
 
 	// Sensor
 	mSensorInterface.ReadADC(); // Read throttle and other analog signals and store it to dataStore
+
+	mReadyToDriveManager.Check();
 
 	// MCU
 	mMCUErrorManager.CheckImplausibility(); // update implausible status
