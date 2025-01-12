@@ -21,10 +21,11 @@ void MCUInterface::MessageReceiveHandler(const uint32_t messageID, const CAN_RxH
 	    // ... Other cases ...
 	    default: {
 	        mLogger.LogError("Received unknown CAN ID in MessageReceiveHandler of MCUInterface. Please raise to developer");
-			return;
-	        break;
+			return; // Return early to not update the broadcast message receive timestamp
 	    }
 	}
+
+	mDataStore.mMCUDataStore.SetLastMCUBroadcastMessageReceiveTs(HAL_GetTick());
 }
 
 void MCUInterface::SendCommandMessageInErrorState()
@@ -48,7 +49,9 @@ void MCUInterface::SendCommandMessage()
 	};
 
 	// Check if the engine should be stopped
-	if (mDataStore.GetPersistedImplausibleStatus())
+	if (mDataStore.GetPersistedImplausibleStatus() 
+			|| mDataStore.GetBroadcastMessageReceiveTimeoutError() 
+			|| mDataStore.GetCommandMessageFrequencyError())
 	{
 		SendCommandMessageInErrorState();
 		mLastCommandMessageSendTs = GetQuotient(HAL_GetTick(), mParameters.CommandMessageTransmitInterval) * mParameters.CommandMessageTransmitInterval;

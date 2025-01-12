@@ -18,7 +18,9 @@ public:
 
 	DataStore():
 		mDrivingInputDataStore(),
-		mPersistedImplausibleStatus{false}
+		mPersistedImplausibleStatus{false},
+		mBroadcastMessageReceiveTimeoutError{false},
+		mCommandMessageFrequencyError(false)
 	{}
 
 	bool GetPersistedImplausibleStatus() const
@@ -26,10 +28,30 @@ public:
 		return mPersistedImplausibleStatus;
 	}
 
+	bool GetBroadcastMessageReceiveTimeoutError() const 
+    {
+        return mBroadcastMessageReceiveTimeoutError;
+    }
+
+    bool GetCommandMessageFrequencyError() const
+    {
+        return mCommandMessageFrequencyError;
+    }
+
 	void SetPersistedImplausibleStatus(const bool status)
 	{
 		mPersistedImplausibleStatus = status;
 	}
+
+    void SetCommandMessageFrequencyError(const bool error)
+    {
+        mCommandMessageFrequencyError = error;
+    }
+
+	void SetBroadcastMessageReceiveTimeoutError(const bool error)
+    {
+        mBroadcastMessageReceiveTimeoutError = error;
+    }
 
 	DrivingInputDataStore mDrivingInputDataStore;
 	MCUDataStore mMCUDataStore;
@@ -37,6 +59,8 @@ public:
 
 private:
 	bool mPersistedImplausibleStatus;
+	bool mBroadcastMessageReceiveTimeoutError;
+    bool mCommandMessageFrequencyError;
 };
 
 } // namespace VehicleControlUnit::DataStore

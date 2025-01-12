@@ -32,9 +32,47 @@ void MCUErrorManager::CheckImplausibility()
 	}
 }
 
+void MCUErrorManager::CheckMCUTimeout() const 
+{
+	const auto lastMessageTsOpt = mDataStore.mMCUDataStore.GetLastMCUBroadcastMessageReceiveTs();
+	if (!lastMessageTsOpt.has_value())
+	{
+		return; // First message from MCU not yet received
+	}
+
+	const auto lastMessageTs = lastMessageTsOpt.value();
+	if (HAL_GetTick() > lastMessageTs + 500)
+	{
+		mDataStore.SetBroadcastMessageReceiveTimeoutError(true);
+	}
+}
+
+void MCUErrorManager::CheckCommandMessageFrequency() const
+{
+	const auto lastMessageTsOpt = mDataStore.mMCUDataStore.GetLastMCUBroadcastMessageReceiveTs();
+	if (!lastMessageTsOpt.has_value())
+	{
+		return; // First message from MCU not yet received
+	}
+
+	const auto commandMessageTransmitFrequencyOpt = mDataStore.mMCUDataStore.GetCommandMessageFrequency();
+	if (!commandMessageTransmitFrequencyOpt.has_value())
+	{
+		return;
+	}
+
+	const auto frequency = commandMessageTransmitFrequencyOpt.value();
+	if (frequency < 20)
+	{
+		mDataStore.SetCommandMessageFrequencyError(true);
+	}
+}
+
 void MCUErrorManager::ResetErrorState()
 {
 	mDataStore.SetPersistedImplausibleStatus(false);
+	mDataStore.SetCommandMessageFrequencyError(false);
+	mDataStore.SetBroadcastMessageReceiveTimeoutError(false);
 	mInImplausibleState = false;
 }
 

@@ -16,6 +16,7 @@ public:
 			mMotorSpeed{std::nullopt},
             mMotorSpeedUpdateTs{std::nullopt},
 			mCommandMessageFrequency{std::nullopt},
+            mLastMCUBroadcastMessageReceiveTs{std::nullopt},
             mMessageReceiveTimeoutError{false}
 	{}
 
@@ -39,6 +40,11 @@ public:
         mMessageReceiveTimeoutError = error;
     }
 
+    void SetLastMCUBroadcastMessageReceiveTs(const std::optional<uint32_t> ts)
+    {
+        mLastMCUBroadcastMessageReceiveTs = ts;
+    }
+
     // actual velocity (in RPM)
     std::optional<int16_t> GetMotorSpeed() const
     {
@@ -60,10 +66,16 @@ public:
         return mMessageReceiveTimeoutError;
     }
 
+    std::optional<uint32_t> GetLastMCUBroadcastMessageReceiveTs() const
+    {
+        return mLastMCUBroadcastMessageReceiveTs;
+    }
+
 private:
     std::optional<int16_t> mMotorSpeed;
     std::optional<uint32_t> mMotorSpeedUpdateTs;
     std::optional<uint32_t> mCommandMessageFrequency;
+    std::optional<uint32_t> mLastMCUBroadcastMessageReceiveTs;
     bool mMessageReceiveTimeoutError;
 };
 

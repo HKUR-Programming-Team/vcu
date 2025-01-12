@@ -25,6 +25,8 @@ public:
 
 	// To be called in the main library
 	void CheckImplausibility();
+	void CheckMCUTimeout() const;
+	void CheckCommandMessageFrequency() const;
 
 	// To be called when error is resolved (i.e. you are ready to restart the car)
 	void ResetErrorState();

@@ -38,6 +38,8 @@ void Main::Loop()
 
 	// MCU
 	mMCUErrorManager.CheckImplausibility(); // update implausible status
+	mMCUErrorManager.CheckCommandMessageFrequency();
+	mMCUErrorManager.CheckMCUTimeout();
 
 	mMCUInterface.SendCommandMessage(); // send packet to motor controller
 	mMCUInterface.StoreCommandMessageFrequency();
