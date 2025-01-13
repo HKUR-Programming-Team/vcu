@@ -45,6 +45,9 @@ void Main::Loop()
 	mMCUInterface.StoreCommandMessageFrequency();
 
 	mDashboardInterface.DisplayDashboard();
+
+	// Performance test
+	// mCANManager.TransmitFlood(0x0D0);
 }
 
 void Main::MailboxCompletedCallbackInvoked(const uint8_t mailboxNumber)

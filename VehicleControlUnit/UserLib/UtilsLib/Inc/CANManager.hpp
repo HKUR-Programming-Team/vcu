@@ -32,7 +32,10 @@ public:
 		mCanPortName(canPortName),
 		mBMSInterface{BMSInterface},
 		mMCUInterface{MCUInterface},
-		mSensorInterface{sensorInterface}
+		mSensorInterface{sensorInterface},
+		mLastFloodTs{0},
+		mFloodMessageCountPerMs{46},
+		mLastFloodMessageCountIncreaseTs{0}
 	{}
 
 	ErrorState init();
@@ -48,6 +51,7 @@ public:
 	void AbortAllSendRequests();
 	void CheckReceiveFIFO();
 
+	void TransmitFlood(const uint32_t messageId);
 private:
 	void MessageReceiveHandler();
 
@@ -66,6 +70,11 @@ private:
 	BMSInterfaceLib::BMSInterface &mBMSInterface;
 	MCUInterfaceLib::MCUInterface &mMCUInterface;
 	SensorInterfaceLib::SensorInterface &mSensorInterface;
+
+	uint32_t mLastFloodTs;
+	uint32_t mFloodMessageCountPerMs;
+	uint8_t mFloodMessageBuffer[8];
+	uint32_t mLastFloodMessageCountIncreaseTs;
 };
 
 }

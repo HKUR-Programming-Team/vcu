@@ -10,6 +10,8 @@
 	#include <MockLibraries.hpp>
 #endif
 
+#include <optional>
+
 namespace VehicleControlUnit::MCUInterfaceLib {
 
 class MCUErrorManager
@@ -20,13 +22,14 @@ public:
 		mDataStore{dataStore},
 		mInImplausibleState{false},
 		mImplausibleStartTs{0},
-		mImplausibleThresholdInterval{implausibleThresholdInterval}
+		mImplausibleThresholdInterval{implausibleThresholdInterval},
+		mFirstMCUBroadcastMessageReceivedTs{std::nullopt}
 	{}
 
 	// To be called in the main library
 	void CheckImplausibility();
-	void CheckMCUTimeout() const;
-	void CheckCommandMessageFrequency() const;
+	void CheckMCUTimeout();
+	void CheckCommandMessageFrequency();
 
 	// To be called when error is resolved (i.e. you are ready to restart the car)
 	void ResetErrorState();
@@ -42,6 +45,7 @@ private:
 
 	const uint32_t mImplausibleThresholdInterval;
 
+	std::optional<uint32_t> mFirstMCUBroadcastMessageReceivedTs;
 };
 
 }

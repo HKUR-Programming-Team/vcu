@@ -32,7 +32,7 @@ void MCUErrorManager::CheckImplausibility()
 	}
 }
 
-void MCUErrorManager::CheckMCUTimeout() const 
+void MCUErrorManager::CheckMCUTimeout()
 {
 	const auto lastMessageTsOpt = mDataStore.mMCUDataStore.GetLastMCUBroadcastMessageReceiveTs();
 	if (!lastMessageTsOpt.has_value())
@@ -40,19 +40,40 @@ void MCUErrorManager::CheckMCUTimeout() const
 		return; // First message from MCU not yet received
 	}
 
+	const auto currentTime = HAL_GetTick();
+
+	if(!mFirstMCUBroadcastMessageReceivedTs.has_value())
+	{
+		mLogger.LogInfo("First MCU broadcast message received");
+		mFirstMCUBroadcastMessageReceivedTs = currentTime;
+	}
+
 	const auto lastMessageTs = lastMessageTsOpt.value();
-	if (HAL_GetTick() > lastMessageTs + 500)
+	if (currentTime > lastMessageTs + 500)
 	{
 		mDataStore.SetBroadcastMessageReceiveTimeoutError(true);
 	}
 }
 
-void MCUErrorManager::CheckCommandMessageFrequency() const
+void MCUErrorManager::CheckCommandMessageFrequency()
 {
 	const auto lastMessageTsOpt = mDataStore.mMCUDataStore.GetLastMCUBroadcastMessageReceiveTs();
 	if (!lastMessageTsOpt.has_value())
 	{
 		return; // First message from MCU not yet received
+	}
+
+	const auto currentTime = HAL_GetTick();
+
+	if(!mFirstMCUBroadcastMessageReceivedTs.has_value())
+	{
+		mLogger.LogInfo("First MCU broadcast message received");
+		mFirstMCUBroadcastMessageReceivedTs = lastMessageTsOpt.value();
+		return; // Wait for 1 second after the first broadcast message is received before starting to monitor
+	}
+	else if(currentTime < mFirstMCUBroadcastMessageReceivedTs.value() + 1000)
+	{
+		return; // Wait for 1 second after the first broadcast message is received before starting to monitor
 	}
 
 	const auto commandMessageTransmitFrequencyOpt = mDataStore.mMCUDataStore.GetCommandMessageFrequency();

@@ -152,4 +152,28 @@ void CANManager::MessageReceiveHandler()
 	return;
 }
 
+void CANManager::TransmitFlood(const uint32_t messageId)
+{
+	const auto currentTime = HAL_GetTick();
+	if (currentTime / 3000 > mLastFloodMessageCountIncreaseTs)
+	{
+		mFloodMessageCountPerMs += 2;
+		mLogger.LogInfo("Flood message per millisec is now: " + std::to_string(mFloodMessageCountPerMs));
+		mLastFloodMessageCountIncreaseTs = currentTime / 3000;
+	}
+
+	if (currentTime == mLastFloodTs)
+	{
+		return;
+	}
+
+	SetTransmitHeader(messageId, 8, false, false, false);
+	for (uint8_t i = 0; i < mFloodMessageCountPerMs; i++)
+	{
+		SendMessage(mFloodMessageBuffer);
+	}
+
+	mLastFloodTs = currentTime;
+}
+
 }

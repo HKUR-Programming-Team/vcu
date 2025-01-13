@@ -221,7 +221,7 @@ void MCUInterface::StoreCommandMessageFrequency()
 	} 
 
 	const auto frequency = mCommandCount * 1000 / mParameters.commandFrequencyUpdateInterval;
-	mLogger.LogInfo("Command message frequency: " + std::to_string(frequency));
+	mLogger.LogInfo("Command message frequency: " + std::to_string(frequency) + ". BroadcastTimeout: " + std::to_string(mDataStore.GetBroadcastMessageReceiveTimeoutError()) + ". Freq error:" + std::to_string(mDataStore.GetCommandMessageFrequencyError()));
 	mDataStore.mMCUDataStore.SetCommandMessageFrequency(frequency);
 	mLastFrequencyStoreTs = currentTs;
 	mCommandCount = 0;

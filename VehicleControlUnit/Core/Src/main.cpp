@@ -77,19 +77,16 @@ VehicleControlUnit::MainLib::Main VCU(hcan, hadc1, DisplayFatalError);
 
 void HAL_CAN_TxMailbox0CompleteCallback(CAN_HandleTypeDef* hcan)
 {
-	// printf("it happened 0\n");
 	VCU.MailboxCompletedCallbackInvoked(CAN_TX_MAILBOX0);
 }
 
 void HAL_CAN_TxMailbox1CompleteCallback(CAN_HandleTypeDef* hcan)
 {
-	printf("it happened 1\n");
 	VCU.MailboxCompletedCallbackInvoked(CAN_TX_MAILBOX1);
 }
 
 void HAL_CAN_TxMailbox2CompleteCallback(CAN_HandleTypeDef* hcan)
 {
-	printf("it happened 2\n");
 	VCU.MailboxCompletedCallbackInvoked(CAN_TX_MAILBOX2);
 }
 /* USER CODE END PV */
