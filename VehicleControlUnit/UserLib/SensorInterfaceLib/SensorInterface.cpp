@@ -75,7 +75,7 @@ void SensorInterface::ReadThrottleSignal()
 
 	mDataStore.mDrivingInputDataStore.SetThrottleError(false);
 	mDataStore.mDrivingInputDataStore.SetTorque(throttle0);
-	mLogger.LogSpam("Throttle Final: " + std::to_string(throttle0));
+	mLogger.LogCustom("Throttle Final: " + std::to_string(throttle0));
 
 	return;
 }
