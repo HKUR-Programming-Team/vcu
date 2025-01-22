@@ -497,21 +497,25 @@ TEST_CASE("MCUErrorManager")
         CHECK(!dataStore.GetPersistedImplausibleStatus());
     }
 
-    SUBCASE("WHEN command message frequency is less than 20 THEN error is set in DataStore")
+    SUBCASE("GIVEN first MCU broadcast message is received since more than 1 second ago WHEN command message frequency is less than 20 THEN error is set in DataStore")
     {
         dataStore.mMCUDataStore.SetLastMCUBroadcastMessageReceiveTs(10); // First broadcast message
+        mcuErrorManager.CheckCommandMessageFrequency();
 
         dataStore.mMCUDataStore.SetCommandMessageFrequency(15);
+        MockCurrentTick = 1100;
         mcuErrorManager.CheckCommandMessageFrequency();
-        
+
         CHECK(dataStore.GetCommandMessageFrequencyError());
     }
 
-    SUBCASE("WHEN command message frequency is more than 20 THEN no error is set in DataStore")
+    SUBCASE("GIVEN first MCU broadcast message is received since more than 1 second ago WHEN command message frequency is more than 20 THEN no error is set in DataStore")
     {
         dataStore.mMCUDataStore.SetLastMCUBroadcastMessageReceiveTs(10); // First broadcast message
+        mcuErrorManager.CheckCommandMessageFrequency();
 
         dataStore.mMCUDataStore.SetCommandMessageFrequency(25);
+        MockCurrentTick = 1100;
         mcuErrorManager.CheckCommandMessageFrequency();
         
         CHECK(!dataStore.GetCommandMessageFrequencyError());
@@ -526,7 +530,7 @@ TEST_CASE("MCUErrorManager")
         CHECK(dataStore.GetBroadcastMessageReceiveTimeoutError());
     }
 
-    SUBCASE("WHEN last MCU broadcast message is received less than 500 ms ago THEN error is set in DataStore")
+    SUBCASE("WHEN last MCU broadcast message is received less than 500 ms ago THEN no error is set in DataStore")
     {
         dataStore.mMCUDataStore.SetLastMCUBroadcastMessageReceiveTs(10);
         MockCurrentTick = 450;
@@ -804,7 +808,7 @@ TEST_CASE("MCUInterface driving input")
             CHECK(canManager.buffer[7] == 0);
         }
 
-        SUBCASE("WHEN the current tick has past the transmit interval THEN no new command message is sent")
+        SUBCASE("WHEN the current tick has past the transmit interval THEN new command message is sent")
         {
             dataStore.mDrivingInputDataStore.SetTorque(300);
             dataStore.mDrivingInputDataStore.SetRegen(0);
@@ -1024,27 +1028,16 @@ TEST_CASE("MCUInterface driving input")
             CHECK_EQ(dataStore.mMCUDataStore.GetCommandMessageFrequency().value_or(69420), 2);
         }
 
-        SUBCASE("WHEN the transmit complete callback is not invoked before command transmit interval since last transmit THEN abort is called")
-        {
-            REQUIRE_EQ(canManager.mAbortCount, 0);
-            MockCurrentTick = 6;
-            mcuInterface.SendCommandMessage(); // First send function will always abort everything
-
-            MockCurrentTick = 11;
-            mcuInterface.SendCommandMessage(); // Abort.
-            CHECK_EQ(canManager.mAbortCount, 2);
-        }
-
-        SUBCASE("WHEN the transmit complete callback is invoked before command transmit interval since last transmit THEN abort is NOT called")
+        SUBCASE("WHEN the current tick has past the transmit interval THEN abort is called")
         {
             REQUIRE_EQ(canManager.mAbortCount, 0);
             MockCurrentTick = 6;
             mcuInterface.SendCommandMessage(); // First send function will always abort everything
             mcuInterface.CANMailboxCompletedCallbackHandler(1);
 
-            MockCurrentTick = 6;
+            MockCurrentTick = 11;
             mcuInterface.SendCommandMessage(); // Should NOT abort as the ACK has been received.
-            CHECK_EQ(canManager.mAbortCount, 1);
+            CHECK_EQ(canManager.mAbortCount, 2);
         }
     }
 }
@@ -1322,11 +1315,14 @@ TEST_CASE("Command Frequency Check Integration test")
     CAN_RxHeaderTypeDef header;
     uint8_t payload[8] = {0,0,0,0,0,0,0,0};
 
-    SUBCASE("GIVEN first MCU broadcast message is received WHEN there are not enough CAN messages completed callbacks to satisfy minimum frequency requirements THEN error is set in DataStore")
+    SUBCASE("GIVEN first MCU broadcast message is received AND more than one second has passed since then WHEN there are not enough CAN messages completed callbacks to satisfy minimum frequency requirements THEN error is set in DataStore")
     {
-        // Set first message received at time 500.
+        // Set first message received at time 100.
         MockCurrentTick = 100;
         mcuInterface.MessageReceiveHandler(0x0AB, header, payload);
+
+        // Record the first MCU broadcast message receive timestamp
+        mcuErrorManager.CheckCommandMessageFrequency();
         
         // Addition to command message frequency: Only 5 messages in the last 0.5 seconds => frequency of 10 hz
         for (int i = 0; i < 5; i++)
@@ -1337,18 +1333,48 @@ TEST_CASE("Command Frequency Check Integration test")
         }
 
         // Time to store the command message frequency
-        MockCurrentTick = 550;
+        MockCurrentTick = 600;
         mcuInterface.StoreCommandMessageFrequency();
 
+        // Already one second after the first message, can give error.
+        MockCurrentTick = 1200;
         mcuErrorManager.CheckCommandMessageFrequency();
         CHECK(dataStore.GetCommandMessageFrequencyError());
     }
 
-    SUBCASE("GIVEN first MCU broadcast message is received WHEN there are enough CAN messages completed callbacks to satisfy minimum frequency requirements THEN error is NOT set in DataStore")
+    SUBCASE("GIVEN first MCU broadcast message is received AND less than one second has passed since then WHEN there are not enough CAN messages completed callbacks to satisfy minimum frequency requirements THEN error NOT is set in DataStore")
+    {
+        // Set first message received at time 100.
+        MockCurrentTick = 100;
+        mcuInterface.MessageReceiveHandler(0x0AB, header, payload);
+
+        // Record the first MCU broadcast message receive timestamp
+        mcuErrorManager.CheckCommandMessageFrequency();
+        
+        // Addition to command message frequency: Only 5 messages in the last 0.5 seconds => frequency of 10 hz
+        for (int i = 0; i < 5; i++)
+        {
+            MockCurrentTick += 3;
+            mcuInterface.SendCommandMessage();
+            mcuInterface.CANMailboxCompletedCallbackHandler(1);
+        }
+
+        // Time to store the command message frequency
+        MockCurrentTick = 850;
+        mcuInterface.StoreCommandMessageFrequency();
+
+        mcuErrorManager.CheckCommandMessageFrequency();
+        CHECK(!dataStore.GetCommandMessageFrequencyError());
+    }
+
+    SUBCASE("GIVEN first MCU broadcast message is received AND more than one second has passed since then WHEN there are enough CAN messages completed callbacks to satisfy minimum frequency requirements THEN error is NOT set in DataStore")
     {
         // Set first message received at time 500.
         MockCurrentTick = 100;
         mcuInterface.MessageReceiveHandler(0x0AB, header, payload);
+
+        // Record the first MCU broadcast message receive timestamp
+        mcuErrorManager.CheckCommandMessageFrequency();
         
         // Addition to command message frequency: 15 messages in the last 0.5 seconds => frequency of 30 hz
         for (int i = 0; i < 15; i++)
@@ -1362,6 +1388,9 @@ TEST_CASE("Command Frequency Check Integration test")
         MockCurrentTick = 550;
         mcuInterface.StoreCommandMessageFrequency();
 
+        // Already one second after the first message, can give error.
+        MockCurrentTick = 1200;
+        
         mcuErrorManager.CheckCommandMessageFrequency();
         CHECK(!dataStore.GetCommandMessageFrequencyError());
     }
