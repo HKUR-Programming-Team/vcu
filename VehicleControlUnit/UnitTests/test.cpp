@@ -1543,7 +1543,8 @@ TEST_CASE("Config Group Parser")
                 "spamLoggingEnabled": false,
                 "infoLoggingEnabled": true,
                 "errorLoggingEnabled": false,
-                "customLoggingEnabled": true
+                "customLoggingEnabled": true,
+                "sensorLoggingEnabled": true
             })";
 
             const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
@@ -1557,6 +1558,7 @@ TEST_CASE("Config Group Parser")
             CHECK_EQ(loggerParameters.infoLoggingEnabled, true);
             CHECK_EQ(loggerParameters.errorLoggingEnabled, false);
             CHECK_EQ(loggerParameters.customLoggingEnabled, true);
+            CHECK_EQ(loggerParameters.sensorLoggingEnable, true);
         }
 
         SUBCASE("WHEN a field is invalid is right THEN nullopt is returned")
@@ -1565,7 +1567,8 @@ TEST_CASE("Config Group Parser")
                 "spamLoggingEnabled": false,
                 "infoLoggingEnabled": true,
                 "errorLoggingEnabled": false,
-                "customLoggingEnabled": 1
+                "customLoggingEnabled": 1,
+                "sensorLoggingEnabled": true
             })";
 
             const json parsedTestJson = json::parse(testJson, nullptr, false); // Parse without exception
@@ -1895,6 +1898,7 @@ TEST_CASE("Config Parser")
                 "infoLoggingEnabled": true, 
                 "errorLoggingEnabled": false, 
                 "customLoggingEnabled": true, 
+                "sensorLoggingEnabled": true,
                 "implausibleThresholdInterval": 69, 
                 "readyToDriveSoundDuration": 1500, 
                 "readyToDriveTriggeringBrakeThreshold": 12, 
@@ -1932,6 +1936,7 @@ TEST_CASE("Config Parser")
             CHECK_EQ(parsed.mLoggerConfig.infoLoggingEnabled, true);
             CHECK_EQ(parsed.mLoggerConfig.errorLoggingEnabled, false);
             CHECK_EQ(parsed.mLoggerConfig.customLoggingEnabled, true);
+            CHECK_EQ(parsed.mLoggerConfig.sensorLoggingEnable, true);
 
             // Error
             CHECK_EQ(parsed.mErrorConfig.implausibleThresholdInterval, 69);

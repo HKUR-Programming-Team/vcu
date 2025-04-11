@@ -8,11 +8,13 @@ std::optional<LoggerConfig> ConfigGroupParser::ParseLoggerParameteres(const json
 	const auto infoLoggingEnabledOpt = ConfigValueParser::GetBool(config, "infoLoggingEnabled");
 	const auto errorLoggingEnabledOpt = ConfigValueParser::GetBool(config, "errorLoggingEnabled");
 	const auto customLoggingEnabledOpt = ConfigValueParser::GetBool(config, "customLoggingEnabled");
+	const auto sensorLoggingEnabledOpt = ConfigValueParser::GetBool(config, "sensorLoggingEnabled");
 
     if (!spamLoggingEnabledOpt.has_value()
             || !infoLoggingEnabledOpt.has_value()
             || !errorLoggingEnabledOpt.has_value()
-            || !customLoggingEnabledOpt.has_value())
+            || !customLoggingEnabledOpt.has_value()
+			|| !sensorLoggingEnabledOpt.has_value())
     {
         return std::nullopt;
     }
@@ -21,7 +23,8 @@ std::optional<LoggerConfig> ConfigGroupParser::ParseLoggerParameteres(const json
 		spamLoggingEnabledOpt.value(),
 		infoLoggingEnabledOpt.value(),
 		errorLoggingEnabledOpt.value(),
-		customLoggingEnabledOpt.value()
+		customLoggingEnabledOpt.value(),
+		sensorLoggingEnabledOpt.value()
 	};
 }
 

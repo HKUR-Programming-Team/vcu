@@ -33,6 +33,9 @@ public:
 	void ReadADC();
 	UtilsLib::ErrorState MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8]);
 
+	// Print special logs to send sensor information to the desktop application
+	void PrintSensorInfoToLogs();
+
 	const MainLib::Config::SensorInterfaceThrottleConfig mThrottleConfig;
 	const MainLib::Config::SensorInterfaceBrakeConfig mBrakeConfig;
 	const MainLib::Config::SensorInterfaceRegenConfig mRegenConfig;

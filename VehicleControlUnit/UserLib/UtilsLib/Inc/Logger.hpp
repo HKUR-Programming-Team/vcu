@@ -12,12 +12,16 @@ class Logger
 {
 public:
 	// Set whether each type of logs are enabled
-	Logger(const bool spamLoggingEnabled, const bool infoLoggingEnabled,
-			const bool errorLoggingEnabled, const bool customLoggingEnabled):
+	Logger(const bool spamLoggingEnabled,
+			const bool infoLoggingEnabled,
+			const bool errorLoggingEnabled,
+			const bool customLoggingEnabled,
+			const bool sensorLoggingEnabled):
 		spamLoggingEnabled(spamLoggingEnabled),
 		infoLoggingEnabled(infoLoggingEnabled),
 		errorLoggingEnabled(errorLoggingEnabled),
-		customLoggingEnabled(customLoggingEnabled)
+		customLoggingEnabled(customLoggingEnabled),
+		sensorLoggingEnabled(sensorLoggingEnabled)
 	{}
 
 	// Interfaces for logging
@@ -25,6 +29,7 @@ public:
 	void LogInfo(const std::string & logMessage) const;
 	void LogError(const std::string & logMessage) const;
 	void LogCustom(const std::string & logMessage) const;
+	void LogSensor(const std::string & logMessage) const;
 private:
 	void PrintLogMsg(const std::string & logType, const std::string & logMessage) const;
 
@@ -32,6 +37,7 @@ private:
 	bool infoLoggingEnabled;
 	bool errorLoggingEnabled;
 	bool customLoggingEnabled;
+	bool sensorLoggingEnabled;
 };
 
 } // namespace VehicleControlUnit::UtilsLib

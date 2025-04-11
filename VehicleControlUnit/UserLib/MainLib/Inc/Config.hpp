@@ -14,6 +14,7 @@ struct LoggerConfig
 	const bool infoLoggingEnabled = true;
 	const bool errorLoggingEnabled = true;
 	const bool customLoggingEnabled = false;
+	const bool sensorLoggingEnable = false;
 };
 
 struct ADCConfig

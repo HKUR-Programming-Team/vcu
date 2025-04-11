@@ -139,6 +139,53 @@ void SensorInterface::ReadRegenSignal()
 	mDataStore.mDrivingInputDataStore.SetRegen(value);
 }
 
+void SensorInterface::PrintSensorInfoToLogs()
+{
+	uint16_t throttlePin0 = 0;
+	uint16_t throttlePin1 = 0;
+	uint16_t brake = 0;
+	uint16_t regen = 0;
+
+	mADCManager.GetBufferByIndex(mThrottleConfig.ThrottleSignalADCIndex1, throttlePin0);
+	mADCManager.GetBufferByIndex(mThrottleConfig.ThrottleSignalADCIndex2, throttlePin1);
+	mADCManager.GetBufferByIndex(mBrakeConfig.BrakeSignalADCIndex, brake);
+	mADCManager.GetBufferByIndex(mRegenConfig.RegenSignalADCIndex, regen);
+
+	// Get the sensor string of one analog sensor
+	auto GetSensorString = [](const uint16_t min,
+			const uint16_t max,
+			const uint16_t value,
+			const uint16_t translated_max)
+	-> std::string{
+		const auto sensor_string = std::to_string(min)
+				+ " " + std::to_string(max)
+				+ " " + std::to_string(value)
+				+ " " + std::to_string(translated_max);
+		return sensor_string;
+	};
+
+	const auto throttlePin0String = GetSensorString(mThrottleConfig.ThrottleMinPin0,
+			mThrottleConfig.ThrottleMaxPin0,
+			throttlePin0,
+			mThrottleConfig.MaxTorque);
+	const auto throttlePin1String = GetSensorString(mThrottleConfig.ThrottleMinPin1,
+			mThrottleConfig.ThrottleMaxPin1,
+			throttlePin1,
+			mThrottleConfig.MaxTorque);
+	const auto brakeString = GetSensorString(mBrakeConfig.BrakeMinPin,
+			mBrakeConfig.BrakeMaxPin,
+			brake,
+			mBrakeConfig.MaxBrake);
+	const auto regenString = GetSensorString(mRegenConfig.RegenMinPin,
+			mRegenConfig.RegenMaxPin,
+			regen,
+			mRegenConfig.MaxRegen);
+
+	const auto finalString = throttlePin0String + " " + throttlePin1String + " " + brakeString + " " + regenString;
+
+	mLogger.LogSensor(finalString);
+}
+
 UtilsLib::ErrorState SensorInterface::MessageReceiveHandler(const CAN_RxHeaderTypeDef& header, const uint8_t message[8])
 {
 	mLogger.LogInfo("TODO: Handle the CAN message received from Sensors, store the data in the DataStore");
