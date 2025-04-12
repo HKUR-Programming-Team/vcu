@@ -1936,7 +1936,7 @@ TEST_CASE("Config Parser")
             CHECK_EQ(parsed.mLoggerConfig.infoLoggingEnabled, true);
             CHECK_EQ(parsed.mLoggerConfig.errorLoggingEnabled, false);
             CHECK_EQ(parsed.mLoggerConfig.customLoggingEnabled, true);
-            CHECK_EQ(parsed.mLoggerConfig.sensorLoggingEnable, true);
+            CHECK_EQ(parsed.mLoggerConfig.sensorLoggingEnabled, true);
 
             // Error
             CHECK_EQ(parsed.mErrorConfig.implausibleThresholdInterval, 69);
