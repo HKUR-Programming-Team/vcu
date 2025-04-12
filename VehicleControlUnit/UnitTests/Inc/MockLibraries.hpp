@@ -93,6 +93,11 @@ public:
     {
         volatile int x = 0;
     }
+
+	void LogSensor(const std::string & logMessage) const
+    {
+        volatile int x = 0;
+    }
 };
 
 enum class GPIOPort

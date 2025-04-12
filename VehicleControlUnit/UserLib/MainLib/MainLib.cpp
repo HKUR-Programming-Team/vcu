@@ -49,6 +49,8 @@ void Main::Loop()
 	mMCUInterface.SendCommandMessage(); // send packet to motor controller
 
 	mDashboardInterface.DisplayDashboard();
+
+	mSensorInterface.PrintSensorInfoToLogs();
 }
 
 }

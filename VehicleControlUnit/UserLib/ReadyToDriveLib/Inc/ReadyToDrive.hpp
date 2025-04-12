@@ -1,7 +1,7 @@
 #pragma once
 
 #include <DataStoreLib/Inc/DataStore.hpp>
-#include <MainLib/Inc/settings.hpp>
+#include <MainLib/Inc/Config.hpp>
  
 #ifndef MOCK_TEST
 	#include <stm32f1xx.h>
@@ -16,13 +16,13 @@ namespace VehicleControlUnit::ReadyToDriveLib {
 class ReadyToDrive
 {
 public:
-	ReadyToDrive(UtilsLib::Logger& logger, DataStoreLib::DataStore& dataStore, const MainLib::Settings::ReadyToDriveParameters readyToDriveParameters):
+	ReadyToDrive(UtilsLib::Logger& logger, DataStoreLib::DataStore& dataStore, const MainLib::Config::Config& config):
 			mLogger{logger},
 			mDataStore{dataStore},
 			mReadyToDriveMode{false},
 			mReadyToDriveStartTs{0},
 			mReadyToDriveButtonPreviousStateIsHigh{true},
-			mParameters{readyToDriveParameters}
+			mParameters{config.mReadyToDriveConfig}
 	{}
 
 	void Check();
@@ -41,7 +41,7 @@ private:
 	uint32_t mReadyToDriveStartTs;
 	bool mReadyToDriveButtonPreviousStateIsHigh;
 
-	const MainLib::Settings::ReadyToDriveParameters mParameters;
+	const MainLib::Config::ReadyToDriveConfig mParameters;
 };
 
 };

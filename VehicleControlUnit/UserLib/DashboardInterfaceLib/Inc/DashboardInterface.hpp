@@ -10,17 +10,17 @@
 #endif
 
 #include <DataStoreLib/Inc/DataStore.hpp>
-#include <MainLib/Inc/settings.hpp>
+#include <MainLib/Inc/Config.hpp>
 
 namespace VehicleControlUnit::DashboardInterfaceLib {
 
 class DashboardInterface
 {
 public:
-	DashboardInterface(UtilsLib::Logger& logger, DataStoreLib::DataStore& dataStore, const MainLib::Settings::DashboardInterfaceParameters dashboardParameters):
+	DashboardInterface(UtilsLib::Logger& logger, DataStoreLib::DataStore& dataStore, const MainLib::Config::Config& config):
 			mLogger{logger},
 			mDataStore{dataStore},
-			mParameters{dashboardParameters}
+			mParameters{config.mDashboardInterfaceConfig}
 	{}
 
 	void DisplayDashboard();
@@ -30,7 +30,7 @@ private:
 	UtilsLib::Logger& mLogger;
 	DataStoreLib::DataStore& mDataStore;
 
-	const MainLib::Settings::DashboardInterfaceParameters mParameters;
+	const MainLib::Config::DashboardInterfaceConfig mParameters;
 };
 
 };

@@ -11,7 +11,7 @@
 #include <DataStoreLib/Inc/DataStore.hpp>
 #include <SensorInterfaceLib/Inc/SensorInterface.hpp>
 #include <UtilsLib/Inc/ErrorState.hpp>
-#include <MainLib/Inc/settings.hpp>
+#include <MainLib/Inc/Config.hpp>
 
 // Forward declaration to make circular dependency between CANManager and MCUInterface work
 namespace VehicleControlUnit::UtilsLib {
@@ -26,14 +26,14 @@ public:
 	MCUInterface(UtilsLib::Logger& logger,
 			DataStoreLib::DataStore& dataStore,
 			UtilsLib::CANManager& CANManager,
-			const MainLib::Settings::MCUInterfaceParameters& mcuinterfaceParameters):
+			const MainLib::Config::Config& config):
 		mLogger{logger},
 		mDataStore{dataStore},
 		mCANManager{CANManager},
 		mLastCommandMessageSendTs{0},
-		mParameters{mcuinterfaceParameters},
+		mParameters{config.mMcuInterfaceConfig},
 		mTCSTriggered{false},
-		mTCSTriggeredStartTorque{MainLib::Settings::sensorInterfaceParameters.MaxTorque}
+		mTCSTriggeredStartTorque{config.mSensorInterfaceThrottleConfig.MaxTorque}
 	{}
 
 	void MessageReceiveHandler(const uint32_t messageID, const CAN_RxHeaderTypeDef& header, const uint8_t message[8]);
@@ -49,7 +49,7 @@ private:
 	uint8_t mTransmitBuffer[8];
 	uint32_t mLastCommandMessageSendTs;
 
-	const MainLib::Settings::MCUInterfaceParameters mParameters;
+	const MainLib::Config::MCUInterfaceConfig mParameters;
 
 	bool mTCSTriggered;
 	int16_t mTCSTriggeredStartTorque;

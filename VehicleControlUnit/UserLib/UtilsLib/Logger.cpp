@@ -22,6 +22,11 @@ void Logger::LogCustom(const std::string & logMessage) const
 	PrintLogMsg("CUSTOM", logMessage);
 }
 
+void Logger::LogSensor(const std::string & logMessage) const
+{
+	PrintLogMsg("SENSOR", logMessage);
+}
+
 void Logger::PrintLogMsg(const std::string & logType, const std::string & logMessage) const
 {
 	if (logType == "SPAM")
@@ -39,6 +44,10 @@ void Logger::PrintLogMsg(const std::string & logType, const std::string & logMes
 	else if (logType == "CUSTOM")
 	{
 		if (!customLoggingEnabled) return;
+	}
+	else if (logType == "SENSOR")
+	{
+		if (!sensorLoggingEnabled) return;
 	}
 	else
 	{
